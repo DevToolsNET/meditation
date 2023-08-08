@@ -1,8 +1,10 @@
-﻿using Meditation.Common.Models;
+﻿using System;
+using Meditation.Common.Models;
 using Meditation.Common.Services;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Meditation.Core.Services
 {
@@ -13,7 +15,7 @@ namespace Meditation.Core.Services
 
         public ProcessListProvider()
         {
-            processes = Process.GetProcesses().Select(p => new ProcessInfo(p)).ToImmutableArray();
+            processes = Process.GetProcesses().Select(p => new ProcessInfo(p, null, null)).ToImmutableArray();
             processesLookup = processes.ToDictionary(p => p.Id, p => p).ToImmutableDictionary();
         }
 

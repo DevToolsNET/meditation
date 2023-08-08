@@ -2,6 +2,7 @@
 using Meditation.Common.Services;
 using Microsoft.Diagnostics.NETCore.Client;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Meditation.Core.Services
 {
@@ -14,7 +15,10 @@ namespace Meditation.Core.Services
             var attachableProcessIds = DiagnosticsClient.GetPublishedProcesses();
             attachedProcesses = attachableProcessIds
                 .Where(id => processListProvider.TryGetProcessById(id, out _))
-                .Select(processListProvider.GetProcessById)
+                .Select(pid => new ProcessInfo(
+                    processListProvider.GetProcessById(pid).ProcessInternal, 
+                    isNetCoreApp: true, 
+                    isNetFramework: false))
                 .ToImmutableArray();
         }
 

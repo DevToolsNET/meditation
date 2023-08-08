@@ -1,4 +1,6 @@
-﻿using Meditation.Core.Services;
+﻿using System;
+using System.Linq;
+using Meditation.Core.Services;
 using Xunit;
 
 namespace Meditation.UnitTests

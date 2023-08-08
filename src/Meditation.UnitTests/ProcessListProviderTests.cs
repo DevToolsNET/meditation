@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Meditation.Core.Services;
 using Xunit;
 
