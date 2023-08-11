@@ -1,23 +1,15 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Meditation.Common.Models
 {
-    public class ProcessInfo
+    public record ProcessInfo(int Id, string Name, ProcessType Type, Lazy<string?> CommandLineArguments, Process Internal)
     {
-        private readonly Process processInternal;
-        private readonly ProcessType processType;
-
-        public ProcessInfo(Process processInternal, ProcessType processType)
+        public ProcessInfo(Process process, ProcessType type, Lazy<string?> commandLineArguments)
+            : this(process.Id, process.ProcessName, type, commandLineArguments, process)
         {
-            this.processInternal = processInternal;
-            this.processType = processType;
+
         }
-
-        public int Id => processInternal.Id;
-        public string Name => processInternal.ProcessName;
-        public ProcessType Type => processType;
-
-        public Process ProcessInternal => processInternal;
 
         public override string ToString()
             => $"[{Id}] {Name}";

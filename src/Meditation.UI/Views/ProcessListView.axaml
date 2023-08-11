@@ -28,6 +28,7 @@
                     <DataGridTextColumn Header="Name"  Binding="{Binding Name}"/>
                     <DataGridTextColumn Header="PID" Binding="{Binding Id}" />
                     <DataGridTextColumn Header="Type" Binding="{Binding Type}" />
+					<DataGridTextColumn Header="Commandline Arguments" Binding="{Binding CommandLineArguments.Value}" />
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>

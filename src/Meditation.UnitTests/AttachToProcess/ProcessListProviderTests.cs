@@ -1,17 +1,18 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
-using Meditation.Core.Services;
+using Meditation.Common.Services;
 using Xunit;
 
-namespace Meditation.UnitTests
+namespace Meditation.UnitTests.AttachToProcess
 {
-    public class ProcessListProviderTests
+    public class ProcessListProviderTests : TestsBase
     {
         [Fact]
         public void ProcessListProvider_ReturnsNonEmptyList()
         {
             // Prepare
-            var provider = new ProcessListProvider();
+            var provider = ServiceProvider.GetRequiredService<IProcessListProvider>();
 
             // Act
             var processes = provider.GetAllProcesses();

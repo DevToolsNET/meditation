@@ -15,9 +15,7 @@ namespace Meditation.Core.Services
             var attachableProcessIds = DiagnosticsClient.GetPublishedProcesses();
             attachedProcesses = attachableProcessIds
                 .Where(id => processListProvider.TryGetProcessById(id, out _))
-                .Select(pid => new ProcessInfo(
-                    processListProvider.GetProcessById(pid).ProcessInternal, 
-                    ProcessType.NetCoreApp))
+                .Select(pid => processListProvider.GetProcessById(pid) with { Type = ProcessType.NetCoreApp })
                 .ToImmutableArray();
         }
 

@@ -1,18 +1,18 @@
-﻿using System;
+﻿using Meditation.Common.Services;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Linq;
-using Meditation.Core.Services;
 using Xunit;
 
-namespace Meditation.UnitTests
+namespace Meditation.UnitTests.AttachToProcess
 {
-    public class AttachableProcessListProviderTests
+    public class AttachableProcessListProviderTests : TestsBase
     {
         [Fact]
         public void AttachableProcessListProvider_ReturnsNonEmptyList()
         {
             // Prepare
-            var processListProvider = new ProcessListProvider();
-            var attachableProcessListProvider = new AttachableProcessListProvider(processListProvider);
+            var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
 
             // Act
             var processes = attachableProcessListProvider.GetAllAttachableProcesses();
