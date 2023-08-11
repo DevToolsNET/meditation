@@ -15,7 +15,7 @@ namespace Meditation.Core.Services
 
         public ProcessListProvider()
         {
-            processes = Process.GetProcesses().Select(p => new ProcessInfo(p, null, null)).ToImmutableArray();
+            processes = Process.GetProcesses().Select(p => new ProcessInfo(p, ProcessType.Unknown)).ToImmutableArray();
             processesLookup = processes.ToDictionary(p => p.Id, p => p).ToImmutableDictionary();
         }
 

@@ -5,21 +5,17 @@ namespace Meditation.Common.Models
     public class ProcessInfo
     {
         private readonly Process processInternal;
-        private readonly bool? isNetCoreApp;
-        private readonly bool? isNetFramework;
+        private readonly ProcessType processType;
 
-        public ProcessInfo(Process processInternal, bool? isNetCoreApp, bool? isNetFramework)
+        public ProcessInfo(Process processInternal, ProcessType processType)
         {
             this.processInternal = processInternal;
-            this.isNetCoreApp = isNetCoreApp;
-            this.isNetFramework = isNetFramework;
+            this.processType = processType;
         }
 
         public int Id => processInternal.Id;
         public string Name => processInternal.ProcessName;
-        public string Type => (isNetCoreApp.HasValue && isNetCoreApp.Value) ? "NetCoreApp" : 
-                              (isNetFramework.HasValue && isNetFramework.Value) ? "NetFramework" 
-                              : "Unknown";
+        public ProcessType Type => processType;
 
         public Process ProcessInternal => processInternal;
 

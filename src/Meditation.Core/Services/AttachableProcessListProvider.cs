@@ -17,8 +17,7 @@ namespace Meditation.Core.Services
                 .Where(id => processListProvider.TryGetProcessById(id, out _))
                 .Select(pid => new ProcessInfo(
                     processListProvider.GetProcessById(pid).ProcessInternal, 
-                    isNetCoreApp: true, 
-                    isNetFramework: false))
+                    ProcessType.NetCoreApp))
                 .ToImmutableArray();
         }
 
