@@ -11,22 +11,18 @@ namespace Meditation.Core.Services
 {
     internal class ProcessListProvider : IProcessListProvider
     {
-        private readonly ImmutableArray<ProcessInfo> processes;
-        private readonly ImmutableDictionary<int, ProcessInfo> processesLookup;
+        private readonly IProcessCommandLineProvider commandLineArgumentsProvider;
+        private readonly IProcessArchitectureProvider processArchitectureProvider;
+        private ImmutableArray<ProcessInfo> processes;
+        private ImmutableDictionary<int, ProcessInfo> processesLookup;
 
         public ProcessListProvider(IProcessCommandLineProvider commandLineArgumentsProvider, IProcessArchitectureProvider processArchitectureProvider)
         {
-            processes = Process.GetProcesses()
-                .Select(process => new ProcessInfo(
-                    process, 
-                    ProcessType.Unknown, 
-                    ConstructLazyCommandLineArguments(process, commandLineArgumentsProvider),
-                    ConstructLazyProcessArchitecture(process, processArchitectureProvider)))
-                .ToImmutableArray();
+            this.commandLineArgumentsProvider = commandLineArgumentsProvider;
+            this.processArchitectureProvider = processArchitectureProvider;
 
-            processesLookup = processes
-                .ToDictionary(p => p.Id, p => p)
-                .ToImmutableDictionary();
+            processes = LoadProcesses();
+            processesLookup = LoadProcessLookup(processes);
         }
 
         public ImmutableArray<ProcessInfo> GetAllProcesses()
@@ -41,6 +37,30 @@ namespace Meditation.Core.Services
                 return processInfo;
 
             throw new ArgumentException("Unable to find process with specified id.", nameof(pid));
+        }
+
+        public void Refresh()
+        {
+            processes = LoadProcesses();
+            processesLookup = LoadProcessLookup(processes);
+        }
+
+        private ImmutableArray<ProcessInfo> LoadProcesses()
+        {
+            return Process.GetProcesses()
+                .Select(process => new ProcessInfo(
+                    process,
+                    ProcessType.Unknown,
+                    ConstructLazyCommandLineArguments(process, commandLineArgumentsProvider),
+                    ConstructLazyProcessArchitecture(process, processArchitectureProvider)))
+                .ToImmutableArray();
+        }
+
+        private ImmutableDictionary<int, ProcessInfo> LoadProcessLookup(ImmutableArray<ProcessInfo> currentProcesses)
+        {
+            return currentProcesses
+                .ToDictionary(p => p.Id, p => p)
+                .ToImmutableDictionary();
         }
 
         private static Lazy<string?> ConstructLazyCommandLineArguments(Process process, IProcessCommandLineProvider commandLineArgumentsProvider)

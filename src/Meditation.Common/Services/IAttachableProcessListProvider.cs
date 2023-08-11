@@ -6,5 +6,6 @@ namespace Meditation.Common.Services
     public interface IAttachableProcessListProvider
     {
         ImmutableArray<ProcessInfo> GetAllAttachableProcesses();
+        void Refresh();
     }
 }

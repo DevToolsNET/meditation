@@ -4,8 +4,6 @@ using Meditation.Common.Models;
 using Meditation.Common.Services;
 using System.Collections.ObjectModel;
 using System.Linq;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 namespace Meditation.UI.ViewModels
 {
@@ -20,7 +18,7 @@ namespace Meditation.UI.ViewModels
         public ProcessListViewModel(IAttachableProcessListProvider processListProvider)
         {
             this.processListProvider = processListProvider;
-            ProcessList = new ObservableCollection<ProcessInfo>(processListProvider.GetAllAttachableProcesses());
+            ProcessList = LoadAttachableProcesses();
         }
 
         [RelayCommand]
@@ -34,11 +32,11 @@ namespace Meditation.UI.ViewModels
         [RelayCommand]
         public void RefreshProcessList()
         {
-            var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                title: "Missing feature",
-                text: "This functionality is not yet implemented",
-                @enum: ButtonEnum.Ok);
-            messageBox.ShowAsync();
+            processListProvider.Refresh();
+            ProcessList = LoadAttachableProcesses();
         }
+
+        private ObservableCollection<ProcessInfo> LoadAttachableProcesses()
+            => new(processListProvider.GetAllAttachableProcesses());
     }
 }

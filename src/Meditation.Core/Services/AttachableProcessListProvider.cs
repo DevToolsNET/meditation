@@ -8,9 +8,25 @@ namespace Meditation.Core.Services
 {
     internal class AttachableProcessListProvider : IAttachableProcessListProvider
     {
-        private readonly ImmutableArray<ProcessInfo> attachedProcesses;
+        private readonly IProcessListProvider processListProvider;
+        private ImmutableArray<ProcessInfo> attachedProcesses;
 
         public AttachableProcessListProvider(IProcessListProvider processListProvider)
+        {
+            this.processListProvider = processListProvider;
+            LoadAttachableProcesses();
+        }
+
+        public ImmutableArray<ProcessInfo> GetAllAttachableProcesses()
+            => attachedProcesses;
+
+        public void Refresh()
+        {
+            processListProvider.Refresh();
+            LoadAttachableProcesses();
+        }
+
+        private void LoadAttachableProcesses()
         {
             var attachableProcessIds = DiagnosticsClient.GetPublishedProcesses();
             attachedProcesses = attachableProcessIds
@@ -18,8 +34,5 @@ namespace Meditation.Core.Services
                 .Select(pid => processListProvider.GetProcessById(pid) with { Type = ProcessType.NetCoreApp })
                 .ToImmutableArray();
         }
-
-        public ImmutableArray<ProcessInfo> GetAllAttachableProcesses()
-            => attachedProcesses;
     }
 }
