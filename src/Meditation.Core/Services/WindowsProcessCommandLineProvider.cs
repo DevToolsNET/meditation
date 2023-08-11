@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 namespace Meditation.Core.Services
 {
     // ReSharper disable InconsistentNaming
-    internal class WindowsCommandLineArgumentsProvider : ICommandLineArgumentsProvider
+    internal class WindowsProcessCommandLineProvider : IProcessCommandLineProvider
     {
         private static class Win32Native
         {

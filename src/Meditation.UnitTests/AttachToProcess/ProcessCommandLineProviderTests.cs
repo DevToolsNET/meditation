@@ -6,15 +6,15 @@ using Xunit;
 
 namespace Meditation.UnitTests.AttachToProcess
 {
-    public class CommandLineArgumentsProviderTests : TestsBase
+    public class ProcessCommandLineProviderTests : TestsBase
     {
         [Fact]
-        public void CommandLineArgumentsProvider_ReturnsNonEmptyArgumentsForThisProcess()
+        public void ProcessCommandLineProvider_ReturnsNonEmptyArgumentsForThisProcess()
         {
             // Prepare
             var pid = Environment.ProcessId;
             var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
-            var commandLineArgumentsProvider = ServiceProvider.GetRequiredService<ICommandLineArgumentsProvider>();
+            var commandLineArgumentsProvider = ServiceProvider.GetRequiredService<IProcessCommandLineProvider>();
 
             // Act
             var process = attachableProcessListProvider.GetAllAttachableProcesses().Single(p => p.Id == pid).Internal;

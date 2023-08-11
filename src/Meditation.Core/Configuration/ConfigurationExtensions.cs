@@ -27,7 +27,8 @@ namespace Meditation.Core.Configuration
 
         private static void AddWindowsServices(this IServiceCollection services)
         {
-            services.AddSingleton<ICommandLineArgumentsProvider, WindowsCommandLineArgumentsProvider>();
+            services.AddSingleton<IProcessCommandLineProvider, WindowsProcessCommandLineProvider>();
+            services.AddSingleton<IProcessArchitectureProvider, WindowsProcessArchitectureProvider>();
         }
 
         private static void AddLinuxServices(this IServiceCollection services)

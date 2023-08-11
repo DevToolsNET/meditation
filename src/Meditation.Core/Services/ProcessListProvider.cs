@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Meditation.Core.Services
 {
@@ -13,10 +14,14 @@ namespace Meditation.Core.Services
         private readonly ImmutableArray<ProcessInfo> processes;
         private readonly ImmutableDictionary<int, ProcessInfo> processesLookup;
 
-        public ProcessListProvider(ICommandLineArgumentsProvider commandLineArgumentsProvider)
+        public ProcessListProvider(IProcessCommandLineProvider commandLineArgumentsProvider, IProcessArchitectureProvider processArchitectureProvider)
         {
             processes = Process.GetProcesses()
-                .Select(process => new ProcessInfo(process, ProcessType.Unknown, ConstructLazyCommandLineArguments(process, commandLineArgumentsProvider)))
+                .Select(process => new ProcessInfo(
+                    process, 
+                    ProcessType.Unknown, 
+                    ConstructLazyCommandLineArguments(process, commandLineArgumentsProvider),
+                    ConstructLazyProcessArchitecture(process, processArchitectureProvider)))
                 .ToImmutableArray();
 
             processesLookup = processes
@@ -38,12 +43,21 @@ namespace Meditation.Core.Services
             throw new ArgumentException("Unable to find process with specified id.", nameof(pid));
         }
 
-        private static Lazy<string?> ConstructLazyCommandLineArguments(Process process, ICommandLineArgumentsProvider commandLineArgumentsProvider)
+        private static Lazy<string?> ConstructLazyCommandLineArguments(Process process, IProcessCommandLineProvider commandLineArgumentsProvider)
         {
             return new Lazy<string?>(() =>
             {
                 commandLineArgumentsProvider.TryGetCommandLineArguments(process, out var commandLineArguments);
                 return commandLineArguments;
+            });
+        }
+
+        private static Lazy<Architecture?> ConstructLazyProcessArchitecture(Process process, IProcessArchitectureProvider processArchitectureProvider)
+        {
+            return new Lazy<Architecture?>(() =>
+            {
+                processArchitectureProvider.TryGetProcessArchitecture(process, out var architecture);
+                return architecture;
             });
         }
     }
