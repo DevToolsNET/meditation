@@ -23,13 +23,13 @@
         </Grid>
 
         <DockPanel Grid.Row="1">
-            <DataGrid ItemsSource="{Binding ProcessList}" SelectedItem="{Binding SelectedProcess}" DockPanel.Dock="Top">
+            <DataGrid ItemsSource="{Binding ProcessList^}" SelectedItem="{Binding SelectedProcess}" DockPanel.Dock="Top">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Name"  Binding="{Binding Name}" IsReadOnly="True" />
                     <DataGridTextColumn Header="PID" Binding="{Binding Id}" IsReadOnly="True" />
                     <DataGridTextColumn Header="Architecture" Binding="{Binding Architecture.Value}" IsReadOnly="True" />
                     <DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" />
-					<DataGridTextColumn Header="Commandline Arguments" Binding="{Binding CommandLineArguments.Value}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Commandline Arguments" Binding="{Binding CommandLineArguments.Value}" IsReadOnly="True" />
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>

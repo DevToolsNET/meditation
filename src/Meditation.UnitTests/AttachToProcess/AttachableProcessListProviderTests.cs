@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Meditation.UnitTests.AttachToProcess
@@ -9,13 +10,13 @@ namespace Meditation.UnitTests.AttachToProcess
     public class AttachableProcessListProviderTests : TestsBase
     {
         [Fact]
-        public void AttachableProcessListProvider_ReturnsNonEmptyList()
+        public async Task AttachableProcessListProvider_ReturnsNonEmptyList()
         {
             // Prepare
             var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
 
             // Act
-            var processes = attachableProcessListProvider.GetAllAttachableProcesses();
+            var processes = await attachableProcessListProvider.GetAllAttachableProcessesAsync();
 
             // Assert
             Assert.NotEmpty(processes);

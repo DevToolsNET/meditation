@@ -8,36 +8,37 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Meditation.Core.Services
 {
     internal class AttachableProcessListProvider : IAttachableProcessListProvider
     {
         private readonly IProcessListProvider processListProvider;
-        private ImmutableArray<ProcessInfo> attachableProcesses;
+        private Task<ImmutableArray<ProcessInfo>> attachableProcessesTask;
 
         public AttachableProcessListProvider(IProcessListProvider processListProvider)
         {
             this.processListProvider = processListProvider;
-            LoadAttachableProcesses();
+            attachableProcessesTask = LoadAttachableProcessesAsync();
         }
 
-        public ImmutableArray<ProcessInfo> GetAllAttachableProcesses()
-            => attachableProcesses;
+        public Task<ImmutableArray<ProcessInfo>> GetAllAttachableProcessesAsync()
+            => attachableProcessesTask;
 
         public void Refresh()
         {
             processListProvider.Refresh();
-            LoadAttachableProcesses();
+            attachableProcessesTask = LoadAttachableProcessesAsync();
         }
 
-        private void LoadAttachableProcesses()
+        private async Task<ImmutableArray<ProcessInfo>> LoadAttachableProcessesAsync()
         {
             var builder = new List<ProcessInfo>();
             var netCoreProcesses = LoadNetCoreProcesses();
             var netCoreProcessesLookup = netCoreProcesses.ToDictionary(p => p.Id, p => p);
 
-            foreach (var netFrameworkProcess in LoadNetFrameworkProcesses())
+            foreach (var netFrameworkProcess in await LoadNetFrameworkProcessesAsync())
             {
                 // NET Framework process obtaining logic might not be 100% reliable, trust .NET Core client primarily
                 if (netCoreProcessesLookup.ContainsKey(netFrameworkProcess.Id))
@@ -47,33 +48,34 @@ namespace Meditation.Core.Services
             }
 
             builder.AddRange(netCoreProcessesLookup.Values);
-            attachableProcesses = builder.ToImmutableArray();
+            return builder.ToImmutableArray();
         }
 
-        private IEnumerable<ProcessInfo> LoadNetFrameworkProcesses()
+        private async Task<ImmutableArray<ProcessInfo>> LoadNetFrameworkProcessesAsync()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                yield break;
+                ImmutableArray.Create<ProcessInfo>();
 
+            var builder = new List<ProcessInfo>();
             var stdout = new StringBuilder();
-            Cli.Wrap("cmd")
+            await Cli.Wrap("cmd")
                 .WithArguments("/c \"tasklist /m \"mscorlib*\" /fo csv /nh\"")
                 .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdout))
-                .ExecuteAsync()
-                .GetAwaiter()
-                .GetResult();
+                .ExecuteAsync();
 
-            using var textReader = new StringReader(stdout.ToString());
             string? currentLine;
-            while ((currentLine = textReader.ReadLine()) != null)
+            using var textReader = new StringReader(stdout.ToString());
+            while ((currentLine = await textReader.ReadLineAsync()) != null)
             {
                 var tokens = currentLine.Split(',');
                 var rawPid = tokens[1].Trim('\"');
                 if (!int.TryParse(rawPid, out var pid) || !processListProvider.TryGetProcessById(pid, out _))
                     continue;
 
-                yield return processListProvider.GetProcessById(pid) with { Type = ProcessType.NetFramework };
+                builder.Add(processListProvider.GetProcessById(pid) with { Type = ProcessType.NetFramework });
             }
+
+            return builder.ToImmutableArray();
         }
 
         private IEnumerable<ProcessInfo> LoadNetCoreProcesses()
