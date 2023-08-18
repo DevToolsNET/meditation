@@ -11,15 +11,15 @@ namespace Meditation.UI.ViewModels
 {
     public partial class ProcessListViewModel : ViewModelBase
     {
-        private readonly IAttachableProcessListProvider processListProvider;
+        private readonly IAttachableProcessesAggregator processListAggregator;
 
         [ObservableProperty] private Task<ImmutableArray<ProcessInfo>> processList;
         [ObservableProperty] private ProcessInfo? selectedProcess;
         [ObservableProperty] private string? nameFilter;
 
-        public ProcessListViewModel(IAttachableProcessListProvider processListProvider)
+        public ProcessListViewModel(IAttachableProcessesAggregator processListAggregator)
         {
-            this.processListProvider = processListProvider;
+            this.processListAggregator = processListAggregator;
             ProcessList = GetAttachableProcessesAsync(CancellationToken.None);
         }
 
@@ -34,13 +34,13 @@ namespace Meditation.UI.ViewModels
         [RelayCommand]
         public void RefreshProcessList()
         {
-            processListProvider.Refresh();
+            processListAggregator.Refresh();
             ProcessList = GetAttachableProcessesAsync(CancellationToken.None);
         }
 
         private async Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct)
         {
-            var processes = await processListProvider.GetAllAttachableProcessesAsync(ct);
+            var processes = await processListAggregator.GetAttachableProcessesAsync(ct);
             foreach (var process in processes)
                 await process.Initialize(ct);
             return processes;

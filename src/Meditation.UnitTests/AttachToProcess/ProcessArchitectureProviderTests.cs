@@ -21,7 +21,7 @@ namespace Meditation.UnitTests.AttachToProcess
             var architectureProvider = ServiceProvider.GetRequiredService<IProcessArchitectureProvider>();
 
             // Act
-            var process = (await attachableProcessListProvider.GetAllAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
+            var process = (await attachableProcessListProvider.GetAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
             var result = await architectureProvider.TryGetProcessArchitectureAsync(process, out var architecture, CancellationToken.None);
 
             // Assert

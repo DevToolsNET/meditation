@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Meditation.Core.Services
+namespace Meditation.Core.Services.Windows
 {
     // ReSharper disable InconsistentNaming
     internal class WindowsProcessCommandLineProvider : IProcessCommandLineProvider
@@ -27,12 +27,12 @@ namespace Meditation.Core.Services
             [StructLayout(LayoutKind.Sequential)]
             public struct ProcessBasicInformation
             {
-                public IntPtr Reserved1;
-                public IntPtr PebBaseAddress;
+                public nint Reserved1;
+                public nint PebBaseAddress;
                 [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-                public IntPtr[] Reserved2;
-                public IntPtr UniqueProcessId;
-                public IntPtr Reserved3;
+                public nint[] Reserved2;
+                public nint UniqueProcessId;
+                public nint Reserved3;
             }
 
             [StructLayout(LayoutKind.Sequential)]
@@ -40,7 +40,7 @@ namespace Meditation.Core.Services
             {
                 public ushort Length;
                 public ushort MaximumLength;
-                public IntPtr Buffer;
+                public nint Buffer;
             }
 
             // This is not the real struct!
@@ -51,8 +51,8 @@ namespace Meditation.Core.Services
             public struct PEB
             {
                 [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-                public IntPtr[] Reserved;
-                public IntPtr ProcessParameters;
+                public nint[] Reserved;
+                public nint ProcessParameters;
             }
 
             [StructLayout(LayoutKind.Sequential)]
@@ -61,21 +61,21 @@ namespace Meditation.Core.Services
                 [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
                 public byte[] Reserved1;
                 [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-                public IntPtr[] Reserved2;
+                public nint[] Reserved2;
                 public UnicodeString ImagePathName;
                 public UnicodeString CommandLine;
             }
 
             [DllImport("ntdll.dll")]
             public static extern uint NtQueryInformationProcess(
-                IntPtr ProcessHandle,
+                nint ProcessHandle,
                 uint ProcessInformationClass,
-                IntPtr ProcessInformation,
+                nint ProcessInformation,
                 uint ProcessInformationLength,
                 out uint ReturnLength);
 
             [DllImport("kernel32.dll")]
-            public static extern IntPtr OpenProcess(
+            public static extern nint OpenProcess(
                 OpenProcessDesiredAccessFlags dwDesiredAccess,
                 [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle,
                 uint dwProcessId);
@@ -83,16 +83,16 @@ namespace Meditation.Core.Services
             [DllImport("kernel32.dll")]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool ReadProcessMemory(
-                IntPtr hProcess, IntPtr lpBaseAddress, IntPtr lpBuffer,
+                nint hProcess, nint lpBaseAddress, nint lpBuffer,
                 uint nSize, out uint lpNumberOfBytesRead);
 
             [DllImport("kernel32.dll")]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool CloseHandle(IntPtr hObject);
+            public static extern bool CloseHandle(nint hObject);
         }
 
         private static bool ReadStructFromProcessMemory<TStruct>(
-            IntPtr hProcess, IntPtr lpBaseAddress, out TStruct? val)
+            nint hProcess, nint lpBaseAddress, out TStruct? val)
         {
             val = default;
             var structSize = Marshal.SizeOf<TStruct>();
@@ -101,7 +101,7 @@ namespace Meditation.Core.Services
             {
                 if (Win32Native.ReadProcessMemory(
                     hProcess, lpBaseAddress, mem, (uint)structSize, out var len) &&
-                    (len == structSize))
+                    len == structSize)
                 {
                     val = Marshal.PtrToStructure<TStruct>(mem);
                     return true;
@@ -121,7 +121,7 @@ namespace Meditation.Core.Services
             var hProcess = Win32Native.OpenProcess(
                 Win32Native.OpenProcessDesiredAccessFlags.PROCESS_QUERY_INFORMATION |
                 Win32Native.OpenProcessDesiredAccessFlags.PROCESS_VM_READ, false, (uint)process.Id);
-            if (hProcess != IntPtr.Zero)
+            if (hProcess != nint.Zero)
             {
                 try
                 {
@@ -135,7 +135,7 @@ namespace Meditation.Core.Services
                         if (0 == ret)
                         {
                             var pbiInfo = Marshal.PtrToStructure<Win32Native.ProcessBasicInformation>(memPBI);
-                            if (pbiInfo.PebBaseAddress != IntPtr.Zero)
+                            if (pbiInfo.PebBaseAddress != nint.Zero)
                             {
                                 if (ReadStructFromProcessMemory<Win32Native.PEB>(hProcess,
                                     pbiInfo.PebBaseAddress, out var pebInfo))

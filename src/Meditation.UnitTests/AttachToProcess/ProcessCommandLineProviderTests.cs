@@ -19,7 +19,7 @@ namespace Meditation.UnitTests.AttachToProcess
             var commandLineArgumentsProvider = ServiceProvider.GetRequiredService<IProcessCommandLineProvider>();
 
             // Act
-            var process = (await attachableProcessListProvider.GetAllAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
+            var process = (await attachableProcessListProvider.GetAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
             var result = await commandLineArgumentsProvider.TryGetCommandLineArgumentsAsync(process, out var commandLineArguments, CancellationToken.None);
 
             // Assert

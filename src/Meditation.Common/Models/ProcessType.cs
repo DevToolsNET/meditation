@@ -2,8 +2,8 @@
 {
     public enum ProcessType
     {
-        Unknown,
-        NetFramework,
-        NetCoreApp
+        Unknown = 1,
+        NetFramework = 2,
+        NetCoreApp = 3
     }
 }

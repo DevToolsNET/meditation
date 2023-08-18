@@ -17,7 +17,7 @@ namespace Meditation.UnitTests.AttachToProcess
             var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
 
             // Act
-            var processes = await attachableProcessListProvider.GetAllAttachableProcessesAsync(CancellationToken.None);
+            var processes = await attachableProcessListProvider.GetAttachableProcessesAsync(CancellationToken.None);
 
             // Assert
             Assert.NotEmpty(processes);

@@ -15,4 +15,8 @@
         <ProjectReference Include="..\Meditation.Common\Meditation.Common.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Services\Linux\" />
+    </ItemGroup>
+
 </Project>

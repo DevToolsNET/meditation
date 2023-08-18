@@ -34,14 +34,11 @@ namespace Meditation.Common.Models
             if (isInitialized)
                 return;
 
-            if (!await processArchitectureProvider.TryGetProcessArchitectureAsync(InternalProcess, out var architecture, ct))
-                throw new Exception($"Could not obtain process architecture for PID={Id}");
+            if (await processArchitectureProvider.TryGetProcessArchitectureAsync(InternalProcess, out var architecture, ct))
+                Architecture = architecture;
+            if (await processCommandLineProvider.TryGetCommandLineArgumentsAsync(InternalProcess, out var commandLineArguments, ct))
+                CommandLineArguments = commandLineArguments;
 
-            if (!await processCommandLineProvider.TryGetCommandLineArgumentsAsync(InternalProcess, out var commandLineArguments, ct))
-                throw new Exception($"Could not obtain process command line arguments for PID={Id}");
-
-            Architecture = architecture;
-            CommandLineArguments = commandLineArguments;
             isInitialized = true;
         }
 
