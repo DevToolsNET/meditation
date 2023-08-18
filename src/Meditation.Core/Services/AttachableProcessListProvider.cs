@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Meditation.Core.Services
@@ -23,7 +24,7 @@ namespace Meditation.Core.Services
             attachableProcessesTask = LoadAttachableProcessesAsync();
         }
 
-        public Task<ImmutableArray<ProcessInfo>> GetAllAttachableProcessesAsync()
+        public Task<ImmutableArray<ProcessInfo>> GetAllAttachableProcessesAsync(CancellationToken ct)
             => attachableProcessesTask;
 
         public void Refresh()
@@ -72,7 +73,7 @@ namespace Meditation.Core.Services
                 if (!int.TryParse(rawPid, out var pid) || !processListProvider.TryGetProcessById(pid, out _))
                     continue;
 
-                builder.Add(processListProvider.GetProcessById(pid) with { Type = ProcessType.NetFramework });
+                builder.Add(ProcessInfo.CreateFrom(processListProvider.GetProcessById(pid), ProcessType.NetFramework));
             }
 
             return builder.ToImmutableArray();
@@ -83,7 +84,7 @@ namespace Meditation.Core.Services
             var attachableProcessIds = DiagnosticsClient.GetPublishedProcesses();
             return attachableProcessIds
                 .Where(id => processListProvider.TryGetProcessById(id, out _))
-                .Select(pid => processListProvider.GetProcessById(pid) with { Type = ProcessType.NetCoreApp });
+                .Select(pid => ProcessInfo.CreateFrom(processListProvider.GetProcessById(pid), ProcessType.NetCoreApp));
         }
     }
 }

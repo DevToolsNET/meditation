@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,8 +21,8 @@ namespace Meditation.UnitTests.AttachToProcess
             var architectureProvider = ServiceProvider.GetRequiredService<IProcessArchitectureProvider>();
 
             // Act
-            var process = (await attachableProcessListProvider.GetAllAttachableProcessesAsync()).Single(p => p.Id == pid).Internal;
-            var result = architectureProvider.TryGetProcessArchitecture(process, out var architecture);
+            var process = (await attachableProcessListProvider.GetAllAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
+            var result = await architectureProvider.TryGetProcessArchitectureAsync(process, out var architecture, CancellationToken.None);
 
             // Assert
             Assert.True(result);

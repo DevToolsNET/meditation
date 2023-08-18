@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace Meditation.UnitTests.AttachToProcess
             var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
 
             // Act
-            var processes = await attachableProcessListProvider.GetAllAttachableProcessesAsync();
+            var processes = await attachableProcessListProvider.GetAllAttachableProcessesAsync(CancellationToken.None);
 
             // Assert
             Assert.NotEmpty(processes);

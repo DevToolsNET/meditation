@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Meditation.Common.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +19,8 @@ namespace Meditation.UnitTests.AttachToProcess
             var commandLineArgumentsProvider = ServiceProvider.GetRequiredService<IProcessCommandLineProvider>();
 
             // Act
-            var process = (await attachableProcessListProvider.GetAllAttachableProcessesAsync()).Single(p => p.Id == pid).Internal;
-            var result = commandLineArgumentsProvider.TryGetCommandLineArguments(process, out var commandLineArguments);
+            var process = (await attachableProcessListProvider.GetAllAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
+            var result = await commandLineArgumentsProvider.TryGetCommandLineArgumentsAsync(process, out var commandLineArguments, CancellationToken.None);
 
             // Assert
             Assert.True(result);

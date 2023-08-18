@@ -51,8 +51,8 @@ namespace Meditation.Core.Services
                 .Select(process => new ProcessInfo(
                     process,
                     ProcessType.Unknown,
-                    ConstructLazyCommandLineArguments(process, commandLineArgumentsProvider),
-                    ConstructLazyProcessArchitecture(process, processArchitectureProvider)))
+                    commandLineArgumentsProvider,
+                    processArchitectureProvider))
                 .ToImmutableArray();
         }
 
@@ -61,24 +61,6 @@ namespace Meditation.Core.Services
             return currentProcesses
                 .ToDictionary(p => p.Id, p => p)
                 .ToImmutableDictionary();
-        }
-
-        private static Lazy<string?> ConstructLazyCommandLineArguments(Process process, IProcessCommandLineProvider commandLineArgumentsProvider)
-        {
-            return new Lazy<string?>(() =>
-            {
-                commandLineArgumentsProvider.TryGetCommandLineArguments(process, out var commandLineArguments);
-                return commandLineArguments;
-            });
-        }
-
-        private static Lazy<Architecture?> ConstructLazyProcessArchitecture(Process process, IProcessArchitectureProvider processArchitectureProvider)
-        {
-            return new Lazy<Architecture?>(() =>
-            {
-                processArchitectureProvider.TryGetProcessArchitecture(process, out var architecture);
-                return architecture;
-            });
         }
     }
 }

@@ -5,6 +5,8 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Meditation.Core.Services
 {
@@ -204,7 +206,7 @@ namespace Meditation.Core.Services
             return rc == 0;
         }
 
-        public bool TryGetCommandLineArguments(Process process, [NotNullWhen(true)] out string? commandLineArguments)
-            => TryGetCommandLineArgumentsCore(process, out commandLineArguments);
+        public Task<bool> TryGetCommandLineArgumentsAsync(Process process, [NotNullWhen(true)] out string? commandLineArguments, CancellationToken ct)
+            => Task.FromResult(TryGetCommandLineArgumentsCore(process, out commandLineArguments));
     }
 }
