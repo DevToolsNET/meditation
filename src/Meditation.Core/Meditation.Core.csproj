@@ -5,10 +5,10 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="CliWrap" Version="3.6.4" />
-        <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.430602" />
-        <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="2.4.416101" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+        <PackageReference Include="CliWrap" />
+        <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" />
+        <PackageReference Include="Microsoft.Diagnostics.Runtime" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>
