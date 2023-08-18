@@ -15,7 +15,7 @@ public partial class MainViewModel : ViewModelBase
     {
         var applicationLifetime = (IClassicDesktopStyleApplicationLifetime?)(Application.Current?.ApplicationLifetime);
         var ownerWindow = applicationLifetime?.MainWindow
-                          ?? throw new InvalidOperationException("Can not open modal, as parent window could not be resolved.");
+                          ?? throw new InvalidOperationException("Cannot open modal, as parent window could not be resolved.");
 
         var window = new AttachToProcessWindow();
         window.ShowDialog(ownerWindow);

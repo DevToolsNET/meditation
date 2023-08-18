@@ -15,22 +15,20 @@ namespace Meditation.Core.Services.Windows
     {
         private const string CommandExecutableName = "cmd.exe";
         private const string CommandArguments = "/c \"tasklist /m \"mscorlib*\" /fo csv /nh\"";
-        private readonly IProcessListProvider processListProvider;
-        private Task<ImmutableArray<ProcessInfo>> attachableProcessesTask;
+        private readonly IProcessListProvider _processListProvider;
+        private Task<ImmutableArray<ProcessInfo>> _attachableProcessesTask;
 
         public AttachableNetFrameworkProcessListProvider(IProcessListProvider processListProvider)
         {
-            this.processListProvider = processListProvider;
-            attachableProcessesTask = LoadNetFrameworkProcessesAsync();
+            _processListProvider = processListProvider;
+            _attachableProcessesTask = LoadNetFrameworkProcessesAsync();
         }
 
         public ProcessType ProviderType => ProcessType.NetFramework;
 
-        public Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct)
-            => attachableProcessesTask;
+        public Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct) => _attachableProcessesTask;
 
-        public void Refresh()
-            => attachableProcessesTask = LoadNetFrameworkProcessesAsync();
+        public void Refresh() => _attachableProcessesTask = LoadNetFrameworkProcessesAsync();
 
         private async Task<ImmutableArray<ProcessInfo>> LoadNetFrameworkProcessesAsync()
         {
@@ -56,10 +54,10 @@ namespace Meditation.Core.Services.Windows
             {
                 var tokens = currentLine.Split(',');
                 var rawPid = tokens[1].Trim('\"');
-                if (!int.TryParse(rawPid, out var pid) || !processListProvider.TryGetProcessById(pid, out _))
+                if (!int.TryParse(rawPid, out var pid) || !_processListProvider.TryGetProcessById(pid, out _))
                     continue;
 
-                builder.Add(ProcessInfo.CreateFrom(processListProvider.GetProcessById(pid), ProcessType.NetFramework));
+                builder.Add(ProcessInfo.CreateFrom(_processListProvider.GetProcessById(pid), ProcessType.NetFramework));
             }
 
             return builder.ToImmutableArray();

@@ -15,31 +15,31 @@ namespace Meditation.Common.Models
         public Architecture? Architecture { get; private set; }
         public string? CommandLineArguments { get; private set; }
         internal readonly Process InternalProcess;
-        private readonly IProcessCommandLineProvider processCommandLineProvider;
-        private readonly IProcessArchitectureProvider processArchitectureProvider;
-        private bool isInitialized;
+        private readonly IProcessCommandLineProvider _processCommandLineProvider;
+        private readonly IProcessArchitectureProvider _processArchitectureProvider;
+        private bool _isInitialized;
 
         public ProcessInfo(Process process, ProcessType type, IProcessCommandLineProvider commandLineProvider, IProcessArchitectureProvider architectureProvider)
         {
             Id = process.Id;
             Name = process.ProcessName;
             Type = type;
-            processCommandLineProvider = commandLineProvider;
-            processArchitectureProvider = architectureProvider;
+            _processCommandLineProvider = commandLineProvider;
+            _processArchitectureProvider = architectureProvider;
             InternalProcess = process;
         }
 
         public async Task Initialize(CancellationToken ct)
         {
-            if (isInitialized)
+            if (_isInitialized)
                 return;
 
-            if (await processArchitectureProvider.TryGetProcessArchitectureAsync(InternalProcess, out var architecture, ct))
+            if (await _processArchitectureProvider.TryGetProcessArchitectureAsync(InternalProcess, out var architecture, ct))
                 Architecture = architecture;
-            if (await processCommandLineProvider.TryGetCommandLineArgumentsAsync(InternalProcess, out var commandLineArguments, ct))
+            if (await _processCommandLineProvider.TryGetCommandLineArgumentsAsync(InternalProcess, out var commandLineArguments, ct))
                 CommandLineArguments = commandLineArguments;
 
-            isInitialized = true;
+            _isInitialized = true;
         }
 
         public static ProcessInfo CreateFrom(ProcessInfo processInfo, ProcessType newProcessType)
@@ -47,15 +47,14 @@ namespace Meditation.Common.Models
             return new ProcessInfo(
                 processInfo.InternalProcess,
                 newProcessType,
-                processInfo.processCommandLineProvider,
-                processInfo.processArchitectureProvider)
+                processInfo._processCommandLineProvider,
+                processInfo._processArchitectureProvider)
             {
                 Architecture = processInfo.Architecture,
                 CommandLineArguments = processInfo.CommandLineArguments
             };
         }
 
-        public override string ToString()
-            => InternalProcess.ToString();
+        public override string ToString() => InternalProcess.ToString();
     }
 }

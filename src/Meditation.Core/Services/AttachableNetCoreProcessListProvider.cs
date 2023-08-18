@@ -11,29 +11,27 @@ namespace Meditation.Core.Services
 {
     internal class AttachableNetCoreProcessListProvider : IAttachableProcessListProvider
     {
-        private readonly IProcessListProvider processListProvider;
-        private ImmutableArray<ProcessInfo> attachableProcesses;
+        private readonly IProcessListProvider _processListProvider;
+        private ImmutableArray<ProcessInfo> _attachableProcesses;
 
         public AttachableNetCoreProcessListProvider(IProcessListProvider processListProvider)
         {
-            this.processListProvider = processListProvider;
-            attachableProcesses = LoadAttachableProcesses().ToImmutableArray();
+            _processListProvider = processListProvider;
+            _attachableProcesses = LoadAttachableProcesses().ToImmutableArray();
         }
 
         public ProcessType ProviderType => ProcessType.NetCoreApp;
 
-        public Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct)
-            => Task.FromResult(attachableProcesses);
+        public Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct) => Task.FromResult(_attachableProcesses);
 
-        public void Refresh()
-            => attachableProcesses = LoadAttachableProcesses().ToImmutableArray();
+        public void Refresh() => _attachableProcesses = LoadAttachableProcesses().ToImmutableArray();
 
         private IEnumerable<ProcessInfo> LoadAttachableProcesses()
         {
             var attachableProcessIds = DiagnosticsClient.GetPublishedProcesses();
             return attachableProcessIds
-                .Where(id => processListProvider.TryGetProcessById(id, out _))
-                .Select(pid => ProcessInfo.CreateFrom(processListProvider.GetProcessById(pid), ProcessType.NetCoreApp));
+                .Where(id => _processListProvider.TryGetProcessById(id, out _))
+                .Select(pid => ProcessInfo.CreateFrom(_processListProvider.GetProcessById(pid), ProcessType.NetCoreApp));
         }
     }
 }

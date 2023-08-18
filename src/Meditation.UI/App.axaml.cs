@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
@@ -19,20 +20,9 @@ namespace Meditation.UI
             InitializeDependencyInjection();
         }
 
-        private void InitializeDependencyInjection()
-        {
-            // In order to make services container visible to all views, store it in resources
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddMeditationCore();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            Resources[typeof(IServiceProvider)] = serviceProvider;
-        }
-
         public override void OnFrameworkInitializationCompleted()
         {
-            // Line below is needed to remove Avalonia data validation.
-            // Without this line you will get duplicate validations from both Avalonia and CT
-            BindingPlugins.DataValidators.RemoveAt(0);
+            UseCommunityToolkitValidation();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -50,6 +40,24 @@ namespace Meditation.UI
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private void InitializeDependencyInjection()
+        {
+            // In order to make services container visible to all views, store it in resources
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddMeditationCore();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            Resources[typeof(IServiceProvider)] = serviceProvider;
+        }
+
+        private static void UseCommunityToolkitValidation()
+        {
+            // Line below is needed to remove Avalonia data validation.
+            // Without this line you will get duplicate validations from both Avalonia and CT
+            // Note: Avalonia registers its data validators first, thus the magic value zero
+
+            BindingPlugins.DataValidators.RemoveAt(0);
         }
     }
 }
