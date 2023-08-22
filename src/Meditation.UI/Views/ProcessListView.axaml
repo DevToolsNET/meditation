@@ -7,7 +7,8 @@
              xmlns:vm="using:Meditation.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
              x:DataType="vm:ProcessListViewModel"
-             x:Class="Meditation.UI.Views.ProcessListView">
+             x:Class="Meditation.UI.Views.ProcessListView"
+             x:CompileBindings="False">
 
     <Grid RowDefinitions="Auto,*">
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
