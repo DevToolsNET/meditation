@@ -2,8 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using Meditation.Common.Models;
 using Meditation.Common.Services;
+using Meditation.UI.Utilities;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,29 +13,29 @@ namespace Meditation.UI.ViewModels
     {
         private readonly IAttachableProcessesAggregator _processListAggregator;
 
-        [ObservableProperty] private Task<ImmutableArray<ProcessInfo>> _processList;
+        [ObservableProperty] private FilterableCollectionView<ProcessInfo> _processList;
         [ObservableProperty] private ProcessInfo? _selectedProcess;
         [ObservableProperty] private string? _nameFilter;
 
         public ProcessListViewModel(IAttachableProcessesAggregator processListAggregator)
         {
             _processListAggregator = processListAggregator;
-            ProcessList = GetAttachableProcessesAsync(CancellationToken.None);
+            ProcessList = new FilterableCollectionView<ProcessInfo>(GetAttachableProcessesAsync(CancellationToken.None));
         }
 
         [RelayCommand]
         public void FilterProcessList()
         {
-            var filteredProcesses  = GetAttachableProcessesAsync(CancellationToken.None)
-                .ContinueWith(previous => previous.Result.Where(p => NameFilter == null || p.Name.Contains(NameFilter)).ToImmutableArray());
-            ProcessList = filteredProcesses;
+            var filteredProcessList = new FilterableCollectionView<ProcessInfo>(GetAttachableProcessesAsync(CancellationToken.None));
+            filteredProcessList.ApplyFilter(p => NameFilter == null || p.Name.Contains(NameFilter));
+            ProcessList = filteredProcessList;
         }
 
         [RelayCommand]
         public void RefreshProcessList()
         {
             _processListAggregator.Refresh();
-            ProcessList = GetAttachableProcessesAsync(CancellationToken.None);
+            ProcessList = new FilterableCollectionView<ProcessInfo>(GetAttachableProcessesAsync(CancellationToken.None));
         }
 
         private async Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct)
