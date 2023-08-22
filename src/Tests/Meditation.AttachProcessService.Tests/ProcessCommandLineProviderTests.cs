@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Meditation.Common.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Meditation.UnitTests.AttachToProcess
+namespace Meditation.AttachProcessService.Tests
 {
     public class ProcessCommandLineProviderTests : TestsBase
     {

@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Meditation.Core\Meditation.Core.csproj" />
+        <ProjectReference Include="..\Meditation.AttachProcessService\Meditation.AttachProcessService.csproj" />
     </ItemGroup>
 
     <ItemGroup>

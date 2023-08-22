@@ -1,13 +1,12 @@
-﻿using Meditation.Common.Models;
-using Meditation.Common.Services;
-using Microsoft.Diagnostics.NETCore.Client;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Meditation.AttachProcessService.Models;
+using Microsoft.Diagnostics.NETCore.Client;
 
-namespace Meditation.Core.Services
+namespace Meditation.AttachProcessService.Services
 {
     internal class AttachableNetCoreProcessListProvider : IAttachableProcessListProvider
     {

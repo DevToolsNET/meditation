@@ -1,11 +1,9 @@
-﻿using System;
-using Meditation.Common.Services;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Meditation.Common.Models
+namespace Meditation.AttachProcessService.Models
 {
     public class ProcessInfo
     {

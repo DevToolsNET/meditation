@@ -1,10 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
-using Meditation.Common.Services;
 using Xunit;
 
-namespace Meditation.UnitTests.AttachToProcess
+namespace Meditation.AttachProcessService.Tests
 {
     public class ProcessListProviderTests : TestsBase
     {

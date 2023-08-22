@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Meditation.Common.Services
+namespace Meditation.AttachProcessService
 {
     public interface IProcessArchitectureProvider
     {

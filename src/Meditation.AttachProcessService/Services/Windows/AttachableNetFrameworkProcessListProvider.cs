@@ -1,6 +1,4 @@
-﻿using CliWrap;
-using Meditation.Common.Models;
-using Meditation.Common.Services;
+﻿using Meditation.AttachProcessService.Models;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -8,8 +6,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CliWrap;
 
-namespace Meditation.Core.Services.Windows
+namespace Meditation.AttachProcessService.Services.Windows
 {
     internal class AttachableNetFrameworkProcessListProvider : IAttachableProcessListProvider
     {

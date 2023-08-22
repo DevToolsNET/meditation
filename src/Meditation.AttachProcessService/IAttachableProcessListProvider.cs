@@ -1,9 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿using Meditation.AttachProcessService.Models;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Meditation.Common.Models;
 
-namespace Meditation.Common.Services
+namespace Meditation.AttachProcessService
 {
     public interface IAttachableProcessListProvider
     {

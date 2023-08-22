@@ -1,7 +1,5 @@
 ﻿// Modified solution from https://stackoverflow.com/a/46006415
 
-using Meditation.Common.Services;
-using Meditation.Core.Utilities;
 using Microsoft.Win32.SafeHandles;
 using System;
 using System.Diagnostics;
@@ -9,8 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Meditation.AttachProcessService.Utilities;
 
-namespace Meditation.Core.Services.Windows
+namespace Meditation.AttachProcessService.Services.Windows
 {
     // ReSharper disable InconsistentNaming
     internal class WindowsProcessCommandLineProvider : IProcessCommandLineProvider

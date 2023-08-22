@@ -1,12 +1,11 @@
-﻿using Meditation.Common.Models;
-using Meditation.Common.Services;
+﻿using Meditation.AttachProcessService.Models;
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Meditation.Core.Services
+namespace Meditation.AttachProcessService.Services
 {
     internal class ProcessListProvider : IProcessListProvider
     {

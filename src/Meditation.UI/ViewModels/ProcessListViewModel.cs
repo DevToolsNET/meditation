@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Meditation.Common.Models;
-using Meditation.Common.Services;
+using Meditation.AttachProcessService;
+using Meditation.AttachProcessService.Models;
 using Meditation.UI.Utilities;
 using System.Collections.Immutable;
 using System.Threading;

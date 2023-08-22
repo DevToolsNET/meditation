@@ -1,8 +1,8 @@
-﻿using System;
-using Meditation.Core.Configuration;
+﻿using Meditation.AttachProcessService.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
-namespace Meditation.UnitTests
+namespace Meditation.AttachProcessService.Tests
 {
     public abstract class TestsBase
     {
@@ -11,7 +11,7 @@ namespace Meditation.UnitTests
         protected TestsBase()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddMeditationCore();
+            serviceCollection.AddMeditationAttachProcessService();
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
     }
