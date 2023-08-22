@@ -10,11 +10,6 @@ namespace Meditation.Core.Services.Windows
 {
     internal class WindowsProcessArchitectureProvider : IProcessArchitectureProvider
     {
-        // See: https://www.pinvoke.net/default.aspx/kernel32/IsWow64Process.html
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool IsWow64Process([In] nint hProcess, [Out, MarshalAs(UnmanagedType.Bool)] out bool wow64Process);
-
         public Task<bool> TryGetProcessArchitectureAsync(Process process, [NotNullWhen(true)] out Architecture? architecture, CancellationToken ct)
         {
             if (!TryGetProcessHandle(process, out var handle))
@@ -59,5 +54,10 @@ namespace Meditation.Core.Services.Windows
                 return false;
             }
         }
+
+        // See: https://www.pinvoke.net/default.aspx/kernel32/IsWow64Process.html
+        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsWow64Process([In] nint hProcess, [Out, MarshalAs(UnmanagedType.Bool)] out bool wow64Process);
     }
 }
