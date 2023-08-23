@@ -1,13 +1,12 @@
-﻿using System.Collections.Immutable;
-using System.Threading;
+﻿using Meditation.Common.Models;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
-using Meditation.Common.Models;
+using System.Threading;
 
 namespace Meditation.Common.Services
 {
-    public interface IAttachableProcessListProvider
+    public interface IAttachableProcessesAggregator
     {
-        ProcessType ProviderType { get; }
         Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct);
 
         void Refresh();

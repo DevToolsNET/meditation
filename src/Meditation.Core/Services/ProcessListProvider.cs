@@ -1,24 +1,32 @@
 ﻿using Meditation.Common.Models;
 using Meditation.Common.Services;
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Meditation.Core.Services
 {
     internal class ProcessListProvider : IProcessListProvider
     {
-        private readonly ImmutableArray<ProcessInfo> processes;
-        private readonly ImmutableDictionary<int, ProcessInfo> processesLookup;
+        private readonly IProcessCommandLineProvider _commandLineArgumentsProvider;
+        private readonly IProcessArchitectureProvider _processArchitectureProvider;
+        private ImmutableArray<ProcessInfo> _processes;
+        private ImmutableDictionary<int, ProcessInfo> _processesLookup;
 
-        public ProcessListProvider()
+        public ProcessListProvider(IProcessCommandLineProvider commandLineArgumentsProvider, IProcessArchitectureProvider processArchitectureProvider)
         {
-            processes = Process.GetProcesses().Select(p => new ProcessInfo(p)).ToImmutableArray();
-            processesLookup = processes.ToDictionary(p => p.Id, p => p).ToImmutableDictionary();
+            _commandLineArgumentsProvider = commandLineArgumentsProvider;
+            _processArchitectureProvider = processArchitectureProvider;
+
+            _processes = LoadProcesses();
+            _processesLookup = LoadProcessLookup(_processes);
         }
 
-        public ImmutableArray<ProcessInfo> GetAllProcesses()
-            => processes;
+        public ImmutableArray<ProcessInfo> GetAllProcesses() => _processes;
+
+        public bool TryGetProcessById(int pid, [NotNullWhen(true)] out ProcessInfo? processInfo) => _processesLookup.TryGetValue(pid, out processInfo);
 
         public ProcessInfo GetProcessById(int pid)
         {
@@ -28,7 +36,28 @@ namespace Meditation.Core.Services
             throw new ArgumentException("Unable to find process with specified id.", nameof(pid));
         }
 
-        public bool TryGetProcessById(int pid, [NotNullWhen(true)] out ProcessInfo? processInfo)
-            => processesLookup.TryGetValue(pid, out processInfo);
+        public void Refresh()
+        {
+            _processes = LoadProcesses();
+            _processesLookup = LoadProcessLookup(_processes);
+        }
+
+        private ImmutableArray<ProcessInfo> LoadProcesses()
+        {
+            return Process.GetProcesses()
+                .Select(process => new ProcessInfo(
+                    process,
+                    ProcessType.Unknown,
+                    _commandLineArgumentsProvider,
+                    _processArchitectureProvider))
+                .ToImmutableArray();
+        }
+
+        private ImmutableDictionary<int, ProcessInfo> LoadProcessLookup(ImmutableArray<ProcessInfo> currentProcesses)
+        {
+            return currentProcesses
+                .ToDictionary(p => p.Id, p => p)
+                .ToImmutableDictionary();
+        }
     }
 }

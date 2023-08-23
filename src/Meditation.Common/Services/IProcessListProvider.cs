@@ -9,5 +9,6 @@ namespace Meditation.Common.Services
         ImmutableArray<ProcessInfo> GetAllProcesses();
         bool TryGetProcessById(int pid, [NotNullWhen(true)] out ProcessInfo? processInfo);
         ProcessInfo GetProcessById(int pid);
+        void Refresh();
     }
 }

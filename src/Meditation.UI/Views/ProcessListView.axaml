@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
+             xmlns:vm="using:Meditation.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
+             x:DataType="vm:ProcessListViewModel"
+             x:Class="Meditation.UI.Views.ProcessListView"
+             x:CompileBindings="False">
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+            <TextBlock Grid.Column="0" Text="Filter: " VerticalAlignment="Center" HorizontalAlignment="Left" />
+            <TextBox Grid.Column="1" x:Name="FilterTextBox" Text="{Binding NameFilter}" HorizontalAlignment="Stretch">
+                <i:Interaction.Behaviors>
+                    <ia:EventTriggerBehavior EventName="TextChanged" SourceObject="{Binding #FilterTextBox}">
+                        <ia:InvokeCommandAction Command="{Binding FilterProcessList}"/>
+                    </ia:EventTriggerBehavior>
+                </i:Interaction.Behaviors>
+            </TextBox>
+            <Button Grid.Column="2" Content="Refresh list" Command="{Binding RefreshProcessListCommand}" HorizontalAlignment="Right" />
+        </Grid>
+
+        <DockPanel Grid.Row="1">
+            <DataGrid ItemsSource="{Binding ProcessList.View^}" SelectedItem="{Binding SelectedProcess}" DockPanel.Dock="Top">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="PID" Binding="{Binding Id}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Architecture" Binding="{Binding Architecture}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Commandline Arguments" Binding="{Binding CommandLineArguments}" IsReadOnly="True" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Grid>
+
+</UserControl>
