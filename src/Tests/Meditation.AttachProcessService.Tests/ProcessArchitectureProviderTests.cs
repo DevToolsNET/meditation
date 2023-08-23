@@ -1,5 +1,4 @@
-﻿using Meditation.Common.Services;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -7,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Meditation.UnitTests.AttachToProcess
+namespace Meditation.AttachProcessService.Tests
 {
     public class ProcessArchitectureProviderTests : TestsBase
     {

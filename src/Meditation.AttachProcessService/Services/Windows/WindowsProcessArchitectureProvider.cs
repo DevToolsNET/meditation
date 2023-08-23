@@ -4,9 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Meditation.Common.Services;
 
-namespace Meditation.Core.Services.Windows
+namespace Meditation.AttachProcessService.Services.Windows
 {
     internal class WindowsProcessArchitectureProvider : IProcessArchitectureProvider
     {

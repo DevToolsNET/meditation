@@ -1,8 +1,8 @@
-﻿using System.Collections.Immutable;
+﻿using Meditation.AttachProcessService.Models;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using Meditation.Common.Models;
 
-namespace Meditation.Common.Services
+namespace Meditation.AttachProcessService
 {
     public interface IProcessListProvider
     {

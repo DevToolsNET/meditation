@@ -6,9 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="xunit" />
-        <PackageReference Include="xunit.runner.visualstudio" >
+        <PackageReference Include="xunit.runner.visualstudio">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -19,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Meditation.Core\Meditation.Core.csproj" />
+		<ProjectReference Include="..\..\Meditation.AttachProcessService\Meditation.AttachProcessService.csproj" />
     </ItemGroup>
 
 </Project>

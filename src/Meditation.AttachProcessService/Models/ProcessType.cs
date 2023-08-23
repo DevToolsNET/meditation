@@ -1,4 +1,4 @@
-﻿namespace Meditation.Common.Models
+﻿namespace Meditation.AttachProcessService.Models
 {
     public enum ProcessType
     {

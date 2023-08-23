@@ -1,14 +1,13 @@
-﻿using System;
-using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Meditation.Core.Configuration;
 using Meditation.UI.ViewModels;
 using Meditation.UI.Views;
 using Meditation.UI.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using Meditation.AttachProcessService.Configuration;
 
 namespace Meditation.UI
 {
@@ -46,7 +45,7 @@ namespace Meditation.UI
         {
             // In order to make services container visible to all views, store it in resources
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddMeditationCore();
+            serviceCollection.AddMeditationAttachProcessService();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Resources[typeof(IServiceProvider)] = serviceProvider;
         }
