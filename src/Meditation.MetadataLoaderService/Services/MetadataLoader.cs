@@ -52,7 +52,7 @@ namespace Meditation.MetadataLoaderService.Services
             {
                 return _loadedAssemblies.GetOrAdd(path, p => AssemblyDef.Load(path));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // FIXME: add logging
                 throw;

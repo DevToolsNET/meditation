@@ -7,24 +7,30 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Meditation.UI.Views.MainView"
              x:DataType="vm:MainViewModel">
-  <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
-  </Design.DataContext>
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainViewModel />
+    </Design.DataContext>
 
-	<DockPanel>
-		<Menu DockPanel.Dock="Top">
-			<MenuItem Header="_Process">
-				<MenuItem Header="_Attach..." Command="{Binding DisplayAttachProcessWindow}"/>
-			</MenuItem>
-		</Menu>
-		<DockPanel>
-			<Border BorderThickness="2" BorderBrush="Gray">
-                <views:MetadataBrowserView DockPanel.Dock="Left" />
-            </Border>
-        </DockPanel>
-	</DockPanel>
+    <Grid RowDefinitions="Auto,*">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..." Command="{Binding OpenAssembly}" />
+            </MenuItem>
+            <MenuItem Header="_Process">
+                <MenuItem Header="_Attach..." Command="{Binding DisplayAttachProcessWindow}"/>
+            </MenuItem>
+        </Menu>
+        <Grid Grid.Row="1" ColumnDefinitions="*,1,*">
+            <views:MetadataBrowserView Grid.Column="0" />
+            <GridSplitter Grid.Column="1" Background="LightGray" ResizeDirection="Columns"/>
+            <ContentControl 
+                Grid.Column="2" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center" 
+                Content="{Binding Greeting}"/>
+        </Grid>
+    </Grid>
 
- 
 </UserControl>

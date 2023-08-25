@@ -8,10 +8,10 @@
     </ItemGroup>
 
     <ItemGroup>
-		<None Remove="Assets\Assembly.png" />
-		<None Remove="Assets\Method.png" />
-		<None Remove="Assets\Module.png" />
-		<None Remove="Assets\TypeDefinition.png" />
+        <None Remove="Assets\Assembly.png" />
+        <None Remove="Assets\Method.png" />
+        <None Remove="Assets\Module.png" />
+        <None Remove="Assets\TypeDefinition.png" />
     </ItemGroup>
 
     <ItemGroup>
