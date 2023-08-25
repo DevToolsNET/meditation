@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Meditation.UI.ViewModels"
+             xmlns:models="clr-namespace:Meditation.MetadataLoaderService.Models;assembly=Meditation.MetadataLoaderService"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:MetadataBrowserViewModel"
+             x:Class="Meditation.UI.Views.MetadataBrowserView">
+	<TreeView ItemsSource="{Binding Assemblies}">
+		<TreeView.DataTemplates>
+			<!-- Assembly -->
+			<TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:AssemblyMetadataEntry}">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="/Assets/Assembly.png" />
+					<TextBlock Text="{Binding Name}" />
+				</StackPanel>
+			</TreeDataTemplate>
+
+			<!-- Module -->
+			<TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:ModuleMetadataEntry}">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="/Assets/Module.png" />
+					<TextBlock Text="{Binding Name}" />
+				</StackPanel>
+			</TreeDataTemplate>
+
+			<!-- Type -->
+			<TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:TypeMetadataEntry}">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="/Assets/TypeDefinition.png" />
+					<TextBlock Text="{Binding Name}" />
+				</StackPanel>
+			</TreeDataTemplate>
+
+			<!-- Method -->
+			<TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:MethodMetadataEntry}">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="/Assets/Method.png" />
+					<TextBlock Text="{Binding Name}" />
+				</StackPanel>
+			</TreeDataTemplate>
+
+		</TreeView.DataTemplates>
+	</TreeView>
+</UserControl>

@@ -8,6 +8,13 @@
     </ItemGroup>
 
     <ItemGroup>
+		<None Remove="Assets\Assembly.png" />
+		<None Remove="Assets\Method.png" />
+		<None Remove="Assets\Module.png" />
+		<None Remove="Assets\TypeDefinition.png" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia" />
         <PackageReference Include="Avalonia.Controls.DataGrid" />
         <PackageReference Include="Avalonia.Themes.Fluent" />
@@ -22,6 +29,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Meditation.AttachProcessService\Meditation.AttachProcessService.csproj" />
+        <ProjectReference Include="..\Meditation.MetadataLoaderService\Meditation.MetadataLoaderService.csproj" />
     </ItemGroup>
 
     <ItemGroup>

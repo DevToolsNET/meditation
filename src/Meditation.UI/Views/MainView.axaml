@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:Meditation.UI.Views"
              xmlns:vm="clr-namespace:Meditation.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Meditation.UI.Views.MainView"
@@ -12,14 +13,18 @@
     <vm:MainViewModel />
   </Design.DataContext>
 
-    <StackPanel>
-        <Menu>
-            <MenuItem Header="_Process">
-                <MenuItem Header="_Attach..." Command="{Binding DisplayAttachProcessWindow}"/>
-            </MenuItem>
-        </Menu>
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-    </StackPanel>
+	<DockPanel>
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="_Process">
+				<MenuItem Header="_Attach..." Command="{Binding DisplayAttachProcessWindow}"/>
+			</MenuItem>
+		</Menu>
+		<DockPanel>
+			<Border BorderThickness="2" BorderBrush="Gray">
+                <views:MetadataBrowserView DockPanel.Dock="Left" />
+            </Border>
+        </DockPanel>
+	</DockPanel>
 
  
 </UserControl>

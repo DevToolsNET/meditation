@@ -8,6 +8,7 @@ using Meditation.UI.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Meditation.AttachProcessService.Configuration;
+using Meditation.MetadataLoaderService.Configuration;
 
 namespace Meditation.UI
 {
@@ -46,6 +47,7 @@ namespace Meditation.UI
             // In order to make services container visible to all views, store it in resources
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMeditationAttachProcessService();
+            serviceCollection.AddMeditationMetadataLoaderServices();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Resources[typeof(IServiceProvider)] = serviceProvider;
         }
