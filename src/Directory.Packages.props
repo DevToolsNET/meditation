@@ -4,6 +4,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	    <PackageVersion Include="CliWrap" Version="3.6.4" />
+		<PackageVersion Include="dnlib" Version="3.6.0" />
 	    <PackageVersion Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.430602" />
 	    <PackageVersion Include="Microsoft.Diagnostics.Runtime" Version="2.4.416101" />
 	    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
