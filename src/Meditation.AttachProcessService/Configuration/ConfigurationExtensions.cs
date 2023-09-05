@@ -13,6 +13,7 @@ namespace Meditation.AttachProcessService.Configuration
             services.AddSingleton<IProcessListProvider, ProcessListProvider>();
             services.AddTransient<IAttachableProcessListProvider, AttachableNetCoreProcessListProvider>();
             services.AddTransient<IAttachableProcessesAggregator, AttachableProcessListAggregator>();
+            services.AddTransient<IProcessSnapshotCreator, ProcessSnapshotCreator>();
             services.AddPlatformSpecificServices();
         }
 
