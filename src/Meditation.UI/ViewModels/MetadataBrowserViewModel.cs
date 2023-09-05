@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meditation.MetadataLoaderService.Models;
 using Meditation.UI.Utilities;
 using System.Linq;
+using Meditation.AttachProcessService;
 using Meditation.MetadataLoaderService;
 
 namespace Meditation.UI.ViewModels
@@ -11,18 +12,15 @@ namespace Meditation.UI.ViewModels
     {
         [ObservableProperty] private FilterableObservableCollection<AssemblyMetadataEntry> _assemblies;
         [ObservableProperty] private string? _metadataNameFilter;
-        private readonly IUserInterfaceEventsConsumer _eventsConsumer;
+        private readonly IAttachedProcessProvider _attachedProcessProvider;
+        private readonly IMetadataLoader _metadataLoader;
 
-        public MetadataBrowserViewModel(IMetadataLoader metadataLoader, IUserInterfaceEventsConsumer eventsConsumer)
+        public MetadataBrowserViewModel(IMetadataLoader metadataLoader, IAttachedProcessProvider attachedProcessProvider)
         {
-            _eventsConsumer = eventsConsumer;
+            _metadataLoader = metadataLoader;
+            _attachedProcessProvider = attachedProcessProvider;
             _assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
-
-            eventsConsumer.AssemblyLoadRequested += path =>
-            {
-                var assemblyMetadata = metadataLoader.LoadMetadataFromAssembly(path);
-                AddAssembly(assemblyMetadata);
-            };
+            RegisterEventHandlers();
         }
 
         public void AddAssembly(AssemblyMetadataEntry entry)
@@ -34,6 +32,39 @@ namespace Meditation.UI.ViewModels
         public void FilterMetadata()
         {
             Assemblies.ApplyFilter(p => MetadataNameFilter == null || p.Name.Contains(MetadataNameFilter));
+        }
+
+        private void RegisterEventHandlers()
+        {
+            _attachedProcessProvider.AttachedProcessChanged += snapshot =>
+            {
+                ClearPreviousProcessData();
+
+                if (snapshot != null) 
+                    HandleProcessAttach(snapshot);
+                else
+                    HandleProcessDetach();
+            };
+        }
+
+        private void ClearPreviousProcessData()
+        {
+            Assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
+        }
+
+        private void HandleProcessAttach(IProcessSnapshot snapshot)
+        {
+            var modules = snapshot.GetModules();
+            foreach (var module in modules.Where(m => m.IsManaged))
+            {
+                var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
+                AddAssembly(assemblyMetadata);
+            }
+        }
+
+        private void HandleProcessDetach()
+        {
+            // Nothing to load
         }
     }
 }

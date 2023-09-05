@@ -8,10 +8,11 @@ namespace Meditation.UI.Configuration
         public static void AddMeditationUserInterfaceServices(this IServiceCollection services)
         {
             services.AddSingleton<IAvaloniaStorageProvider, AvaloniaStorageProvider>();
+            services.AddSingleton<IAvaloniaDialogsContext, AvaloniaDialogContext>();
 
-            var eventsHub = new UserInterfaceEventsHub();
-            services.AddSingleton<IUserInterfaceEventsConsumer>(eventsHub);
-            services.AddSingleton<IUserInterfaceEventsRaiser>(eventsHub);
+            var attachableProcessContext = new AttachedProcessContext();
+            services.AddSingleton<IAttachedProcessProvider>(attachableProcessContext);
+            services.AddSingleton<IAttachedProcessController>(attachableProcessContext);
         }
     }
 }
