@@ -12,6 +12,7 @@ namespace Meditation.UI.ViewModels
     {
         [ObservableProperty] private FilterableObservableCollection<AssemblyMetadataEntry> _assemblies;
         [ObservableProperty] private string? _metadataNameFilter;
+        [ObservableProperty] private bool? _isLoadingData;
         private readonly IAttachedProcessProvider _attachedProcessProvider;
         private readonly IMetadataLoader _metadataLoader;
 
@@ -54,12 +55,16 @@ namespace Meditation.UI.ViewModels
 
         private void HandleProcessAttach(IProcessSnapshot snapshot)
         {
+            IsLoadingData = true;
+
             var modules = snapshot.GetModules();
             foreach (var module in modules.Where(m => m.IsManaged))
             {
                 var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
                 AddAssembly(assemblyMetadata);
             }
+
+            IsLoadingData = false;
         }
 
         private void HandleProcessDetach()

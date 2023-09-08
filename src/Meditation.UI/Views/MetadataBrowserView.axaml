@@ -24,7 +24,7 @@
         </Grid>
 
         <!-- Metadata browser -->
-        <TreeView Grid.Row="1" ItemsSource="{Binding Assemblies.View}">
+        <TreeView IsEnabled="{Binding !IsLoadingData}" Grid.Row="1" ItemsSource="{Binding Assemblies.View}">
             <TreeView.DataTemplates>
                 <!-- Assembly -->
                 <TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:AssemblyMetadataEntry}">
