@@ -6,16 +6,16 @@ namespace Meditation.UI.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     public string Greeting => "Welcome to Meditation!";
-    private readonly IAvaloniaDialogsContext _dialogContext;
+    private readonly IAvaloniaDialogService _dialogService;
 
-    public MainViewModel(IAvaloniaDialogsContext dialogContext)
+    public MainViewModel(IAvaloniaDialogService dialogService)
     {
-        _dialogContext = dialogContext;
+        _dialogService = dialogService;
     }
 
     [RelayCommand]
     public void DisplayAttachProcessWindow()
     {
-        _dialogContext.DisplayDialog<AttachToProcessWindow>();
+        _dialogService.DisplayDialog<AttachToProcessWindow>();
     }
 }

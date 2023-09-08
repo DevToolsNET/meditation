@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Meditation.AttachProcessService;
+using Meditation.AttachProcessService.Models;
 using Meditation.UI.Windows;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Meditation.AttachProcessService.Models;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 namespace Meditation.UI.ViewModels
 {
@@ -14,16 +14,16 @@ namespace Meditation.UI.ViewModels
     {
         private readonly IProcessSnapshotCreator _processSnapshotCreator;
         private readonly IAttachedProcessController _attachedProcessController;
-        private readonly IAvaloniaDialogsContext _dialogsContext;
+        private readonly IAvaloniaDialogService _dialogService;
 
         public AttachToProcessViewModel(
             IProcessSnapshotCreator processSnapshotCreator, 
-            IAttachedProcessController attachedProcessController, 
-            IAvaloniaDialogsContext dialogsContext)
+            IAttachedProcessController attachedProcessController,
+            IAvaloniaDialogService dialogService)
         {
             _processSnapshotCreator = processSnapshotCreator;
             _attachedProcessController = attachedProcessController;
-            _dialogsContext = dialogsContext;
+            _dialogService = dialogService;
         }
 
         [RelayCommand]
@@ -36,7 +36,7 @@ namespace Meditation.UI.ViewModels
             if (snapshot == null)
                 return;
 
-            await _dialogsContext.CloseDialogAsync<AttachToProcessWindow>();
+            _dialogService.CloseDialog<AttachToProcessWindow>();
             await Task.Run(() => _attachedProcessController.Attach(snapshot), ct);
         }
 
