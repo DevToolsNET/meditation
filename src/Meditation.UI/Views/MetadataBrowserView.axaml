@@ -30,7 +30,7 @@
                 <TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:AssemblyMetadataEntry}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Assets/Assembly.png" />
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
                     </StackPanel>
                 </TreeDataTemplate>
 
@@ -38,7 +38,7 @@
                 <TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:ModuleMetadataEntry}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Assets/Module.png" />
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
                     </StackPanel>
                 </TreeDataTemplate>
 
@@ -46,7 +46,8 @@
                 <TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:TypeMetadataEntry}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Assets/TypeDefinition.png" />
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
+                        <TextBlock Text="{Binding Path=Token, StringFormat=' ({0})'}" />
                     </StackPanel>
                 </TreeDataTemplate>
 
@@ -54,7 +55,8 @@
                 <TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:MethodMetadataEntry}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Assets/Method.png" />
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
+                        <TextBlock Text="{Binding Path=Token, StringFormat=' ({0})'}" />
                     </StackPanel>
                 </TreeDataTemplate>
 

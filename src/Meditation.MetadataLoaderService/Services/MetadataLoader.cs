@@ -37,13 +37,24 @@ namespace Meditation.MetadataLoaderService.Services
                 {
                     var typeMembers = new List<MetadataEntryBase>();
                     foreach (var method in type.Methods)
-                        typeMembers.Add(new MethodMetadataEntry(method.Name, ImmutableArray<MetadataEntryBase>.Empty));
-                    moduleMembers.Add(new TypeMetadataEntry(type.Name, type.FullName, typeMembers.ToImmutableArray()));
-                }
-                assemblyMembers.Add(new ModuleMetadataEntry(module.Name, moduleMembers.ToImmutableArray()));
-            }
+                        typeMembers.Add(new MethodMetadataEntry(method.Name, method.MDToken.ToInt32(), ImmutableArray<MetadataEntryBase>.Empty));
+                    SortEntriesBy(typeMembers, m => m.Name);
 
-            return new AssemblyMetadataEntry(assembly.Name, assembly.FullName, assemblyMembers.ToImmutableArray());
+                    moduleMembers.Add(new TypeMetadataEntry(type.Name, type.FullName, type.MDToken.ToInt32(), typeMembers.ToImmutableArray()));
+                }
+                SortEntriesBy(moduleMembers, m => m.Name);
+
+                assemblyMembers.Add(new ModuleMetadataEntry(module.Name, module.MDToken.ToInt32(), module.Location, moduleMembers.ToImmutableArray()));
+            }
+            SortEntriesBy(assemblyMembers, m => m.Name);
+
+            return new AssemblyMetadataEntry(assembly.Name, assembly.MDToken.ToInt32(), assembly.FullName, assemblyMembers.ToImmutableArray());
+        }
+
+        private void SortEntriesBy<TProperty>(List<MetadataEntryBase> entries, Func<MetadataEntryBase, TProperty> selector)
+            where TProperty : IComparable<TProperty>
+        {
+            entries.Sort((first, second) => selector(first).CompareTo(selector(second)));
         }
 
         private AssemblyDef LoadAssembly(string path)

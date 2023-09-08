@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meditation.MetadataLoaderService.Models;
 using Meditation.UI.Utilities;
 using System.Linq;
+using Avalonia.Controls.Shapes;
 using Meditation.AttachProcessService;
 using Meditation.MetadataLoaderService;
 
@@ -58,7 +59,7 @@ namespace Meditation.UI.ViewModels
             IsLoadingData = true;
 
             var modules = snapshot.GetModules();
-            foreach (var module in modules.Where(m => m.IsManaged))
+            foreach (var module in modules.Where(m => m.IsManaged).OrderBy(m => System.IO.Path.GetFileName(m.FileName)))
             {
                 var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
                 AddAssembly(assemblyMetadata);
