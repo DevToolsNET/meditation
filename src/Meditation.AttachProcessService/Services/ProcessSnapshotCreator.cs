@@ -8,15 +8,15 @@ namespace Meditation.AttachProcessService.Services
 {
     internal class ProcessSnapshotCreator : IProcessSnapshotCreator
     {
-        public Task<IProcessSnapshot> CreateProcessSnapshotAsync(int processId, CancellationToken ct)
+        public Task<IProcessSnapshot> CreateProcessSnapshotAsync(ProcessId processId, CancellationToken ct)
         {
-            return Task.Run(() =>
+            return Task.Run<IProcessSnapshot>(() =>
             {
-                var dataTarget = DataTarget.CreateSnapshotAndAttach(processId);
+                var dataTarget = DataTarget.CreateSnapshotAndAttach(processId.Value);
                 if (dataTarget.ClrVersions.IsEmpty)
                     throw new ArgumentException($"Target process ({processId}) does not have a .NET runtime", nameof(processId));
 
-                return Task.FromResult<IProcessSnapshot>(new ProcessSnapshot(processId, dataTarget));
+                return new ProcessSnapshot(processId, dataTarget);
             }, ct);
         }
     }

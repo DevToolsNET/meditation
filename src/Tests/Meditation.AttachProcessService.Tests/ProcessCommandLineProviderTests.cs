@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Meditation.AttachProcessService.Models;
 using Xunit;
 
 namespace Meditation.AttachProcessService.Tests
@@ -13,7 +14,7 @@ namespace Meditation.AttachProcessService.Tests
         public async Task ProcessCommandLineProvider_ReturnsNonEmptyArgumentsForThisProcess()
         {
             // Prepare
-            var pid = Environment.ProcessId;
+            var pid = new ProcessId(Environment.ProcessId);
             var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
             var commandLineArgumentsProvider = ServiceProvider.GetRequiredService<IProcessCommandLineProvider>();
 

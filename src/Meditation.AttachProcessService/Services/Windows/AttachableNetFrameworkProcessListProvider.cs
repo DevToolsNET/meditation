@@ -53,10 +53,10 @@ namespace Meditation.AttachProcessService.Services.Windows
             {
                 var tokens = currentLine.Split(',');
                 var rawPid = tokens[1].Trim('\"');
-                if (!int.TryParse(rawPid, out var pid) || !_processListProvider.TryGetProcessById(pid, out _))
+                if (!int.TryParse(rawPid, out var pid) || !_processListProvider.TryGetProcessById(new ProcessId(pid), out _))
                     continue;
 
-                builder.Add(ProcessInfo.CreateFrom(_processListProvider.GetProcessById(pid), ProcessType.NetFramework));
+                builder.Add(ProcessInfo.CreateFrom(_processListProvider.GetProcessById(new ProcessId(pid)), ProcessType.NetFramework));
             }
 
             return builder.ToImmutableArray();

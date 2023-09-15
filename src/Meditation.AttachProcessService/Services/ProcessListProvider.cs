@@ -12,7 +12,7 @@ namespace Meditation.AttachProcessService.Services
         private readonly IProcessCommandLineProvider _commandLineArgumentsProvider;
         private readonly IProcessArchitectureProvider _processArchitectureProvider;
         private ImmutableArray<ProcessInfo> _processes;
-        private ImmutableDictionary<int, ProcessInfo> _processesLookup;
+        private ImmutableDictionary<ProcessId, ProcessInfo> _processesLookup;
 
         public ProcessListProvider(IProcessCommandLineProvider commandLineArgumentsProvider, IProcessArchitectureProvider processArchitectureProvider)
         {
@@ -25,9 +25,9 @@ namespace Meditation.AttachProcessService.Services
 
         public ImmutableArray<ProcessInfo> GetAllProcesses() => _processes;
 
-        public bool TryGetProcessById(int pid, [NotNullWhen(true)] out ProcessInfo? processInfo) => _processesLookup.TryGetValue(pid, out processInfo);
+        public bool TryGetProcessById(ProcessId pid, [NotNullWhen(true)] out ProcessInfo? processInfo) => _processesLookup.TryGetValue(pid, out processInfo);
 
-        public ProcessInfo GetProcessById(int pid)
+        public ProcessInfo GetProcessById(ProcessId pid)
         {
             if (TryGetProcessById(pid, out var processInfo))
                 return processInfo;
@@ -52,7 +52,7 @@ namespace Meditation.AttachProcessService.Services
                 .ToImmutableArray();
         }
 
-        private ImmutableDictionary<int, ProcessInfo> LoadProcessLookup(ImmutableArray<ProcessInfo> currentProcesses)
+        private static ImmutableDictionary<ProcessId, ProcessInfo> LoadProcessLookup(ImmutableArray<ProcessInfo> currentProcesses)
         {
             return currentProcesses
                 .ToDictionary(p => p.Id, p => p)

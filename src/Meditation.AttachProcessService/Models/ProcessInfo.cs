@@ -7,7 +7,7 @@ namespace Meditation.AttachProcessService.Models
 {
     public class ProcessInfo
     {
-        public int Id { get; }
+        public ProcessId Id { get; }
         public string Name { get; }
         public ProcessType Type { get; }
         public Architecture? Architecture { get; private set; }
@@ -19,7 +19,7 @@ namespace Meditation.AttachProcessService.Models
 
         public ProcessInfo(Process process, ProcessType type, IProcessCommandLineProvider commandLineProvider, IProcessArchitectureProvider architectureProvider)
         {
-            Id = process.Id;
+            Id = new ProcessId(process.Id);
             Name = process.ProcessName;
             Type = type;
             _processCommandLineProvider = commandLineProvider;

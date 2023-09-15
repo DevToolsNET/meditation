@@ -10,13 +10,13 @@ namespace Meditation.AttachProcessService.Models
         private readonly IDataTarget _dataTarget;
         private bool _isDisposed;
 
-        public ProcessSnapshot(int processId, IDataTarget dataTarget)
+        public ProcessSnapshot(ProcessId processId, IDataTarget dataTarget)
         {
             ProcessId = processId;
             _dataTarget = dataTarget;
         }
 
-        public int ProcessId { get; }
+        public ProcessId ProcessId { get; }
 
         public IEnumerable<ModuleInfo> GetModules() => _dataTarget.EnumerateModules();
 
