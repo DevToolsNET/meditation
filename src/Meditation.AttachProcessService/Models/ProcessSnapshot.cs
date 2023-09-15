@@ -1,6 +1,5 @@
 ﻿using Microsoft.Diagnostics.Runtime;
 using Microsoft.Diagnostics.Runtime.Interfaces;
-using System;
 using System.Collections.Generic;
 
 namespace Meditation.AttachProcessService.Models
@@ -27,7 +26,6 @@ namespace Meditation.AttachProcessService.Models
 
             _isDisposed = true;
             _dataTarget.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }

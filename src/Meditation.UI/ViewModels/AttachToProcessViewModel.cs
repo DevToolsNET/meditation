@@ -51,7 +51,7 @@ namespace Meditation.UI.ViewModels
                 // FIXME: add logging
                 var messageBox = MessageBoxManager.GetMessageBoxStandard(
                     title: "Failed to attach process",
-                    text: $"Could not attach to selected process due to: {e.Message}",
+                    text: $"Could not attach to selected process due to: {e.ToString()}",
                     @enum: ButtonEnum.Ok);
                 await messageBox.ShowAsync();
                 return null;

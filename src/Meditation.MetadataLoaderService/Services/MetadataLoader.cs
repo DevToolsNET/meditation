@@ -31,22 +31,9 @@ namespace Meditation.MetadataLoaderService.Services
             {
                 return _metadataModels.GetOrAdd(path, p =>
                 {
-                    var assembly = LoadAssembly(p);
+                    var assembly = AssemblyDef.Load(p);
                     return BuildAssemblyMembers(assembly);
                 });
-            }
-        }
-
-        private AssemblyDef LoadAssembly(string path)
-        {
-            try
-            {
-                return _loadedAssemblies.GetOrAdd(path, p => AssemblyDef.Load(path));
-            }
-            catch (Exception)
-            {
-                // FIXME: add logging
-                throw;
             }
         }
 

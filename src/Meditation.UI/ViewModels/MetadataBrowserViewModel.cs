@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Meditation.MetadataLoaderService.Models;
 using Meditation.UI.Utilities;
@@ -61,8 +62,16 @@ namespace Meditation.UI.ViewModels
             var modules = snapshot.GetModules();
             foreach (var module in modules.Where(m => m.IsManaged).OrderBy(m => System.IO.Path.GetFileName(m.FileName)))
             {
-                var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
-                AddAssembly(assemblyMetadata);
+                try
+                {
+                    var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
+                    AddAssembly(assemblyMetadata);
+                }
+                catch (Exception a)
+                {
+                    // FIXME: add logging
+                    throw;
+                }
             }
 
             IsLoadingData = false;
