@@ -42,14 +42,16 @@ namespace Meditation.MetadataLoaderService.Services
 
         private static AssemblyMetadataEntry BuildAssemblyMembers(AssemblyDef assembly)
         {
+            var assemblyToken = new AssemblyToken(assembly.MDToken.ToInt32());
             var assemblyMembers = new List<MetadataEntryBase>();
             foreach (var module in assembly.Modules)
             {
+                var moduleToken = new ModuleToken(module.MDToken.ToInt32());
                 var moduleMembers = BuildModuleMembers(module);
-                assemblyMembers.Add(new ModuleMetadataEntry(module.Name, module.MDToken.ToInt32(), module.Location, moduleMembers.ToImmutableArray()));
+                assemblyMembers.Add(new ModuleMetadataEntry(module.Name, moduleToken, module.Location, moduleMembers.ToImmutableArray()));
             }
             SortEntriesBy(assemblyMembers, m => m.Name);
-            return new AssemblyMetadataEntry(assembly.Name, assembly.MDToken.ToInt32(), assembly.FullName, assemblyMembers.ToImmutableArray());
+            return new AssemblyMetadataEntry(assembly.Name, assemblyToken, assembly.FullName, assemblyMembers.ToImmutableArray());
         }
 
         private static List<MetadataEntryBase> BuildModuleMembers(ModuleDef module)
@@ -57,8 +59,9 @@ namespace Meditation.MetadataLoaderService.Services
             var moduleMembers = new List<MetadataEntryBase>();
             foreach (var type in module.GetTypes())
             {
+                var typeDefinitionToken = new TypeDefinitionToken(type.MDToken.ToInt32());
                 var typeMembers = BuildTypeMembers(type);
-                moduleMembers.Add(new TypeMetadataEntry(type.Name, type.FullName, type.MDToken.ToInt32(), typeMembers.ToImmutableArray()));
+                moduleMembers.Add(new TypeMetadataEntry(type.Name, type.FullName, typeDefinitionToken, typeMembers.ToImmutableArray()));
             }
             SortEntriesBy(moduleMembers, m => m.Name);
             return moduleMembers;
@@ -68,7 +71,10 @@ namespace Meditation.MetadataLoaderService.Services
         {
             var typeMembers = new List<MetadataEntryBase>(capacity: type.Methods.Count);
             foreach (var method in type.Methods)
-                typeMembers.Add(new MethodMetadataEntry(method.Name, method.MDToken.ToInt32(), ImmutableArray<MetadataEntryBase>.Empty));
+            {
+                var methodDefinitionToken = new MethodDefinitionToken(method.MDToken.ToInt32());
+                typeMembers.Add(new MethodMetadataEntry(method.Name, methodDefinitionToken, ImmutableArray<MetadataEntryBase>.Empty));
+            }
             SortEntriesBy(typeMembers, m => m.Name);
             return typeMembers;
         }

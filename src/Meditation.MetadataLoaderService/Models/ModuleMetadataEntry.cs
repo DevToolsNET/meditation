@@ -2,5 +2,6 @@
 
 namespace Meditation.MetadataLoaderService.Models
 {
-    public record ModuleMetadataEntry(string Name, int Token, string Path, ImmutableArray<MetadataEntryBase> Children) : MetadataEntryBase(Name, Token, Children);
+    public record ModuleMetadataEntry(string Name, ModuleToken ModuleToken, string Path, ImmutableArray<MetadataEntryBase> Children)
+        : MetadataEntryBase(Name, new MetadataToken(ModuleToken.Value), Children);
 }

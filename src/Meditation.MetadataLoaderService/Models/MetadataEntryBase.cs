@@ -4,6 +4,6 @@ namespace Meditation.MetadataLoaderService.Models
 {
     public abstract record MetadataEntryBase(
         string Name,
-        int Token,
+        MetadataToken Token,
         ImmutableArray<MetadataEntryBase> Children);
 }
