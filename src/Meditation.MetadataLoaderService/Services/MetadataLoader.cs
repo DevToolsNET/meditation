@@ -11,20 +11,30 @@ namespace Meditation.MetadataLoaderService.Services
     {
         private readonly ConcurrentDictionary<string, AssemblyDef> _loadedAssemblies;
         private readonly ConcurrentDictionary<string, AssemblyMetadataEntry> _metadataModels;
+        private readonly object _syncObject;
 
         public MetadataLoader()
         {
             _loadedAssemblies = new ConcurrentDictionary<string, AssemblyDef>();
             _metadataModels = new ConcurrentDictionary<string, AssemblyMetadataEntry>();
+            _syncObject = new object();
         }
 
         public AssemblyMetadataEntry LoadMetadataFromAssembly(string path)
         {
-            return _metadataModels.GetOrAdd(path, p =>
+            // Fast-path: metadata model is already constructed
+            if (_metadataModels.TryGetValue(path, out var metadataModel))
+                return metadataModel;
+
+            // Slow-path: only single thread should construct metadata model
+            lock (_syncObject)
             {
-                var assembly = LoadAssembly(p);
-                return BuildAssemblyMembers(assembly);
-            });
+                return _metadataModels.GetOrAdd(path, p =>
+                {
+                    var assembly = LoadAssembly(p);
+                    return BuildAssemblyMembers(assembly);
+                });
+            }
         }
 
         private AssemblyDef LoadAssembly(string path)
@@ -43,7 +53,7 @@ namespace Meditation.MetadataLoaderService.Services
         private static AssemblyMetadataEntry BuildAssemblyMembers(AssemblyDef assembly)
         {
             var assemblyToken = new AssemblyToken(assembly.MDToken.ToInt32());
-            var assemblyMembers = new List<MetadataEntryBase>();
+            var assemblyMembers = new List<MetadataEntryBase>(capacity: assembly.Modules.Count);
             foreach (var module in assembly.Modules)
             {
                 var moduleToken = new ModuleToken(module.MDToken.ToInt32());
@@ -56,7 +66,7 @@ namespace Meditation.MetadataLoaderService.Services
 
         private static List<MetadataEntryBase> BuildModuleMembers(ModuleDef module)
         {
-            var moduleMembers = new List<MetadataEntryBase>();
+            var moduleMembers = new List<MetadataEntryBase>(capacity: module.Types.Count);
             foreach (var type in module.GetTypes())
             {
                 var typeDefinitionToken = new TypeDefinitionToken(type.MDToken.ToInt32());
