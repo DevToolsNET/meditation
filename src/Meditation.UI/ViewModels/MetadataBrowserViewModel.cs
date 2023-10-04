@@ -1,12 +1,8 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Meditation.MetadataLoaderService.Models;
 using Meditation.UI.Utilities;
 using System.Linq;
-using Avalonia.Controls.Shapes;
-using Meditation.AttachProcessService;
-using Meditation.MetadataLoaderService;
 
 namespace Meditation.UI.ViewModels
 {
@@ -15,71 +11,35 @@ namespace Meditation.UI.ViewModels
         [ObservableProperty] private FilterableObservableCollection<AssemblyMetadataEntry> _assemblies;
         [ObservableProperty] private string? _metadataNameFilter;
         [ObservableProperty] private bool? _isLoadingData;
-        private readonly IAttachedProcessProvider _attachedProcessProvider;
-        private readonly IMetadataLoader _metadataLoader;
+        private readonly IAttachedProcessContext _attachedProcessContext;
 
-        public MetadataBrowserViewModel(IMetadataLoader metadataLoader, IAttachedProcessProvider attachedProcessProvider)
+        public MetadataBrowserViewModel(IAttachedProcessContext attachedProcessContext)
         {
-            _metadataLoader = metadataLoader;
-            _attachedProcessProvider = attachedProcessProvider;
+            _attachedProcessContext = attachedProcessContext;
             _assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
             RegisterEventHandlers();
         }
 
-        public void AddAssembly(AssemblyMetadataEntry entry)
+        private void RegisterEventHandlers()
         {
-            Assemblies.Add(entry);
+            // Set loading flag on process attaching
+            _attachedProcessContext.ProcessAttaching += _ => IsLoadingData = true;
+
+            // Clear loading flag on process attached
+            _attachedProcessContext.ProcessAttached += _ => IsLoadingData = false;
+
+            // Add assembly on process assembly loaded
+            _attachedProcessContext.AssemblyLoaded += (_, assembly) => Assemblies.Add(assembly);
+
+            // Clear data on process detach
+            _attachedProcessContext.ProcessDetached +=
+                _ => Assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
         }
 
         [RelayCommand]
         public void FilterMetadata()
         {
             Assemblies.ApplyFilter(p => MetadataNameFilter == null || p.Name.Contains(MetadataNameFilter));
-        }
-
-        private void RegisterEventHandlers()
-        {
-            _attachedProcessProvider.AttachedProcessChanged += snapshot =>
-            {
-                ClearPreviousProcessData();
-
-                if (snapshot != null) 
-                    HandleProcessAttach(snapshot);
-                else
-                    HandleProcessDetach();
-            };
-        }
-
-        private void ClearPreviousProcessData()
-        {
-            Assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
-        }
-
-        private void HandleProcessAttach(IProcessSnapshot snapshot)
-        {
-            IsLoadingData = true;
-
-            var modules = snapshot.GetModules();
-            foreach (var module in modules.Where(m => m.IsManaged).OrderBy(m => System.IO.Path.GetFileName(m.FileName)))
-            {
-                try
-                {
-                    var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
-                    AddAssembly(assemblyMetadata);
-                }
-                catch (Exception)
-                {
-                    // FIXME: add logging
-                    throw;
-                }
-            }
-
-            IsLoadingData = false;
-        }
-
-        private void HandleProcessDetach()
-        {
-            // Nothing to load
         }
     }
 }

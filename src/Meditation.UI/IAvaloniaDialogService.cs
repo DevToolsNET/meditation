@@ -1,10 +1,10 @@
 ﻿using Avalonia.Controls;
+using Meditation.UI.Services.Dialogs;
 
 namespace Meditation.UI
 {
     public interface IAvaloniaDialogService
     {
-        void DisplayDialog<TWindow>() where TWindow : Window;
-        void CloseDialog<TWindow>() where TWindow : Window;
+        DialogLifetime CreateDialog<TWindow>() where TWindow : Window;
     }
 }

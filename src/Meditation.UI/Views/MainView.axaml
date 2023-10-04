@@ -7,17 +7,12 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Meditation.UI.Views.MainView"
              x:DataType="vm:MainViewModel">
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Process">
-                <MenuItem Header="_Attach..." Command="{Binding DisplayAttachProcessWindow}"/>
-                <MenuItem Header="_Detach" Command="{Binding DetachProcess}"/>
+                <MenuItem Header="_Attach..." Command="{Binding  AttachToProcessController.DisplayAttachProcessWindowCommand}"/>
+                <MenuItem Header="_Detach" Command="{Binding AttachToProcessController.DetachCommand}"/>
             </MenuItem>
         </Menu>
         <Grid Grid.Row="1" ColumnDefinitions="*,1,*">

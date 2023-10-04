@@ -7,11 +7,12 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:AttachToProcessViewModel"
              x:Class="Meditation.UI.Views.AttachToProcessView">
+
     <Grid RowDefinitions="*,Auto">
         <views:ProcessListView Name="ProcessSelection" Grid.Row="0" />
         <Button Grid.Row="1"
                 Content="Attach"
-                Command="{Binding AttachProcessCommand}" 
+                Command="{Binding AttachToProcessController.AttachCommand}" 
                 CommandParameter="{Binding #ProcessSelection.DataContext}" />
     </Grid>
     

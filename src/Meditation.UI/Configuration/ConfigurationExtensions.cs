@@ -1,4 +1,7 @@
-﻿using Meditation.UI.Services;
+﻿using Meditation.UI.Controllers;
+using Meditation.UI.Services;
+using Meditation.UI.Services.Dialogs;
+using Meditation.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meditation.UI.Configuration
@@ -9,10 +12,8 @@ namespace Meditation.UI.Configuration
         {
             services.AddSingleton<IAvaloniaStorageProvider, AvaloniaStorageProvider>();
             services.AddSingleton<IAvaloniaDialogService, AvaloniaDialogService>();
-
-            var attachableProcessContext = new AttachedProcessContext();
-            services.AddSingleton<IAttachedProcessProvider>(attachableProcessContext);
-            services.AddSingleton<IAttachedProcessController>(attachableProcessContext);
+            services.AddSingleton<IAttachedProcessContext, AttachedProcessContext>();
+            services.AddSingleton<AttachToProcessController>();
         }
     }
 }
