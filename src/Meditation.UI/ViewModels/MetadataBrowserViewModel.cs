@@ -67,7 +67,7 @@ namespace Meditation.UI.ViewModels
                     var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
                     AddAssembly(assemblyMetadata);
                 }
-                catch (Exception a)
+                catch (Exception)
                 {
                     // FIXME: add logging
                     throw;
