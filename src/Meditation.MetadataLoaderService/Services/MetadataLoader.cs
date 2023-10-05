@@ -72,7 +72,7 @@ namespace Meditation.MetadataLoaderService.Services
                 assemblyMembers.Add(new ModuleMetadataEntry(module.Name, moduleToken, module.Location, moduleMembers.ToImmutableArray()));
             }
             SortEntriesBy(assemblyMembers, m => m.Name);
-            return new AssemblyMetadataEntry(assembly.Name, assemblyToken, assembly.FullName, assemblyMembers.ToImmutableArray());
+            return new AssemblyMetadataEntry(assembly.Name, assembly.Version, assemblyToken, assembly.FullName, assemblyMembers.ToImmutableArray());
         }
 
         private static List<MetadataEntryBase> BuildModuleMembers(ModuleDef module)
