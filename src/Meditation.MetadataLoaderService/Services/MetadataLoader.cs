@@ -4,36 +4,60 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
 
 namespace Meditation.MetadataLoaderService.Services
 {
     internal class MetadataLoader : IMetadataLoader
     {
-        private readonly ConcurrentDictionary<string, AssemblyDef> _loadedAssemblies;
+        private readonly ConcurrentDictionary<string, AssemblyDef> _assemblies;
         private readonly ConcurrentDictionary<string, AssemblyMetadataEntry> _metadataModels;
         private readonly object _syncObject;
 
         public MetadataLoader()
         {
-            _loadedAssemblies = new ConcurrentDictionary<string, AssemblyDef>();
+            _assemblies = new ConcurrentDictionary<string, AssemblyDef>();
             _metadataModels = new ConcurrentDictionary<string, AssemblyMetadataEntry>();
             _syncObject = new object();
         }
 
-        public AssemblyMetadataEntry LoadMetadataFromAssembly(string path)
+        public IEnumerable<AssemblyMetadataEntry> LoadMetadataFromProcess(IEnumerable<string> modulePaths)
+        {
+            var assembliesLookup = new Dictionary<(UTF8String Name, Version Version), AssemblyDef>();
+            foreach (var modulePath in modulePaths.OrderBy(Path.GetFileName))
+            {
+                var (metadata, assemblyDef) = LoadMetadataFromAssemblyImpl(modulePath);
+                if (assembliesLookup.ContainsKey((assemblyDef.Name, assemblyDef.Version)))
+                {
+                    // This means that the assembly is already processed
+                    // It happens usually in connection with NGEN (see: https://learn.microsoft.com/en-us/dotnet/framework/tools/ngen-exe-native-image-generator).
+                    // For example, consider case when we are processing modules: System.Data.dll and subsequently try to process System.Data.ni.dll
+
+                    // FIXME: log reason for skipping assembly processing
+                    continue;
+                }
+
+                assembliesLookup.Add((assemblyDef.Name, assemblyDef.Version), assemblyDef);
+                yield return metadata;
+            }
+
+        }
+
+        public AssemblyMetadataEntry LoadMetadataFromAssembly(string path) => LoadMetadataFromAssemblyImpl(path).MetadataModel;
+
+        private (AssemblyMetadataEntry MetadataModel, AssemblyDef Assembly) LoadMetadataFromAssemblyImpl(string path)
         {
             // Fast-path: metadata model is already constructed
-            if (_metadataModels.TryGetValue(path, out var metadataModel))
-                return metadataModel;
+            if (_assemblies.TryGetValue(path, out var assemblyDef) && _metadataModels.TryGetValue(path, out var metadataModel))
+                return (metadataModel, assemblyDef);
 
             // Slow-path: only single thread should construct metadata model
             lock (_syncObject)
             {
-                return _metadataModels.GetOrAdd(path, p =>
-                {
-                    var assembly = AssemblyDef.Load(p);
-                    return BuildAssemblyMembers(assembly);
-                });
+                assemblyDef = _assemblies.GetOrAdd(path, _ => AssemblyDef.Load(path));
+                metadataModel = _metadataModels.GetOrAdd(path, _ => BuildAssemblyMembers(assemblyDef));
+                return (metadataModel, assemblyDef);
             }
         }
 
