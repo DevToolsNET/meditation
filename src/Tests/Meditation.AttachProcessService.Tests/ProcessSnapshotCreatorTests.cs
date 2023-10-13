@@ -22,7 +22,7 @@ namespace Meditation.AttachProcessService.Tests
             // Assert
             Assert.NotNull(snapshot);
             Assert.Equal(processId, snapshot.ProcessId);
-            Assert.NotEmpty(snapshot.GetModules());
+            Assert.NotEmpty(snapshot.EnumerateModules());
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Diagnostics.Runtime;
+﻿using System;
+using Microsoft.Diagnostics.Runtime;
 using Microsoft.Diagnostics.Runtime.Interfaces;
 using System.Collections.Generic;
 
@@ -17,7 +18,13 @@ namespace Meditation.AttachProcessService.Models
 
         public ProcessId ProcessId { get; }
 
-        public IEnumerable<ModuleInfo> GetModules() => _dataTarget.EnumerateModules();
+        public IEnumerable<ModuleInfo> EnumerateModules()
+        {
+            if (_isDisposed)
+                throw new ObjectDisposedException(nameof(_dataTarget));
+
+            return _dataTarget.EnumerateModules();
+        }
 
         public void Dispose()
         {

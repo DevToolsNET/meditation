@@ -102,7 +102,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                // FIXME: add logging
+                // FIXME [#16]: add logging
                 var messageBox = MessageBoxManager.GetMessageBoxStandard(
                     title: "Failed to attach process",
                     text: $"Could not attach to selected process due to: {exception}",

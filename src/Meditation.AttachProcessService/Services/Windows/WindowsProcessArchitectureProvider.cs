@@ -40,14 +40,14 @@ namespace Meditation.AttachProcessService.Services.Windows
             }
             catch (InvalidOperationException)
             {
-                // FIXME: add logging
+                // FIXME [#16]: add logging
                 // Process has not been started, or already exited
                 handle = null;
                 return false;
             }
             catch (NotSupportedException)
             {
-                // FIXME: add logging
+                // FIXME [#16]: add logging
                 // Process is running on a remote computer (unsupported)
                 handle = null;
                 return false;

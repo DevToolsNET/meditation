@@ -59,7 +59,7 @@ namespace Meditation.UI.Services
         private void LoadAssemblies(IProcessSnapshot processSnapshot)
         {
             var builder = new List<AssemblyMetadataEntry>();
-            var managedModulePaths = processSnapshot.GetModules()
+            var managedModulePaths = processSnapshot.EnumerateModules()
                 .Where(m => m.IsManaged)
                 .OrderBy(m => Path.GetFileName(m.FileName))
                 .Select(m => m.FileName);
