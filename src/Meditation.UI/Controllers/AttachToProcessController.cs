@@ -61,7 +61,14 @@ namespace Meditation.UI.Controllers
         public async Task Attach(ProcessListViewModel processListViewModel, CancellationToken ct)
         {
             if (processListViewModel.SelectedProcess is not { } selectedProcessInfo)
-                throw new ArgumentException("No process was selected for attach", nameof(processListViewModel));
+            {
+                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                    title: "Nothing selected",
+                    text: "You need to select a process before proceeding.",
+                    @enum: ButtonEnum.Ok);
+                await messageBox.ShowAsync();
+                return;
+            }
 
             using var snapshot = await TryObtainProcessSnapshot(selectedProcessInfo, ct);
             if (snapshot == null)
