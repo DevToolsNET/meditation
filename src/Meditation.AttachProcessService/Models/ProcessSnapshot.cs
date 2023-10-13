@@ -17,7 +17,7 @@ namespace Meditation.AttachProcessService.Models
 
         public ProcessId ProcessId { get; }
 
-        public IEnumerable<ModuleInfo> GetModules() => _dataTarget.EnumerateModules();
+        public IEnumerable<ModuleInfo> EnumerateModules() => _dataTarget.EnumerateModules();
 
         public void Dispose()
         {

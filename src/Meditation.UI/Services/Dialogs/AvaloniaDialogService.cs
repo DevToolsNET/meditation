@@ -23,7 +23,7 @@ namespace Meditation.UI.Services.Dialogs
             }
             catch (Exception ex)
             {
-                // FIXME: add logging
+                // FIXME [#16]: add logging
                 throw new InvalidOperationException("Could not open dialog.", ex);
             }
         }

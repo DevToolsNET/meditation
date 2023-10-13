@@ -58,7 +58,7 @@ namespace Meditation.UI.Services
         private void LoadAssemblies(IProcessSnapshot processSnapshot)
         {
             var builder = new List<AssemblyMetadataEntry>();
-            var modules = processSnapshot.GetModules();
+            var modules = processSnapshot.EnumerateModules();
             foreach (var module in modules.Where(m => m.IsManaged).OrderBy(m => System.IO.Path.GetFileName(m.FileName)))
             {
                 try
@@ -69,7 +69,7 @@ namespace Meditation.UI.Services
                 }
                 catch (Exception)
                 {
-                    // FIXME: add logging
+                    // FIXME [#16]: add logging
                     throw;
                 }
             }

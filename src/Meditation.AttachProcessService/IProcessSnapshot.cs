@@ -9,6 +9,6 @@ namespace Meditation.AttachProcessService
     {
         public ProcessId ProcessId { get; }
 
-        public IEnumerable<ModuleInfo> GetModules();
+        public IEnumerable<ModuleInfo> EnumerateModules();
     }
 }
