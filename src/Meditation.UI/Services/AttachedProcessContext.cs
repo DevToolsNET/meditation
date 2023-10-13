@@ -4,6 +4,7 @@ using Meditation.MetadataLoaderService.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Meditation.AttachProcessService.Models;
 
@@ -58,20 +59,15 @@ namespace Meditation.UI.Services
         private void LoadAssemblies(IProcessSnapshot processSnapshot)
         {
             var builder = new List<AssemblyMetadataEntry>();
-            var modules = processSnapshot.EnumerateModules();
-            foreach (var module in modules.Where(m => m.IsManaged).OrderBy(m => System.IO.Path.GetFileName(m.FileName)))
+            var managedModulePaths = processSnapshot.EnumerateModules()
+                .Where(m => m.IsManaged)
+                .OrderBy(m => Path.GetFileName(m.FileName))
+                .Select(m => m.FileName);
+
+            foreach (var assemblyMetadata in _metadataLoader.LoadMetadataFromProcess(managedModulePaths))
             {
-                try
-                {
-                    var assemblyMetadata = _metadataLoader.LoadMetadataFromAssembly(module.FileName);
-                    AssemblyLoaded?.Invoke(processSnapshot.ProcessId, assemblyMetadata);
-                    builder.Add(assemblyMetadata);
-                }
-                catch (Exception)
-                {
-                    // FIXME [#16]: add logging
-                    throw;
-                }
+                AssemblyLoaded?.Invoke(processSnapshot.ProcessId, assemblyMetadata);
+                builder.Add(assemblyMetadata);
             }
 
             Assemblies = builder.ToImmutableArray();
