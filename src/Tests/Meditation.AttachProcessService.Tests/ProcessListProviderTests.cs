@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using Meditation.AttachProcessService.Models;
 using Xunit;
 
 namespace Meditation.AttachProcessService.Tests
@@ -11,6 +12,7 @@ namespace Meditation.AttachProcessService.Tests
         public void ProcessListProvider_ReturnsNonEmptyList()
         {
             // Prepare
+            var pid = new ProcessId(Environment.ProcessId);
             var provider = ServiceProvider.GetRequiredService<IProcessListProvider>();
 
             // Act
@@ -18,7 +20,7 @@ namespace Meditation.AttachProcessService.Tests
 
             // Assert
             Assert.NotEmpty(processes);
-            Assert.True(processes.Any(p => p.Id == Environment.ProcessId));
+            Assert.True(processes.Any(p => p.Id == pid));
         }
     }
 }

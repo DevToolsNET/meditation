@@ -31,7 +31,7 @@ namespace Meditation.AttachProcessService.Services
             if (netCoreProvider is not null)
             {
                 var builder = new List<ProcessInfo>();
-                var addedProcessIds = new HashSet<int>();
+                var addedProcessIds = new HashSet<ProcessId>();
                 var netCoreProcesses = await netCoreProvider.GetAttachableProcessesAsync(ct);
                 foreach (var process in netCoreProcesses)
                 {
@@ -56,7 +56,7 @@ namespace Meditation.AttachProcessService.Services
             else
             {
                 var builder = new List<ProcessInfo>();
-                var addedProcessIds = new HashSet<int>();
+                var addedProcessIds = new HashSet<ProcessId>();
                 foreach (var attachableProcessListProvider in _dotnetProcessListProviders)
                 {
                     var processes = await attachableProcessListProvider.GetAttachableProcessesAsync(ct);

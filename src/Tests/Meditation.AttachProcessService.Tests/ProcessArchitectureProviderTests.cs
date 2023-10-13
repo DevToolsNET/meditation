@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Meditation.AttachProcessService.Models;
 using Xunit;
 
 namespace Meditation.AttachProcessService.Tests
@@ -14,7 +15,7 @@ namespace Meditation.AttachProcessService.Tests
         public async Task ProcessArchitectureProvider_ReturnsCorrectArchitectureForCurrentProcess()
         {
             // Prepare
-            var pid = Environment.ProcessId;
+            var pid = new ProcessId(Environment.ProcessId);
             var currentArchitecture = RuntimeInformation.ProcessArchitecture;
             var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
             var architectureProvider = ServiceProvider.GetRequiredService<IProcessArchitectureProvider>();

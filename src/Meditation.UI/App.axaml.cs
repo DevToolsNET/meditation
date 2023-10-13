@@ -2,12 +2,14 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Meditation.AttachProcessService.Configuration;
+using Meditation.MetadataLoaderService.Configuration;
+using Meditation.UI.Configuration;
+using Meditation.UI.Utilities;
 using Meditation.UI.ViewModels;
-using Meditation.UI.Views;
 using Meditation.UI.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Meditation.AttachProcessService.Configuration;
 
 namespace Meditation.UI
 {
@@ -27,14 +29,7 @@ namespace Meditation.UI
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainViewModel()
-                };
-            }
-            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-            {
-                singleViewPlatform.MainView = new MainView
-                {
-                    DataContext = new MainViewModel()
+                    DataContext = this.GetServiceProvider().CreateInstance<MainViewModel>()
                 };
             }
 
@@ -46,6 +41,8 @@ namespace Meditation.UI
             // In order to make services container visible to all views, store it in resources
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMeditationAttachProcessService();
+            serviceCollection.AddMeditationMetadataLoaderServices();
+            serviceCollection.AddMeditationUserInterfaceServices();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Resources[typeof(IServiceProvider)] = serviceProvider;
         }

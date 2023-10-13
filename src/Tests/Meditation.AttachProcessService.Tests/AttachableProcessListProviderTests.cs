@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Meditation.AttachProcessService.Models;
 using Xunit;
 
 namespace Meditation.AttachProcessService.Tests
@@ -13,6 +14,7 @@ namespace Meditation.AttachProcessService.Tests
         public async Task AttachableProcessListProvider_ReturnsNonEmptyList()
         {
             // Prepare
+            var pid = new ProcessId(Environment.ProcessId);
             var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
 
             // Act
@@ -20,7 +22,7 @@ namespace Meditation.AttachProcessService.Tests
 
             // Assert
             Assert.NotEmpty(processes);
-            Assert.True(processes.Any(p => p.Id == Environment.ProcessId));
+            Assert.True(processes.Any(p => p.Id == pid));
         }
     }
 }

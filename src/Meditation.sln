@@ -20,6 +20,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BFDC7E0B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.AttachProcessService.Tests", "Tests\Meditation.AttachProcessService.Tests\Meditation.AttachProcessService.Tests.csproj", "{C08352B5-9948-4D41-BA2A-5BA6204C9085}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.MetadataLoaderService", "Meditation.MetadataLoaderService\Meditation.MetadataLoaderService.csproj", "{09492C7B-0C0C-40B2-B42A-6C26EAA93C2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.MetadataLoaderService.Tests", "Tests\Meditation.MetadataLoaderService.Tests\Meditation.MetadataLoaderService.Tests.csproj", "{212F0274-C89D-497D-8E83-C1B036A738E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,12 +46,21 @@ Global
 		{C08352B5-9948-4D41-BA2A-5BA6204C9085}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C08352B5-9948-4D41-BA2A-5BA6204C9085}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C08352B5-9948-4D41-BA2A-5BA6204C9085}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09492C7B-0C0C-40B2-B42A-6C26EAA93C2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09492C7B-0C0C-40B2-B42A-6C26EAA93C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09492C7B-0C0C-40B2-B42A-6C26EAA93C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09492C7B-0C0C-40B2-B42A-6C26EAA93C2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{212F0274-C89D-497D-8E83-C1B036A738E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212F0274-C89D-497D-8E83-C1B036A738E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212F0274-C89D-497D-8E83-C1B036A738E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212F0274-C89D-497D-8E83-C1B036A738E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C08352B5-9948-4D41-BA2A-5BA6204C9085} = {BFDC7E0B-0E75-48AD-9D37-97E67485E087}
+		{212F0274-C89D-497D-8E83-C1B036A738E8} = {BFDC7E0B-0E75-48AD-9D37-97E67485E087}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3B4148E2-7E96-47B8-8894-CAAFF1959049}

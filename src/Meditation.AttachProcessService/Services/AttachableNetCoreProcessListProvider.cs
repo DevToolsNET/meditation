@@ -29,7 +29,8 @@ namespace Meditation.AttachProcessService.Services
         {
             var attachableProcessIds = DiagnosticsClient.GetPublishedProcesses();
             return attachableProcessIds
-                .Where(id => _processListProvider.TryGetProcessById(id, out _))
+                .Select(pid => new ProcessId(pid))
+                .Where(pid => _processListProvider.TryGetProcessById(pid, out _))
                 .Select(pid => ProcessInfo.CreateFrom(_processListProvider.GetProcessById(pid), ProcessType.NetCoreApp));
         }
     }

@@ -1,19 +1,14 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
+﻿using Meditation.UI.Controllers;
 
 namespace Meditation.UI.ViewModels
 {
     public partial class AttachToProcessViewModel : ViewModelBase
     {
-        [RelayCommand]
-        public void AttachProcess()
+        public AttachToProcessController AttachToProcessController { get; }
+
+        public AttachToProcessViewModel(AttachToProcessController attachToProcessController)
         {
-            var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                title: "Missing feature",
-                text: "This functionality is not yet implemented",
-                @enum: ButtonEnum.Ok);
-            messageBox.ShowAsync();
+            AttachToProcessController = attachToProcessController;
         }
     }
 }

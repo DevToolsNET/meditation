@@ -2,24 +2,28 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:Meditation.UI.Views"
              xmlns:vm="clr-namespace:Meditation.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Meditation.UI.Views.MainView"
              x:DataType="vm:MainViewModel">
-  <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
-  </Design.DataContext>
 
-    <StackPanel>
-        <Menu>
+    <Grid RowDefinitions="Auto,*">
+        <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Process">
-                <MenuItem Header="_Attach..." Command="{Binding DisplayAttachProcessWindow}"/>
+                <MenuItem Header="_Attach..." Command="{Binding  AttachToProcessController.DisplayAttachProcessWindowCommand}"/>
+                <MenuItem Header="_Detach" Command="{Binding AttachToProcessController.DetachCommand}"/>
             </MenuItem>
         </Menu>
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-    </StackPanel>
+        <Grid Grid.Row="1" ColumnDefinitions="*,1,*">
+            <views:MetadataBrowserView Grid.Column="0" />
+            <GridSplitter Grid.Column="1" Background="LightGray" ResizeDirection="Columns"/>
+            <ContentControl 
+                Grid.Column="2" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center" 
+                Content="{Binding Greeting}"/>
+        </Grid>
+    </Grid>
 
- 
 </UserControl>

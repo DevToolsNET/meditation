@@ -7,8 +7,8 @@ namespace Meditation.AttachProcessService
     public interface IProcessListProvider
     {
         ImmutableArray<ProcessInfo> GetAllProcesses();
-        bool TryGetProcessById(int pid, [NotNullWhen(true)] out ProcessInfo? processInfo);
-        ProcessInfo GetProcessById(int pid);
+        bool TryGetProcessById(ProcessId pid, [NotNullWhen(true)] out ProcessInfo? processInfo);
+        ProcessInfo GetProcessById(ProcessId pid);
         void Refresh();
     }
 }
