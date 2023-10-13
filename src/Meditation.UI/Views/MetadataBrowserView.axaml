@@ -31,6 +31,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Assets/Assembly.png" />
                         <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
+                        <TextBlock Text="{Binding Path=Version, StringFormat=' ({0})'}" />
                     </StackPanel>
                 </TreeDataTemplate>
 
