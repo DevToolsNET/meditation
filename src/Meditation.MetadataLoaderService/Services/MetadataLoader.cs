@@ -24,21 +24,21 @@ namespace Meditation.MetadataLoaderService.Services
 
         public IEnumerable<AssemblyMetadataEntry> LoadMetadataFromProcess(IEnumerable<string> modulePaths)
         {
-            var assembliesLookup = new Dictionary<(UTF8String Name, Version Version), AssemblyDef>();
+            var assembliesLookup = new Dictionary<(UTF8String Name, Version Version, UTF8String Culture, PublicKey PublicKey), AssemblyDef>();
             foreach (var modulePath in modulePaths.OrderBy(Path.GetFileName))
             {
                 var (metadata, assemblyDef) = LoadMetadataFromAssemblyImpl(modulePath);
-                if (assembliesLookup.ContainsKey((assemblyDef.Name, assemblyDef.Version)))
+                if (assembliesLookup.ContainsKey((assemblyDef.Name, assemblyDef.Version, assemblyDef.Culture, assemblyDef.PublicKey)))
                 {
                     // This means that the assembly is already processed
                     // It happens usually in connection with NGEN (see: https://learn.microsoft.com/en-us/dotnet/framework/tools/ngen-exe-native-image-generator).
                     // For example, consider case when we are processing modules: System.Data.dll and subsequently try to process System.Data.ni.dll
 
-                    // FIXME: log reason for skipping assembly processing
+                    // FIXME [#16]: log reason for skipping assembly processing
                     continue;
                 }
 
-                assembliesLookup.Add((assemblyDef.Name, assemblyDef.Version), assemblyDef);
+                assembliesLookup.Add((assemblyDef.Name, assemblyDef.Version, assemblyDef.Culture, assemblyDef.PublicKey), assemblyDef);
                 yield return metadata;
             }
 
