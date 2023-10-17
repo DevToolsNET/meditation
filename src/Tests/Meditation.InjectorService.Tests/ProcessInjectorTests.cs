@@ -21,7 +21,8 @@ namespace Meditation.InjectorService.Tests
 
             // Assert
             Assert.True(result);
-            Assert.NotEqual(IntPtr.Zero, remoteModuleHandle);
+            Assert.False(remoteModuleHandle?.IsInvalid);
+            Assert.False(remoteModuleHandle?.IsClosed);
         }
     }
 }

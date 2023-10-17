@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Meditation.InjectorService.Services.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Runtime.InteropServices;
-using Meditation.InjectorService.Services.Windows;
 
 namespace Meditation.InjectorService.Configuration
 {
