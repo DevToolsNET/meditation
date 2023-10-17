@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Diagnostics;
+﻿using CliWrap;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Meditation.InjectorService.Tests
@@ -8,16 +10,22 @@ namespace Meditation.InjectorService.Tests
     public class ProcessInjectorTests : TestsBase
     {
         [Fact]
-        public void ProcessInjector_InjectSelfToOtherProcess()
+        public async Task ProcessInjector_InjectSelfToOtherProcess()
         {
             // Prepare
-            const string targetExecutable = "notepad.exe";
+            var targetExecutable = typeof(TestSubject.TestSubject).Assembly.Location;
             var assemblyPath = typeof(ProcessInjectorTests).Assembly.Location;
-            var targetProcess = Process.Start(targetExecutable);
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
+            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, TestSubject.TestSubject.SynchronizationHandleName);
 
             // Act
-            var result = processInjector.TryInjectModuleToProcess(targetProcess.Id, assemblyPath, out var remoteModuleHandle);
+            var executionTask = Cli.Wrap("dotnet")
+                .WithArguments(targetExecutable)
+                .ExecuteAsync();
+            var processId = executionTask.ProcessId;
+            var result = processInjector.TryInjectModuleToProcess(processId, assemblyPath, out var remoteModuleHandle);
+            waitHandle.Set();
+            await executionTask;
 
             // Assert
             Assert.True(result);

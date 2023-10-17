@@ -6,6 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CliWrap" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
 		<PackageReference Include="xunit" />
@@ -21,6 +22,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Meditation.InjectorService\Meditation.InjectorService.csproj" />
+	  <ProjectReference Include="..\Meditation.TestSubject\Meditation.TestSubject.csproj" />
 	</ItemGroup>
 
 </Project>
