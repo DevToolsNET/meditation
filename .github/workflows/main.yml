@@ -29,5 +29,7 @@ jobs:
       run: dotnet restore src/Meditation.sln
     - name: Build (dotnet)
       run: dotnet build src/Meditation.sln --no-restore --no-incremental /property:WarningLevel=0
+    - name: Publish (dotnet AOT)
+      run: dotnet publish ./src/Meditation.Bootstrap/Meditation.Bootstrap.csproj -r win-x64
     - name: Test
       run: dotnet test src/Meditation.sln --no-build --verbosity normal

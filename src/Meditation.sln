@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.Interop", "Medit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.TestSubject", "Tests\Meditation.TestSubject\Meditation.TestSubject.csproj", "{65C2A38A-F113-4BCC-9FE4-75099917D700}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.Bootstrap", "Meditation.Bootstrap\Meditation.Bootstrap.csproj", "{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{65C2A38A-F113-4BCC-9FE4-75099917D700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65C2A38A-F113-4BCC-9FE4-75099917D700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65C2A38A-F113-4BCC-9FE4-75099917D700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

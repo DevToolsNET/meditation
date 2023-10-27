@@ -1,7 +1,9 @@
 ﻿using Meditation.Interop;
 using Meditation.Interop.Windows;
-using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -9,7 +11,7 @@ namespace Meditation.InjectorService.Services.Windows
 {
     internal class WindowsProcessInjector : IProcessInjector
     {
-        public bool TryInjectModuleToProcess(int pid, string modulePath, [NotNullWhen(true)] out SafeHandle? remoteModuleHandle)
+        public bool TryInjectModule(int pid, string modulePath, [NotNullWhen(true)] out SafeHandle? remoteModuleHandle)
         {
             // Open target process
             using var processHandle = Kernel32.OpenProcess(ProcessAccessFlags.All, (uint)pid);
@@ -84,22 +86,18 @@ namespace Meditation.InjectorService.Services.Windows
             }
 
             // Obtain handle to injected module though thread exit code
-            if (!Kernel32.GetExitCodeThread(threadHandle, out var moduleHandle))
+            var moduleName = Path.GetFileName(modulePath);
+            var module = Process.GetProcessById(pid).Modules.Cast<ProcessModule>().FirstOrDefault(m => m.ModuleName == moduleName);
+            if (module == null)
             {
-                // Error while obtaining thread's exit code
-                // FIXME: logging
+                // Error while obtaining base address for loaded module
+                // FIXME [#16]: logging
                 remoteModuleHandle = null;
                 return false;
             }
 
-            // Cleanup
-            remoteModuleHandle = new GenericSafeHandle(() => moduleHandle, static _ => true, ownsHandle: false);
+            remoteModuleHandle = new GenericSafeHandle(() => module.BaseAddress, static _ => true, ownsHandle: false);
             return true;
-        }
-
-        public bool TryExecuteStaticMethodInDefaultProcessAppDomain(int pid, string assemblyPath, string fullTypeName, string methodName, string arg, out int returnCode)
-        {
-            throw new NotImplementedException();
         }
     }
 }

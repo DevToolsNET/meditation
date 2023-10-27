@@ -25,6 +25,7 @@ namespace Meditation.InjectorService.Configuration
         private static void AddWindowsServices(this IServiceCollection services)
         {
             services.AddTransient<IProcessInjector, WindowsProcessInjector>();
+            services.AddTransient<IProcessInjecteeExecutor, WindowsProcessInjecteeExecutor>();
         }
 
         private static void AddLinuxServices(this IServiceCollection services)

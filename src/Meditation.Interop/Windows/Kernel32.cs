@@ -7,6 +7,12 @@ namespace Meditation.Interop.Windows
 {
     public static partial class Kernel32
     {
+        public static SafeHandle LoadLibraryW(string library)
+        {
+            IntPtr AcquireFunction() => NativeBindings.LoadLibraryW(library);
+            return new GenericSafeHandle(AcquireFunction, static _ => true, ownsHandle: false);
+        }
+
         public static SafeHandle OpenProcess(ProcessAccessFlags processAccess, uint processId)
         {
             IntPtr AcquireFunction() => NativeBindings.OpenProcess((uint)processAccess, false, processId);
@@ -55,7 +61,7 @@ namespace Meditation.Interop.Windows
             return new GenericSafeHandle(AcquireFunction, static _ => true, ownsHandle: false);
         }
 
-        public static SafeHandle CreateRemoteThread(SafeHandle processHandle, SafeHandle threadStart, SafeHandle args)
+        public static SafeHandle CreateRemoteThread(SafeHandle processHandle, SafeHandle threadStart, SafeHandle? args)
         {
             // hProcess: handle to target process
             // lpThreadAttributes: pointer to security attributes (nullptr means default)
@@ -69,7 +75,7 @@ namespace Meditation.Interop.Windows
                 lpThreadAttributes: IntPtr.Zero,
                 dwStackSize: 0,
                 lpStartAddress: threadStart.DangerousGetHandle(),
-                lpParameter: args.DangerousGetHandle(),
+                lpParameter: args?.DangerousGetHandle() ?? IntPtr.Zero,
                 dwCreationFlags: 0,
                 lpThreadId: out _);
 
@@ -83,7 +89,7 @@ namespace Meditation.Interop.Windows
             return NativeBindings.WaitForSingleObject(handle.DangerousGetHandle(), timeoutMillis) == 0;
         }
 
-        public static bool GetExitCodeThread(SafeHandle threadHandle, out IntPtr returnValue)
+        public static bool GetExitCodeThread(SafeHandle threadHandle, out uint returnValue)
         {
             return NativeBindings.GetExitCodeThread(threadHandle.DangerousGetHandle(), out returnValue);
         }
@@ -123,7 +129,7 @@ namespace Meditation.Interop.Windows
             // Source: http://pinvoke.net/default.aspx/kernel32.getexitcodethread
             [LibraryImport("kernel32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static partial bool GetExitCodeThread(IntPtr hThread, out IntPtr lpExitCode);
+            public static partial bool GetExitCodeThread(IntPtr hThread, out uint lpExitCode);
 
             // Source: http://pinvoke.net/default.aspx/kernel32/OpenProcess.html
             [LibraryImport("kernel32.dll", SetLastError = true)]
@@ -134,6 +140,9 @@ namespace Meditation.Interop.Windows
             [SuppressUnmanagedCodeSecurity]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static partial bool CloseHandle(IntPtr hObject);
+
+            [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+            public static partial IntPtr LoadLibraryW(string librayName);
         }
     }
 }
