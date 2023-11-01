@@ -2,12 +2,18 @@
 using Meditation.Interop.Windows;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Meditation.InjectorService.Services.Windows
 {
     internal class WindowsProcessInjecteeExecutor : IProcessInjecteeExecutor
     {
-        public bool TryExecuteExportedMethod(int pid, string modulePath, SafeHandle injectedModuleHandle, string exportedMethodName,
+        public bool TryExecuteExportedMethod(
+            int pid, 
+            string modulePath, 
+            SafeHandle injectedModuleHandle, 
+            string exportedMethodName, 
+            string argument,
             [NotNullWhen(returnValue: true)] out uint? returnCode)
         {
             if (!TryGetMethodAddressInRemoteProcess(injectedModuleHandle, modulePath, exportedMethodName, out var remoteMethodHandle))
@@ -19,7 +25,7 @@ namespace Meditation.InjectorService.Services.Windows
             }
 
             using var methodHandle = remoteMethodHandle;
-            return TryExecuteInRemoteProcess(pid, methodHandle, out returnCode);
+            return TryExecuteInRemoteProcess(pid, methodHandle, argument, out returnCode);
         }
 
         private static bool TryGetMethodAddressInRemoteProcess(
@@ -51,7 +57,10 @@ namespace Meditation.InjectorService.Services.Windows
             return true;
         }
 
-        private static bool TryExecuteInRemoteProcess(int pid, SafeHandle remoteMethodHandle,
+        private static bool TryExecuteInRemoteProcess(
+            int pid, 
+            SafeHandle remoteMethodHandle,
+            string argument,
             [NotNullWhen(returnValue: true)] out uint? returnCode)
         {
             using var remoteProcessHandle = Kernel32.OpenProcess(ProcessAccessFlags.All, (uint)pid);
@@ -63,7 +72,30 @@ namespace Meditation.InjectorService.Services.Windows
                 return false;
             }
 
-            using var remoteThreadHandle = Kernel32.CreateRemoteThread(remoteProcessHandle, remoteMethodHandle, null);
+            // Allocate memory in target process for hook arguments
+            const AllocationType allocation = AllocationType.Commit;
+            const MemoryProtection protection = MemoryProtection.ReadWrite;
+            var bytesCount = (uint)(argument.Length * sizeof(char) + 1);
+            using var memoryHandle = Kernel32.VirtualAllocEx(remoteProcessHandle, bytesCount, allocation, protection);
+            if (memoryHandle.IsInvalid)
+            {
+                // Unable to allocate memory in target process
+                // FIXME [#16]: logging
+                returnCode = null;
+                return false;
+            }
+
+            // Write hook arguments to target process
+            var modulePathData = Encoding.Unicode.GetBytes(argument + '\0');
+            if (!Kernel32.WriteProcessMemory(remoteProcessHandle, memoryHandle, modulePathData, out var written) || written != modulePathData.Length)
+            {
+                // Unable to write memory of target process
+                // FIXME [#16]: logging
+                returnCode = null;
+                return false;
+            }
+
+            using var remoteThreadHandle = Kernel32.CreateRemoteThread(remoteProcessHandle, remoteMethodHandle, memoryHandle);
             if (remoteThreadHandle.IsInvalid)
             {
                 // Could not find exported symbol matching the parameter within the injected module

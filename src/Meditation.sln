@@ -28,11 +28,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.InjectorService.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.InjectorService", "Meditation.InjectorService\Meditation.InjectorService.csproj", "{A9ABEBBA-8EA9-465C-BA79-3BF01A6ADF98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.Interop", "Meditation.Interop\Meditation.Interop.csproj", "{25CA5972-8157-49DF-88AF-91EA482F7C80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.Interop", "Meditation.Interop\Meditation.Interop.csproj", "{25CA5972-8157-49DF-88AF-91EA482F7C80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.TestSubject", "Tests\Meditation.TestSubject\Meditation.TestSubject.csproj", "{65C2A38A-F113-4BCC-9FE4-75099917D700}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.TestSubject", "Tests\Meditation.TestSubject\Meditation.TestSubject.csproj", "{65C2A38A-F113-4BCC-9FE4-75099917D700}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.Bootstrap", "Meditation.Bootstrap\Meditation.Bootstrap.csproj", "{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.Bootstrap.Native", "Meditation.Bootstrap.Native\Meditation.Bootstrap.Native.csproj", "{471E015A-15E4-4507-B970-AD49489E9EEE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.Bootstrap.Managed", "Meditation.Bootstrap.Managed\Meditation.Bootstrap.Managed.csproj", "{181FCD0E-0791-4EFC-9CF7-5A154E8726DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,10 +82,14 @@ Global
 		{65C2A38A-F113-4BCC-9FE4-75099917D700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65C2A38A-F113-4BCC-9FE4-75099917D700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65C2A38A-F113-4BCC-9FE4-75099917D700}.Release|Any CPU.Build.0 = Release|Any CPU
-		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81BD7503-B61A-43AA-8DF2-32EA0E85C2FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{471E015A-15E4-4507-B970-AD49489E9EEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{471E015A-15E4-4507-B970-AD49489E9EEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{471E015A-15E4-4507-B970-AD49489E9EEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{471E015A-15E4-4507-B970-AD49489E9EEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{181FCD0E-0791-4EFC-9CF7-5A154E8726DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{181FCD0E-0791-4EFC-9CF7-5A154E8726DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{181FCD0E-0791-4EFC-9CF7-5A154E8726DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{181FCD0E-0791-4EFC-9CF7-5A154E8726DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
