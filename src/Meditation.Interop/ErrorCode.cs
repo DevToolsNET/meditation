@@ -8,6 +8,7 @@
         NotSupported = 0xDEAD_0003,
         NotImplemented = 0xDEAD_0004,
         ClrNotFound = 0xDEAD_0005,
-        HostNotFound = 0xDEAD_0006
+        MetaHostNotFound = 0xDEAD_0006,
+        HostNotFound = 0xDEAD_0007
     }
 }

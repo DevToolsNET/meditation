@@ -70,10 +70,7 @@ namespace Meditation.Bootstrap.Native
             // Test for .NET Framework application
             using var mscoreeModuleHandle = Kernel32.GetModuleHandle(mscoreeModule);
             if (!mscoreeModuleHandle.IsInvalid)
-            {
-                // TODO: implement .NET Framework support
-                return ErrorCode.NotImplemented;
-            }
+                return NetFrameworkHookingStrategy.TryInitializeWindowsNetFrameworkProcess(mscoreeModuleHandle, arguments);
 
             // Attempt to inject an unsupported process
             return ErrorCode.ClrNotFound;

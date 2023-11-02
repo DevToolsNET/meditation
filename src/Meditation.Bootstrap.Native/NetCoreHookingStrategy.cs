@@ -1,4 +1,5 @@
-﻿using Meditation.Interop;
+﻿using Meditation.Bootstrap.Native.NativeObjectWrappers;
+using Meditation.Interop;
 using Meditation.Interop.Windows;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -6,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Meditation.Bootstrap.Native
 {
-    internal static unsafe class NetCoreHookingStrategy
+    internal static class NetCoreHookingStrategy
     {
         private delegate int GetCLRRuntimeHost([MarshalAs(UnmanagedType.LPStruct), In] Guid riid, [Out] out IntPtr ppUnk);
 
@@ -19,7 +20,8 @@ namespace Meditation.Bootstrap.Native
                 return ErrorCode.HostNotFound;
             }
 
-            if (!TryExecuteInDefaultAppDomain(clrRuntimeHost, args, out var result))
+            using var runtimeHost = clrRuntimeHost;
+            if (!runtimeHost.ExecuteInDefaultAppDomain(args.AssemblyPath, args.TypeFullName, args.MethodName, args.Argument, out var result))
             {
                 // Error during execution of hook's managed entrypoint
                 // FIXME [#16]: logging
@@ -29,87 +31,21 @@ namespace Meditation.Bootstrap.Native
             return (result.Value == 0) ? ErrorCode.Ok : ErrorCode.RuntimeError;
         }
 
-        private static bool TryObtainClrRuntimeHostHandle(SafeHandle coreClrModuleHandle, out IntPtr clrRuntimeHostHandle)
+        private static bool TryObtainClrRuntimeHostHandle(
+            SafeHandle coreClrModuleHandle, 
+            [NotNullWhen(returnValue: true)] out ICLRRuntimeHostComWrapper? clrRuntimeHostHandle)
         {
-            var clrRuntimeHostId = new Guid("90F1A06C-7712-4762-86B5-7A5EBA6BDB02");
+            var clrRuntimeHostId = new Guid(0x90F1A06C, 0x7712, 0x4762, 0x86, 0xB5, 0x7A, 0x5E, 0xBA, 0x6B, 0xDB, 0x02);
             var getClrRuntimeHostFunctionHandle = Kernel32.GetProcAddress(coreClrModuleHandle, nameof(GetCLRRuntimeHost));
             var clrRuntimeHostProvider = Marshal.GetDelegateForFunctionPointer<GetCLRRuntimeHost>(getClrRuntimeHostFunctionHandle.DangerousGetHandle());
-            return clrRuntimeHostProvider(clrRuntimeHostId, out clrRuntimeHostHandle) == 0;
-        }
-
-        private static bool TryExecuteInDefaultAppDomain(IntPtr clrRuntimeHost, HookArguments args, [NotNullWhen(returnValue: true)] out int? returnValue)
-        {
-            // TODO: Simplify interop once COM source generators are available: https://github.com/dotnet/runtime/issues/66674
-            // This is a public API defined in mscoree.idl
-            // See for reference: https://github.com/dotnet/runtime/blob/main/src/coreclr/inc/mscoree.idl
-            // COM is currently not supported in NativeAOT: https://github.com/dotnet/runtime/blob/main/src/coreclr/nativeaot/docs/limitations.md
-            // We can call the member function directly by abusing the fact how these objects are represented in memory
-
-            // COM ABI requires that pointer to an object is the pointer to type's vtable
-            var instance = clrRuntimeHost;
-            var vtable = *(void***)instance;
-            // Entries in vtable:
-            // 0: [IUnknown] QueryInterface
-            // 1: [IUnknown] AddRef
-            // 2: [IUnknown] Release
-            // 3: [ICLRRuntimeHost] Start
-            // 4: [ICLRRuntimeHost] Stop
-            // 5: [ICLRRuntimeHost] SetHostControl
-            // 6: [ICLRRuntimeHost] GetCLRControl
-            // 7: [ICLRRuntimeHost] UnloadAppDomain
-            // 8: [ICLRRuntimeHost] ExecuteInAppDomain
-            // 9: [ICLRRuntimeHost] GetCurrentAppDomainId
-            // 10: [ICLRRuntimeHost] ExecuteApplication
-            // 11: [ICLRRuntimeHost] ExecuteInDefaultAppDomain
-
-            // ExecuteInDefaultAppDomain is in the index 11 of vtable
-            var function = *(vtable + 11);
-
-            // Function expects strings to be passed as LPCWSTR (wchar_t instead of default marshaling to char)
-            using var assemblyPathNativeStringHandle = ConvertStringToNativeLpcwstr(args.AssemblyPath);
-            using var typeNameNativeStringHandle = ConvertStringToNativeLpcwstr(args.TypeFullName);
-            using var methodNameNativeStringHandle = ConvertStringToNativeLpcwstr(args.MethodName);
-            using var argumentNativeStringHandle = ConvertStringToNativeLpcwstr(args.Argument);
-            if (argumentNativeStringHandle.IsInvalid ||
-                typeNameNativeStringHandle.IsInvalid ||
-                methodNameNativeStringHandle.IsInvalid ||
-                argumentNativeStringHandle.IsInvalid)
+            if (clrRuntimeHostProvider(clrRuntimeHostId, out var rawClrRuntimeHostHandle) != 0)
             {
-                // Could not marshall arguments
-                // FIXME [#16]: logging
-                returnValue = null;
+                clrRuntimeHostHandle = null;
                 return false;
             }
 
-            var result =  ((delegate* unmanaged<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, out int, int>)(function))(
-                instance,
-                assemblyPathNativeStringHandle.DangerousGetHandle(),
-                typeNameNativeStringHandle.DangerousGetHandle(),
-                methodNameNativeStringHandle.DangerousGetHandle(),
-                argumentNativeStringHandle.DangerousGetHandle(),
-                out var exitCode);
-
-            if (result != 0)
-            {
-                // Error during method execution
-                // FIXME [#16]: logging
-                returnValue = result;
-                return false;
-            }
-
-            returnValue = exitCode;
+            clrRuntimeHostHandle = new ICLRRuntimeHostComWrapper(rawClrRuntimeHostHandle);
             return true;
-        }
-
-        private static SafeHandle ConvertStringToNativeLpcwstr(string input)
-        {
-            return new GenericSafeHandle(
-                acquireDelegate: () => Marshal.StringToHGlobalUni(input), 
-                releaseDelegate: ptr => 
-                {
-                    Marshal.FreeHGlobal(ptr);
-                    return true;
-                });
         }
     }
 }
