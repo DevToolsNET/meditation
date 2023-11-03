@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Meditation.TestSubject
+namespace Meditation.TestSubject.NetCore
 {
     public static class TestSubject
     {

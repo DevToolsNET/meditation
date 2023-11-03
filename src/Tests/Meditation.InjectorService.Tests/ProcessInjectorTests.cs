@@ -12,6 +12,8 @@ namespace Meditation.InjectorService.Tests
 {
     public class ProcessInjectorTests : TestsBase
     {
+        private const string ipcTerminationSignaller = "/meditation/tests-ipc-signal";
+
         [Theory]
         [InlineData("net7.0")]
 #if WINDOWS
@@ -22,7 +24,7 @@ namespace Meditation.InjectorService.Tests
             // Prepare
             var injectedAssemblyPath = typeof(ProcessInjectorTests).Assembly.Location;
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
-            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, TestSubject.TestSubject.SynchronizationHandleName);
+            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
             waitHandle.Reset();
 
             // Act
@@ -52,7 +54,7 @@ namespace Meditation.InjectorService.Tests
             var injectedModulePath = GetMeditationBootstrapNativeModulePath();
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
-            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, TestSubject.TestSubject.SynchronizationHandleName);
+            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
             waitHandle.Reset();
 
             // Act (module injection)
@@ -95,7 +97,7 @@ namespace Meditation.InjectorService.Tests
             var injectedModulePath = GetMeditationBootstrapNativeModulePath();
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
-            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, TestSubject.TestSubject.SynchronizationHandleName);
+            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
             waitHandle.Reset();
 
             // Act (module injection)
@@ -163,15 +165,16 @@ namespace Meditation.InjectorService.Tests
         private static Command GetTestSubjectExecutionCommand(string netSdkIdentifier)
         {
             var isNetFramework = netSdkIdentifier.StartsWith("net4");
+            var projectSuffix = isNetFramework ? "NetFramework" : "NetCore";
             var extension = isNetFramework ? "exe" : "dll";
             var assemblyPath =  Path.GetFullPath(
                 Path.Combine(
                     "../../../../",
-                    "Meditation.TestSubject",
+                    $"Meditation.TestSubject.{projectSuffix}",
                     "bin",
                     "Debug",
                     netSdkIdentifier,
-                    $"Meditation.TestSubject.{extension}"));
+                    $"Meditation.TestSubject.{projectSuffix}.{extension}"));
             var executable = isNetFramework ? assemblyPath : "dotnet";
             var argument = isNetFramework ? string.Empty : assemblyPath;
             return Cli.Wrap(executable).WithArguments(argument);

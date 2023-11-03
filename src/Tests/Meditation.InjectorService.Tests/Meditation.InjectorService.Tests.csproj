@@ -22,7 +22,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Meditation.InjectorService\Meditation.InjectorService.csproj" />
-	  <ProjectReference Include="..\Meditation.TestSubject\Meditation.TestSubject.csproj" />
 	</ItemGroup>
 
 </Project>
