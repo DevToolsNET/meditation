@@ -22,6 +22,19 @@ namespace Meditation.MetadataLoaderService.Services
             _syncObject = new object();
         }
 
+        public ModuleMetadataEntry GetCoreLibrary(MethodMetadataEntry method)
+        {
+            var coreLibRef = method.MethodDef.Module.GetAssemblyRefs().SingleOrDefault(ar => ar.IsCorLib());
+            if (coreLibRef == null)
+                throw new NotSupportedException($"Could not determine core library for module \"{method.ModulePath}\".");
+
+            var coreLibDef = _assemblies.Values.SingleOrDefault(ad => ad.Name == coreLibRef.Name);
+            if (coreLibDef == null || !_metadataModels.TryGetValue(coreLibDef.ManifestModule.Location, out var metadataEntry))
+                throw new InvalidOperationException("Core library has not been loaded yet.");
+
+            return metadataEntry.ManifestModule;
+        }
+
         public IEnumerable<AssemblyMetadataEntry> LoadMetadataFromProcess(IEnumerable<string> modulePaths)
         {
             var assembliesLookup = new Dictionary<(UTF8String Name, Version Version, UTF8String Culture, PublicKey PublicKey), AssemblyDef>();
@@ -72,7 +85,7 @@ namespace Meditation.MetadataLoaderService.Services
                 assemblyMembers.Add(new ModuleMetadataEntry(module.Name, moduleToken, module.Location, moduleMembers.ToImmutableArray()));
             }
             SortEntriesBy(assemblyMembers, m => m.Name);
-            return new AssemblyMetadataEntry(assembly.Name, assembly.Version, assemblyToken, assembly.FullName, assemblyMembers.ToImmutableArray());
+            return new AssemblyMetadataEntry(assembly, assemblyMembers.ToImmutableArray());
         }
 
         private static List<MetadataEntryBase> BuildModuleMembers(ModuleDef module)
@@ -92,10 +105,8 @@ namespace Meditation.MetadataLoaderService.Services
         {
             var typeMembers = new List<MetadataEntryBase>(capacity: type.Methods.Count);
             foreach (var method in type.Methods)
-            {
-                var methodDefinitionToken = new MethodDefinitionToken(method.MDToken.ToInt32());
-                typeMembers.Add(new MethodMetadataEntry(method.Name, methodDefinitionToken, ImmutableArray<MetadataEntryBase>.Empty));
-            }
+                typeMembers.Add(new MethodMetadataEntry(method, ImmutableArray<MetadataEntryBase>.Empty));
+
             SortEntriesBy(typeMembers, m => m.Name);
             return typeMembers;
         }

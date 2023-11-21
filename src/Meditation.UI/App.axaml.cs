@@ -10,6 +10,7 @@ using Meditation.UI.ViewModels;
 using Meditation.UI.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Meditation.CompilationService.Configuration;
 
 namespace Meditation.UI
 {
@@ -42,6 +43,7 @@ namespace Meditation.UI
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMeditationAttachProcessService();
             serviceCollection.AddMeditationMetadataLoaderServices();
+            serviceCollection.AddMeditationCompilationServices();
             serviceCollection.AddMeditationUserInterfaceServices();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Resources[typeof(IServiceProvider)] = serviceProvider;

@@ -16,23 +16,34 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.AvaloniaEdit" />
         <PackageReference Include="Avalonia.Controls.DataGrid" />
         <PackageReference Include="Avalonia.Themes.Fluent" />
         <PackageReference Include="Avalonia.Fonts.Inter" />
         <PackageReference Include="Avalonia.Xaml.Behaviors" />
+        <PackageReference Include="AvaloniaEdit.TextMate" />
         <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
 
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" />
         <PackageReference Include="MessageBox.Avalonia" />
+        <PackageReference Include="TextMateSharp.Grammars" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Meditation.AttachProcessService\Meditation.AttachProcessService.csproj" />
+        <ProjectReference Include="..\Meditation.CompilationService\Meditation.CompilationService.csproj" />
         <ProjectReference Include="..\Meditation.MetadataLoaderService\Meditation.MetadataLoaderService.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Update="Views\IDE\IdeDiagnosticsListView.axaml.cs">
+          <DependentUpon>IdeDiagnosticsListView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\IDE\DevelopmentEnvironment.axaml.cs">
+          <DependentUpon>DevelopmentEnvironment.axaml</DependentUpon>
+        </Compile>
         <Compile Update="Views\ProcessListView.axaml.cs">
         <DependentUpon>ProcessListView.axaml</DependentUpon>
         </Compile>

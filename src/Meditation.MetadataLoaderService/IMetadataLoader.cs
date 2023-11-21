@@ -7,5 +7,6 @@ namespace Meditation.MetadataLoaderService
     {
         IEnumerable<AssemblyMetadataEntry> LoadMetadataFromProcess(IEnumerable<string> modulePath);
         AssemblyMetadataEntry LoadMetadataFromAssembly(string path);
+        ModuleMetadataEntry GetCoreLibrary(MethodMetadataEntry method);
     }
 }
