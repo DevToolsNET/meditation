@@ -24,21 +24,21 @@ namespace Meditation.InjectorService.Tests
             // Prepare
             var injectedAssemblyPath = typeof(ProcessInjectorTests).Assembly.Location;
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
-            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
-            waitHandle.Reset();
+            using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
             // Act
-            var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
+            using var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
             var processId = executionTask.ProcessId;
             var result = processInjector.TryInjectModule(processId, injectedAssemblyPath, out var remoteModuleHandle);
+            using var moduleHandle = remoteModuleHandle;
             // Wait for target process to exit gracefully
             waitHandle.Set();
             await executionTask;
 
             // Assert
             Assert.True(result);
-            Assert.False(remoteModuleHandle?.IsInvalid);
-            Assert.False(remoteModuleHandle?.IsClosed);
+            Assert.False(moduleHandle?.IsInvalid);
+            Assert.False(moduleHandle?.IsClosed);
         }
 
         [Theory]
@@ -54,11 +54,10 @@ namespace Meditation.InjectorService.Tests
             var injectedModulePath = GetMeditationBootstrapNativeModulePath();
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
-            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
-            waitHandle.Reset();
+            using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
             // Act (module injection)
-            var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
+            using var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
             var processId = executionTask.ProcessId;
             var moduleInjectionResult = processInjector.TryInjectModule(processId, injectedModulePath, out var remoteModuleHandle);
             // Act (code execution)
@@ -66,10 +65,11 @@ namespace Meditation.InjectorService.Tests
             uint? returnCode = null;
             if (moduleInjectionResult)
             {
+                using var moduleHandle = remoteModuleHandle;
                 executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
                     processId, 
-                    injectedModulePath, 
-                    remoteModuleHandle!, 
+                    injectedModulePath,
+                    moduleHandle!, 
                     exportedMethod, 
                     hookArgument, 
                     out returnCode);
@@ -97,11 +97,10 @@ namespace Meditation.InjectorService.Tests
             var injectedModulePath = GetMeditationBootstrapNativeModulePath();
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
-            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
-            waitHandle.Reset();
+            using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
             // Act (module injection)
-            var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
+            using var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
             var processId = executionTask.ProcessId;
             var moduleInjectionResult = processInjector.TryInjectModule(processId, injectedModulePath, out var remoteModuleHandle);
             // Act (code execution)
@@ -112,10 +111,11 @@ namespace Meditation.InjectorService.Tests
                 // Ensure module had time to load properly
                 await Task.Delay(TimeSpan.FromSeconds(value: 1));
                 // Execute managed hook entrypoint
+                using var moduleHandle = remoteModuleHandle;
                 executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
                     processId, 
-                    injectedModulePath, 
-                    remoteModuleHandle!, 
+                    injectedModulePath,
+                    moduleHandle!, 
                     exportedMethod, 
                     hookArgument,
                     out returnCode);

@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.Bootstrap.Native
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.Bootstrap.Managed", "Meditation.Bootstrap.Managed\Meditation.Bootstrap.Managed.csproj", "{181FCD0E-0791-4EFC-9CF7-5A154E8726DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meditation.TestSubject.NetFramework", "Tests\Meditation.TestSubject.NetFramework\Meditation.TestSubject.NetFramework.csproj", "{3AB5CA75-F821-4BEE-8E3D-3A45FEBF8B3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.TestSubject.NetFramework", "Tests\Meditation.TestSubject.NetFramework\Meditation.TestSubject.NetFramework.csproj", "{3AB5CA75-F821-4BEE-8E3D-3A45FEBF8B3D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.TestSubject.NetCore", "Tests\Meditation.TestSubject.NetCore\Meditation.TestSubject.NetCore.csproj", "{BA32DCF3-22E4-4630-9E40-B3F1B6184781}"
 EndProject

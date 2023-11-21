@@ -15,11 +15,6 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
 
         }
 
-        ~IUnknownComWrapper()
-        {
-            Dispose(false);
-        }
-
         public override uint Release()
         {
             var function = GetNthElementInVirtualMethodTable(2);
