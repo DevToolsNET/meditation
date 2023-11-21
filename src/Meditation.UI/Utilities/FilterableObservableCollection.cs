@@ -26,6 +26,8 @@ namespace Meditation.UI.Utilities
                 View.Add(element);
         }
 
+        public bool IsEmpty() => _allElements.IsEmpty;
+
         public void ApplyFilter(Func<TElement, bool> predicate)
         {
             _activeFilter = predicate;

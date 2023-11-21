@@ -94,7 +94,7 @@ namespace Meditation.MetadataLoaderService.Services
             foreach (var method in type.Methods)
             {
                 var methodDefinitionToken = new MethodDefinitionToken(method.MDToken.ToInt32());
-                typeMembers.Add(new MethodMetadataEntry(method.Name, methodDefinitionToken, ImmutableArray<MetadataEntryBase>.Empty));
+                typeMembers.Add(new MethodMetadataEntry(method.Name, methodDefinitionToken, ImmutableArray<MetadataEntryBase>.Empty, method));
             }
             SortEntriesBy(typeMembers, m => m.Name);
             return typeMembers;
