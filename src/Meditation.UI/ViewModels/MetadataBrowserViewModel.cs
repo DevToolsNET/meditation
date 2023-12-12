@@ -8,7 +8,7 @@ namespace Meditation.UI.ViewModels
 {
     public partial class MetadataBrowserViewModel : ViewModelBase
     {
-        [ObservableProperty] private FilterableObservableCollection<AssemblyMetadataEntry> _assemblies;
+        [ObservableProperty] private FilterableObservableCollection<MetadataEntryBase> _items;
         [ObservableProperty] private string? _metadataNameFilter;
         [ObservableProperty] private bool? _isLoadingData;
         private readonly IAttachedProcessContext _attachedProcessContext;
@@ -16,7 +16,7 @@ namespace Meditation.UI.ViewModels
         public MetadataBrowserViewModel(IAttachedProcessContext attachedProcessContext)
         {
             _attachedProcessContext = attachedProcessContext;
-            _assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
+            _items = new FilterableObservableCollection<MetadataEntryBase>(Enumerable.Empty<MetadataEntryBase>());
             RegisterEventHandlers();
         }
 
@@ -29,17 +29,17 @@ namespace Meditation.UI.ViewModels
             _attachedProcessContext.ProcessAttached += _ => IsLoadingData = false;
 
             // Add assembly on process assembly loaded
-            _attachedProcessContext.AssemblyLoaded += (_, assembly) => Assemblies.Add(assembly);
+            _attachedProcessContext.AssemblyOrNetModuleLoaded += (_, metadata) => Items.Add(metadata);
 
             // Clear data on process detach
             _attachedProcessContext.ProcessDetached +=
-                _ => Assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
+                _ => Items = new FilterableObservableCollection<MetadataEntryBase>(Enumerable.Empty<MetadataEntryBase>());
         }
 
         [RelayCommand]
         public void FilterMetadata()
         {
-            Assemblies.ApplyFilter(p => MetadataNameFilter == null || p.Name.Contains(MetadataNameFilter));
+            Items.ApplyFilter(p => MetadataNameFilter == null || p.Name.Contains(MetadataNameFilter));
         }
     }
 }

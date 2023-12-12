@@ -5,7 +5,7 @@ namespace Meditation.MetadataLoaderService
 {
     public interface IMetadataLoader
     {
-        IEnumerable<AssemblyMetadataEntry> LoadMetadataFromProcess(IEnumerable<string> modulePath);
-        AssemblyMetadataEntry LoadMetadataFromAssembly(string path);
+        IEnumerable<MetadataEntryBase> LoadMetadataFromProcess(IEnumerable<string> modulePaths);
+        MetadataEntryBase LoadMetadataFromPath(string path);
     }
 }

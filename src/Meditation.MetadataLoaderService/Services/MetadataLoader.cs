@@ -11,59 +11,92 @@ namespace Meditation.MetadataLoaderService.Services
 {
     internal class MetadataLoader : IMetadataLoader
     {
-        private readonly ConcurrentDictionary<string, AssemblyDef> _assemblies;
-        private readonly ConcurrentDictionary<string, AssemblyMetadataEntry> _metadataModels;
+        private readonly ConcurrentDictionary<string, ModuleDef> _modules;
+        private readonly ConcurrentDictionary<string, MetadataEntryBase> _metadataModels;
         private readonly object _syncObject;
 
         public MetadataLoader()
         {
-            _assemblies = new ConcurrentDictionary<string, AssemblyDef>();
-            _metadataModels = new ConcurrentDictionary<string, AssemblyMetadataEntry>();
+            _modules = new ConcurrentDictionary<string, ModuleDef>();
+            _metadataModels = new ConcurrentDictionary<string, MetadataEntryBase>();
             _syncObject = new object();
         }
 
-        public IEnumerable<AssemblyMetadataEntry> LoadMetadataFromProcess(IEnumerable<string> modulePaths)
+        public IEnumerable<MetadataEntryBase> LoadMetadataFromProcess(IEnumerable<string> modulePaths)
         {
             var assembliesLookup = new Dictionary<(UTF8String Name, Version Version, UTF8String Culture, PublicKey PublicKey), AssemblyDef>();
+            var netModulesLookup = new Dictionary<Guid, ModuleDef>();
             foreach (var modulePath in modulePaths.OrderBy(Path.GetFileName))
             {
-                var (metadata, assemblyDef) = LoadMetadataFromAssemblyImpl(modulePath);
-                if (assembliesLookup.ContainsKey((assemblyDef.Name, assemblyDef.Version, assemblyDef.Culture, assemblyDef.PublicKey)))
+                var (metadata, moduleDef) = LoadMetadataImpl(modulePath);
+                if (moduleDef.Assembly != null)
                 {
-                    // This means that the assembly is already processed
-                    // It happens usually in connection with NGEN (see: https://learn.microsoft.com/en-us/dotnet/framework/tools/ngen-exe-native-image-generator).
-                    // For example, consider case when we are processing modules: System.Data.dll and subsequently try to process System.Data.ni.dll
+                    // Loading a regular assembly
+                    var assemblyDef = moduleDef.Assembly;
+                    if (assembliesLookup.ContainsKey((assemblyDef.Name, assemblyDef.Version, assemblyDef.Culture, assemblyDef.PublicKey)))
+                    {
+                        // This means that the assembly is already processed
+                        // It happens usually in connection with NGEN (see: https://learn.microsoft.com/en-us/dotnet/framework/tools/ngen-exe-native-image-generator).
+                        // For example, consider case when we are processing modules: System.Data.dll and subsequently try to process System.Data.ni.dll
 
-                    // FIXME [#16]: log reason for skipping assembly processing
-                    continue;
+                        // FIXME [#16]: log reason for skipping assembly processing
+                        continue;
+                    }
+
+                    assembliesLookup.Add((assemblyDef.Name, assemblyDef.Version, assemblyDef.Culture, assemblyDef.PublicKey), assemblyDef);
+                    yield return metadata;
                 }
+                else
+                {
+                    // Loading a netmodule
+                    // Note: all compliant modules have Mvid (module identifier) unless it was manually edited
+                    // Reference: https://learn.microsoft.com/en-us/dotnet/api/system.reflection.module.moduleversionid?view=net-7.0
+                    var moduleIdentifier = moduleDef.Mvid ?? default;
+                    if (netModulesLookup.ContainsKey(moduleIdentifier))
+                    {
+                        // Identical netmodule was loaded multiple times
+                        continue;
+                    }
 
-                assembliesLookup.Add((assemblyDef.Name, assemblyDef.Version, assemblyDef.Culture, assemblyDef.PublicKey), assemblyDef);
-                yield return metadata;
+                    netModulesLookup.Add(moduleIdentifier, moduleDef);
+                    yield return metadata;
+                }
             }
-
         }
 
-        public AssemblyMetadataEntry LoadMetadataFromAssembly(string path) => LoadMetadataFromAssemblyImpl(path).MetadataModel;
+        public MetadataEntryBase LoadMetadataFromPath(string path) => LoadMetadataImpl(path).MetadataModel;
 
-        private (AssemblyMetadataEntry MetadataModel, AssemblyDef Assembly) LoadMetadataFromAssemblyImpl(string path)
+        private (MetadataEntryBase MetadataModel, ModuleDef Module) LoadMetadataImpl(string path)
         {
             // Fast-path: metadata model is already constructed
-            if (_assemblies.TryGetValue(path, out var assemblyDef) && _metadataModels.TryGetValue(path, out var metadataModel))
-                return (metadataModel, assemblyDef);
+            if (_modules.TryGetValue(path, out var moduleDef) && _metadataModels.TryGetValue(path, out var metadataModel))
+                return (metadataModel, moduleDef);
 
             // Slow-path: only single thread should construct metadata model
             lock (_syncObject)
             {
-                assemblyDef = _assemblies.GetOrAdd(path, _ => AssemblyDef.Load(path));
-                metadataModel = _metadataModels.GetOrAdd(path, _ => BuildAssemblyMembers(assemblyDef));
-                return (metadataModel, assemblyDef);
+                moduleDef = _modules.GetOrAdd(path, _ => ModuleDefMD.Load(path));
+                metadataModel = _metadataModels.GetOrAdd(path, _ =>
+                {
+                    if (moduleDef.Assembly != null)
+                        return BuildAssemblyMetadata(moduleDef.Assembly);
+
+                    return BuildModuleMetadata(moduleDef);
+                });
+
+                return (metadataModel, moduleDef);
             }
         }
 
-        private static AssemblyMetadataEntry BuildAssemblyMembers(AssemblyDef assembly)
+        private static AssemblyMetadataEntry BuildAssemblyMetadata(AssemblyDef assembly)
         {
             var assemblyToken = new AssemblyToken(assembly.MDToken.ToInt32());
+            var assemblyMembers = BuildAssemblyMembers(assembly);
+            return new AssemblyMetadataEntry(assembly.Name, assembly.Version, assemblyToken, assembly.FullName, assemblyMembers.ToImmutableArray());
+        }
+
+        private static List<MetadataEntryBase> BuildAssemblyMembers(AssemblyDef assembly)
+        {
             var assemblyMembers = new List<MetadataEntryBase>(capacity: assembly.Modules.Count);
             foreach (var module in assembly.Modules)
             {
@@ -72,7 +105,14 @@ namespace Meditation.MetadataLoaderService.Services
                 assemblyMembers.Add(new ModuleMetadataEntry(module.Name, moduleToken, module.Location, moduleMembers.ToImmutableArray()));
             }
             SortEntriesBy(assemblyMembers, m => m.Name);
-            return new AssemblyMetadataEntry(assembly.Name, assembly.Version, assemblyToken, assembly.FullName, assemblyMembers.ToImmutableArray());
+            return assemblyMembers;
+        }
+
+        private static ModuleMetadataEntry BuildModuleMetadata(ModuleDef module)
+        {
+            var moduleToken = new ModuleToken(module.MDToken.ToInt32());
+            var moduleMembers = BuildModuleMembers(module);
+            return new ModuleMetadataEntry(module.Name, moduleToken, module.Location, moduleMembers.ToImmutableArray());
         }
 
         private static List<MetadataEntryBase> BuildModuleMembers(ModuleDef module)
