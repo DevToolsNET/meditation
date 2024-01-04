@@ -30,15 +30,65 @@ namespace Meditation.UI.Controllers
         }
 
         [RelayCommand]
-        public async Task DisplayAttachProcessWindow()
+        public Task DisplayAttachProcessWindow()
+        {
+            try
+            {
+                return DisplayAttachProcessWindowImplementation();
+            }
+            catch (Exception exception)
+            {
+                return ShowUnhandledExceptionMessageBox(exception);
+            }
+        }
+
+        [RelayCommand]
+        public Task CloseAttachProcessWindow()
+        {
+            try
+            {
+                CloseAttachProcessWindowImplementation();
+                return Task.CompletedTask;
+            }
+            catch (Exception exception)
+            {
+                return ShowUnhandledExceptionMessageBox(exception);
+            }
+        }
+
+        [RelayCommand]
+        public Task Attach(ProcessListViewModel processListViewModel, CancellationToken ct)
+        {
+            try
+            {
+                return AttachImplementation(processListViewModel, ct);
+            }
+            catch (Exception exception)
+            {
+                return ShowUnhandledExceptionMessageBox(exception);
+            }
+        }
+
+        [RelayCommand]
+        public Task Detach(CancellationToken ct)
+        {
+            try
+            {
+                return DetachImplementation(ct);
+            }
+            catch (Exception exception)
+            {
+                return ShowUnhandledExceptionMessageBox(exception);
+            }
+        }
+
+        private async Task DisplayAttachProcessWindowImplementation()
         {
             if (_attachedProcessContext.ProcessSnapshot is { } snapshot)
             {
-                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                await ShowMessageBox(
                     title: "Cannot attach to multiple processes",
-                    text: $"To attach another process, detach first from the currently attached process ({snapshot.ProcessId.Value}).",
-                    @enum: ButtonEnum.Ok);
-                await messageBox.ShowAsync();
+                    content: $"To attach another process, detach first from the currently attached process ({snapshot.ProcessId.Value}).");
                 return;
             }
 
@@ -46,8 +96,7 @@ namespace Meditation.UI.Controllers
             _attachProcessDialogLifetime.Show();
         }
 
-        [RelayCommand]
-        public void CloseAttachProcessWindow()
+        private void CloseAttachProcessWindowImplementation()
         {
             if (_attachProcessDialogLifetime == null)
                 throw new InvalidOperationException($"Dialog {nameof(AttachToProcessWindow)} is not opened.");
@@ -57,16 +106,11 @@ namespace Meditation.UI.Controllers
             _attachProcessDialogLifetime = null;
         }
 
-        [RelayCommand]
-        public async Task Attach(ProcessListViewModel processListViewModel, CancellationToken ct)
+        private async Task AttachImplementation(ProcessListViewModel processListViewModel, CancellationToken ct)
         {
             if (processListViewModel.SelectedProcess is not { } selectedProcessInfo)
             {
-                var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                    title: "Nothing selected",
-                    text: "You need to select a process before proceeding.",
-                    @enum: ButtonEnum.Ok);
-                await messageBox.ShowAsync();
+                await ShowMessageBox(title: "Nothing selected", content: "You need to select a process before proceeding.");
                 return;
             }
 
@@ -74,30 +118,25 @@ namespace Meditation.UI.Controllers
             if (snapshot == null)
                 return;
 
-            CloseAttachProcessWindow();
+            CloseAttachProcessWindowImplementation();
             await Task.Run(() => _attachedProcessContext.Initialize(snapshot), ct);
         }
 
-        [RelayCommand]
-        public async Task Detach(CancellationToken ct)
+        private async Task DetachImplementation(CancellationToken ct)
         {
             if (_attachedProcessContext.ProcessSnapshot is { } snapshot)
             {
-                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                var result = await ShowMessageBox(
                     title: "Preparing to detach process",
-                    text: $"Do you want to detach from process ({snapshot.ProcessId.Value})?",
-                    @enum: ButtonEnum.YesNo);
+                    content: $"Do you want to detach from process ({snapshot.ProcessId.Value})?",
+                    buttonEnum: ButtonEnum.YesNo);
 
-                if (await messageBox.ShowAsync() == ButtonResult.Yes)
+                if (result == ButtonResult.Yes)
                     await Task.Run(() => _attachedProcessContext.Reset(), ct);
             }
             else
             {
-                var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                    title: "Nothing to detach",
-                    text: "No process is currently attached.",
-                    @enum: ButtonEnum.Ok);
-                await messageBox.ShowAsync();
+                await ShowMessageBox(title: "Nothing to detach", content: "No process is currently attached.");
             }
         }
 
@@ -110,13 +149,20 @@ namespace Meditation.UI.Controllers
             catch (Exception exception)
             {
                 // FIXME [#16]: add logging
-                var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                    title: "Failed to attach process",
-                    text: $"Could not attach to selected process due to: {exception}",
-                    @enum: ButtonEnum.Ok);
-                await messageBox.ShowAsync();
+                await ShowMessageBox(title: "Failed to attach process", content: $"Could not attach to selected process due to: {exception}");
                 return null;
             }
+        }
+
+        private static Task<ButtonResult> ShowMessageBox(string title, string content, ButtonEnum buttonEnum = ButtonEnum.Ok)
+        {
+            var messageBox = MessageBoxManager.GetMessageBoxStandard(title: title, text: content, @enum: buttonEnum);
+            return messageBox.ShowAsync();
+        }
+
+        private static Task ShowUnhandledExceptionMessageBox(Exception exception)
+        {
+            return ShowMessageBox(title: "Unhandled exception", content: exception.ToString());
         }
     }
 }
