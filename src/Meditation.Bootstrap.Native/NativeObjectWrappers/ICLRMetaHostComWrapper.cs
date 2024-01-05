@@ -1,6 +1,5 @@
-﻿using Meditation.Bootstrap.Native.Utils;
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace Meditation.Bootstrap.Native.NativeObjectWrappers
 {
@@ -37,37 +36,20 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
 
         }
 
-        public bool GetRuntime(
-            string pwzVersion, 
+        public int GetRuntime(
+            SafeHandle pwzVersion, 
             Guid riid, 
-            [NotNullWhen(returnValue: true)] out ICLRRuntimeInfoComWrapper? runtimeInfo)
+            out ICLRRuntimeInfoComWrapper? runtimeInfo)
         {
             var function = GetNthElementInVirtualMethodTable((int)MethodTableICLRMetaHost.GetRuntime);
-            using var runtimeVersion = MarshalingUtils.ConvertStringToNativeLpcwstr(pwzVersion);
-            if (runtimeVersion.IsInvalid)
-            {
-                // Could not marshall arguments
-                // FIXME [#16]: logging
-                runtimeInfo = null;
-                return false;
-            }
-
             var result = ((delegate* unmanaged<IntPtr, IntPtr, Guid, out IntPtr, int>)(function))(
                 Handle,
-                runtimeVersion.DangerousGetHandle(),
+                pwzVersion.DangerousGetHandle(),
                 riid,
                 out var rawRuntimeInfoHandle);
 
-            if (result != 0)
-            {
-                // Error during method execution
-                // FIXME [#16]: logging
-                runtimeInfo = null;
-                return false;
-            }
-
-            runtimeInfo = new ICLRRuntimeInfoComWrapper(rawRuntimeInfoHandle);
-            return true;
+            runtimeInfo = result == 0 ? new ICLRRuntimeInfoComWrapper(rawRuntimeInfoHandle) : null;
+            return result;
         }
     }
 }

@@ -17,18 +17,11 @@ namespace Meditation.Bootstrap.Native
             {
                 // Could not obtain instance of the CoreCLR Runtime Host
                 // FIXME [#16]: logging
-                return ErrorCode.HostNotFound;
+                return ErrorCode.NotFound_Host;
             }
 
             using var runtimeHost = clrRuntimeHost;
-            if (!runtimeHost.ExecuteInDefaultAppDomain(args.AssemblyPath, args.TypeFullName, args.MethodName, args.Argument, out var result))
-            {
-                // Error during execution of hook's managed entrypoint
-                // FIXME [#16]: logging
-                return ErrorCode.RuntimeError;
-            }
-
-            return (result.Value == 0) ? ErrorCode.Ok : ErrorCode.RuntimeError;
+            return CommonHookExecutionStrategy.ExecuteHook(runtimeHost, args);
         }
 
         /// <summary>

@@ -18,9 +18,9 @@ namespace Meditation.Bootstrap.Native
         /// <param name="_">Ignored</param>
         /// <returns>0xABCD_EF98</returns>
         [UnmanagedCallersOnly(EntryPoint = "MeditationSanityCheck")]
-        public static uint SanityCheck(IntPtr _)
+        public static ErrorCode SanityCheck(IntPtr _)
         {
-            return 0xABCD_EF98;
+            return (ErrorCode)0xABCD_EF98;
         }
 
         /// <summary>
@@ -33,43 +33,62 @@ namespace Meditation.Bootstrap.Native
         /// <param name="nativeWideStringHookArgs">String input marshaled to LPCWSTR. This specifies what managed code to execute after environment initialization (format: assemblyPath#typeFullName#methodName#argument)</param>
         /// <returns>Zero on success, other values on failures</returns>
         [UnmanagedCallersOnly(EntryPoint = "MeditationInitialize")]
-        public static uint NativeEntryPoint(IntPtr nativeWideStringHookArgs)
+        public static ErrorCode NativeEntryPoint(IntPtr nativeWideStringHookArgs)
         {
-            if (!TryParseHooksArgs(nativeWideStringHookArgs, out var hookArguments))
-                return (uint)ErrorCode.InvalidArguments;
+            try
+            {
+                if (!TryParseHooksArgs(nativeWideStringHookArgs, out var errorCode, out var hookArguments))
+                    return errorCode;
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return (uint)NativeEntryPointWindows(hookArguments);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                return (uint)ErrorCode.NotImplemented;
-            
-            // Unknown platform
-            return (uint)ErrorCode.NotSupported;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    return NativeEntryPointWindows(hookArguments);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    return ErrorCode.NotImplemented_OperatingSystem;
+
+                return ErrorCode.NotSupported_OperatingSystem;
+            }
+            catch (Exception _)
+            {
+                // Unhandled exception during hooking
+                // FIXME [#16]: logging
+                return ErrorCode.InternalError;
+            }
         }
 
-        private static bool TryParseHooksArgs(IntPtr nativeWideStringHookArgs, [NotNullWhen(returnValue: true)] out HookArguments? hookArgs)
+        private static bool TryParseHooksArgs(IntPtr nativeWideStringHookArgs, out ErrorCode error, [NotNullWhen(true)] out HookArguments? hookArgs)
         {
             hookArgs = null;
+
             // Ensure the pointer is valid
             if (nativeWideStringHookArgs == IntPtr.Zero)
+            {
+                error = ErrorCode.InvalidArguments_HookArgs_PointerIsNull;
                 return false;
-
-            var rawArgs = Marshal.PtrToStringUni(nativeWideStringHookArgs);
+            }
 
             // Ensure the pointer was actually pointing to a string
+            var rawArgs = Marshal.PtrToStringUni(nativeWideStringHookArgs);
             if (rawArgs == null)
+            {
+                error = ErrorCode.InvalidArguments_HookArgs_PointerIsNotAValidNativeWideString;
                 return false;
+            }
 
             // Ensure there are enough elements
             var tokens = rawArgs.Split("#");
             if (tokens.Length < 4)
+            {
+                error = ErrorCode.InvalidArguments_HookArgs_CouldNotParse;
                 return false;
+            }
 
             hookArgs = new HookArguments(
                 AssemblyPath: tokens[0],
                 TypeFullName: tokens[1], 
                 MethodName: tokens[2], 
                 Argument: tokens[3]);
+
+            error = ErrorCode.Ok;
             return true;
         }
 
@@ -89,7 +108,7 @@ namespace Meditation.Bootstrap.Native
                 return NetFrameworkHookingStrategy.TryInitializeWindowsNetFrameworkProcess(mscoreeModuleHandle, arguments);
 
             // Attempt to inject an unsupported process
-            return ErrorCode.ClrNotFound;
+            return ErrorCode.NotSupported_Process;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Meditation.Bootstrap.Native.NativeObjectWrappers;
+using Meditation.Bootstrap.Native.Utils;
 using Meditation.Interop;
 using Meditation.Interop.Windows;
 using System;
@@ -20,7 +21,7 @@ namespace Meditation.Bootstrap.Native
             {
                 // Could not obtain instance of ICLRMetaHost
                 // FIXME [#16]: logging
-                return ErrorCode.MetaHostNotFound;
+                return ErrorCode.NotFound_MetaHost;
             }
 
             using var metaHost = clrMetaHost;
@@ -28,7 +29,7 @@ namespace Meditation.Bootstrap.Native
             {
                 // Could not obtain instance of ICLRRuntimeInfo
                 // FIXME [#16]: logging
-                return ErrorCode.ClrNotFound;
+                return ErrorCode.NotFound_Clr;
             }
 
             using var runtimeInfo = info;
@@ -36,18 +37,11 @@ namespace Meditation.Bootstrap.Native
             {
                 // Could not obtain instance of ICLRRuntimeHost
                 // FIXME [#16]: logging
-                return ErrorCode.HostNotFound;
+                return ErrorCode.NotFound_Host;
             }
 
             using var runtimeHost = clrHost;
-            if (!runtimeHost.ExecuteInDefaultAppDomain(args.AssemblyPath, args.TypeFullName, args.MethodName, args.Argument, out var result))
-            {
-                // Error during execution of hook's managed entrypoint
-                // FIXME [#16]: logging
-                return ErrorCode.RuntimeError;
-            }
-
-            return (result.Value == 0) ? ErrorCode.Ok : ErrorCode.RuntimeError;
+            return CommonHookExecutionStrategy.ExecuteHook(runtimeHost, args);
         }
 
         /// <summary>
@@ -75,8 +69,12 @@ namespace Meditation.Bootstrap.Native
 
             // Execute CLRCreateInstance
             var clrMetaHostProvider = Marshal.GetDelegateForFunctionPointer<CLRCreateInstance>(getClrMetaHostFunctionHandle.DangerousGetHandle());
-            if (clrMetaHostProvider(clsidClrMetaHost, iidIClrMetaHost, out var rawClrMetaHostHandle) != 0)
+            var result = clrMetaHostProvider(clsidClrMetaHost, iidIClrMetaHost, out var rawClrMetaHostHandle);
+
+            if (result != 0)
             {
+                // Could not obtain ICLRMetaHost
+                // FIXME [#16]: log return value
                 clrMetaHost = null;
                 return false;
             }
@@ -105,8 +103,26 @@ namespace Meditation.Bootstrap.Native
             // Source: https://github.com/dotnet/runtime/blob/9e31c21bcbb661fc4fa235839a66442a65ef447c/src/coreclr/inc/metahost.idl#L55
             var iidIClrRuntimeInfo = new Guid(0xBD39D1D2, 0xBA2F, 0x486a, 0x89, 0xB0, 0xB4, 0xB0, 0xCB, 0x46, 0x68, 0x91);
 
+            // Marshall arguments
+            using var runtimeVersion = MarshalingUtils.ConvertStringToNativeLpcwstr(clrRuntimeVersionV4);
+            if (runtimeVersion.IsInvalid)
+            {
+                // Could not marshall arguments
+                // FIXME [#16]: logging
+                runtimeInfo = null;
+                return false;
+            }
+
             // Try obtain runtime info
-            return clrMetaHost.GetRuntime(clrRuntimeVersionV4, iidIClrRuntimeInfo, out runtimeInfo);
+            var result = clrMetaHost.GetRuntime(runtimeVersion, iidIClrRuntimeInfo, out runtimeInfo);
+            if (result != 0)
+            {
+                // Could not obtain instance of ICLRRuntimeInfo
+                // FIXME [#16]: log return value
+                runtimeInfo = null;
+            }
+
+            return result == 0;
         }
 
         /// <summary>
@@ -129,7 +145,15 @@ namespace Meditation.Bootstrap.Native
             var iidIClrRuntimeHost = new Guid(0x90F1A06C, 0x7712, 0x4762, 0x86, 0xB5, 0x7A, 0x5E, 0xBA, 0x6B, 0xDB, 0x02);
 
             // Try obtain runtime host
-            return runtimeInfo.GetInterface(clsidClrRuntimeHost, iidIClrRuntimeHost, ptr => new ICLRRuntimeHostComWrapper(ptr), out runtimeHost);
+            var result = runtimeInfo.GetInterface(clsidClrRuntimeHost, iidIClrRuntimeHost, ptr => new ICLRRuntimeHostComWrapper(ptr), out runtimeHost);
+            if (result != 0)
+            {
+                // Could not obtain instance of ICLRRuntimeHost
+                // FIXME [#16]: logging
+                runtimeHost = null;
+            }
+
+            return result == 0;
         }
     }
 }

@@ -46,11 +46,11 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
 
         }
 
-        public bool GetInterface<TInterface>(
+        public int GetInterface<TInterface>(
             Guid rclsid, 
             Guid riid, 
             Func<IntPtr, TInterface> activator, 
-            [NotNullWhen(returnValue: true)] out TInterface? ppUnk)
+            out TInterface? ppUnk)
             where TInterface : NativeObjectWrapperBase
         {
             var function = GetNthElementInVirtualMethodTable((int)MethodTableICLRRuntimeInfo.GetInterface);
@@ -60,16 +60,8 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
                 riid,
                 out var rawInterfaceHandle);
 
-            if (result != 0)
-            {
-                // Could not marshall arguments
-                // FIXME [#16]: logging
-                ppUnk = null;
-                return false;
-            }
-
-            ppUnk = activator(rawInterfaceHandle);
-            return true;
+            ppUnk = (result == 0) ? activator(rawInterfaceHandle) : null;
+            return result;
         }
     }
 }
