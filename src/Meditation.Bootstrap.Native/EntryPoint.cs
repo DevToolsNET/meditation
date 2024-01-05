@@ -8,14 +8,30 @@ namespace Meditation.Bootstrap.Native
 {
     public static class EntryPoint
     {
-        // Note: this method is dynamically invoked by tests
+        /// <summary>
+        /// This method exists only for testing purposes. Its aim is to validate that native module injection logic works.
+        /// Note(invocations): this method will be executed dynamically by spawning a native thread in the target process and running the unmanaged export (used by unit tests).
+        /// Note(signature): all native exports need to have a concrete signature. Static method, System.UInt32 as return value, System.IntPtr as its only parameter.
+        /// Note(return value): unit tests expect a specific constant to be returned (0xABCD_EF98), anything else will be treated as an injection failure.
+        /// References: for more details on these restrictions, see this: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread
+        /// </summary>
+        /// <param name="_">Ignored</param>
+        /// <returns>0xABCD_EF98</returns>
         [UnmanagedCallersOnly(EntryPoint = "MeditationSanityCheck")]
         public static uint SanityCheck(IntPtr _)
         {
             return 0xABCD_EF98;
         }
 
-        // Note: this method is dynamically invoked by Meditation.InjectorService
+        /// <summary>
+        /// This method lays initial works to setup a hooking environment. As a last step, it will call into managed code (e.g. Meditation.Bootstrap.Managed) to perform the actual hook.
+        /// Note(invocations): this method will be executed dynamically by spawning a native thread in the target process and running the unmanaged export (used by Meditation.InjectorService).
+        /// Note(signature): all native exports need to have a concrete signature. Static method, System.UInt32 as return value, System.IntPtr as its only parameter.
+        /// Note(return value): return 0 to indicate that the hook was successful. Use different values to indicate failures. These values will be interpreted by Meditation's injection service.
+        /// References: for more details on these restrictions, see this: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread
+        /// </summary>
+        /// <param name="nativeWideStringHookArgs">String input marshaled to LPCWSTR. This specifies what managed code to execute after environment initialization (format: assemblyPath#typeFullName#methodName#argument)</param>
+        /// <returns>Zero on success, other values on failures</returns>
         [UnmanagedCallersOnly(EntryPoint = "MeditationInitialize")]
         public static uint NativeEntryPoint(IntPtr nativeWideStringHookArgs)
         {
