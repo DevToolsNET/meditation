@@ -24,10 +24,9 @@ namespace Meditation.InjectorService.Services.Windows
             }
 
             // Allocate memory in target process for module path
-            const AllocationType allocation = AllocationType.Commit;
-            const MemoryProtection protection = MemoryProtection.ReadWrite;
+            const MemoryProtectionType protection = MemoryProtectionType.ReadWrite;
             var bytesCount = (uint)(modulePath.Length * sizeof(char) + 1);
-            using var memoryHandle = Kernel32.VirtualAllocEx(processHandle, bytesCount, allocation, protection);
+            using var memoryHandle = Kernel32.VirtualAllocEx(processHandle, bytesCount, protection);
             if (memoryHandle.IsInvalid)
             {
                 // Unable to allocate memory in target process
@@ -87,7 +86,7 @@ namespace Meditation.InjectorService.Services.Windows
 
             // Obtain handle to injected module though thread exit code
             var moduleName = Path.GetFileName(modulePath);
-            var module = Process.GetProcessById(pid).Modules.Cast<ProcessModule>().FirstOrDefault(m => m.ModuleName == moduleName);
+            var module = Process.GetProcessById(pid).Modules.Cast<ProcessModule>().SingleOrDefault(m => m.ModuleName == moduleName);
             if (module == null)
             {
                 // Error while obtaining base address for loaded module

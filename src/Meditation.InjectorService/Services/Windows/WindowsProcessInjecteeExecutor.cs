@@ -73,10 +73,9 @@ namespace Meditation.InjectorService.Services.Windows
             }
 
             // Allocate memory in target process for hook arguments
-            const AllocationType allocation = AllocationType.Commit;
-            const MemoryProtection protection = MemoryProtection.ReadWrite;
+            const MemoryProtectionType protection = MemoryProtectionType.ReadWrite;
             var bytesCount = (uint)(argument.Length * sizeof(char) + 1);
-            using var memoryHandle = Kernel32.VirtualAllocEx(remoteProcessHandle, bytesCount, allocation, protection);
+            using var memoryHandle = Kernel32.VirtualAllocEx(remoteProcessHandle, bytesCount, protection);
             if (memoryHandle.IsInvalid)
             {
                 // Unable to allocate memory in target process

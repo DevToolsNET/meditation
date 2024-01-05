@@ -15,24 +15,24 @@ namespace Meditation.Interop.Windows
 
         public static SafeHandle OpenProcess(ProcessAccessFlags processAccess, uint processId)
         {
-            IntPtr AcquireFunction() => NativeBindings.OpenProcess((uint)processAccess, false, processId);
+            IntPtr AcquireFunction() => NativeBindings.OpenProcess((uint)processAccess, bInheritHandle: false, processId);
             return new GenericSafeHandle(AcquireFunction, NativeBindings.CloseHandle);
         }
 
-        public static SafeHandle VirtualAllocEx(SafeHandle processHandle, uint bytesCount, AllocationType allocationType, MemoryProtection protectionType)
+        public static SafeHandle VirtualAllocEx(SafeHandle processHandle, uint bytesCount, MemoryProtectionType protectionType)
         {
             IntPtr AcquireFunction() => NativeBindings.VirtualAllocEx(
                 hProcess: processHandle.DangerousGetHandle(), 
                 lpAddress: IntPtr.Zero, 
                 dwSize: bytesCount, 
-                flAllocationType: (uint)allocationType, 
+                flAllocationType: (uint)MemoryOperationType.Commit, 
                 flProtect: (uint)protectionType);
 
             bool ReleaseFunction(IntPtr handle) => NativeBindings.VirtualFreeEx(
                 hProcess: processHandle.DangerousGetHandle(), 
                 lpAddress: handle, 
                 dwSize: bytesCount, 
-                dwFreeType: AllocationType.Release);
+                dwFreeType: MemoryOperationType.Release);
 
             return new GenericSafeHandle(AcquireFunction, ReleaseFunction);
         }
@@ -107,7 +107,7 @@ namespace Meditation.Interop.Windows
 
             [LibraryImport("kernel32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static partial bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, AllocationType dwFreeType);
+            public static partial bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, MemoryOperationType dwFreeType);
 
             // Source: http://pinvoke.net/default.aspx/kernel32/GetModuleHandle.html
             [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

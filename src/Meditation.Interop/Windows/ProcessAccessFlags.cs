@@ -2,6 +2,10 @@
 
 namespace Meditation.Interop.Windows
 {
+    /// <summary>
+    /// Types of operations / access to the process object
+    /// See this for detailed information: https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights
+    /// </summary>
     [Flags]
     public enum ProcessAccessFlags : uint
     {
