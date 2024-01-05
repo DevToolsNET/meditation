@@ -7,16 +7,29 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
     internal unsafe class ICLRMetaHostComWrapper : IUnknownComWrapper
     {
         // Virtual method table entries:
-        // 0: [IUnknown] QueryInterface
-        // 1: [IUnknown] AddRef
-        // 2: [IUnknown] Release
-        // 3: [ICLRMetaHost] GetRuntime
-        // 4: [ICLRMetaHost] GetVersionFromFile
-        // 5: [ICLRMetaHost] EnumerateInstalledRuntimes
-        // 6: [ICLRMetaHost] EnumerateLoadedRuntimes
-        // 7: [ICLRMetaHost] RequestRuntimeLoadedNotification
-        // 8: [ICLRMetaHost] QueryLegacyV2RuntimeBinding
-        // 9: [ICLRMetaHost] ExitProcess
+        enum MethodTableICLRMetaHost
+        {
+            // [IUnknown]
+            QueryInterface = 0,
+            // [IUnknown]
+            AddRef = 1,
+            // [IUnknown]
+            Release = 2,
+            // [ICLRMetaHost]
+            GetRuntime = 3,
+            // [ICLRMetaHost]
+            GetVersionFromFile = 4,
+            // [ICLRMetaHost]
+            EnumerateInstalledRuntimes = 5,
+            // [ICLRMetaHost]
+            EnumerateLoadedRuntimes = 6,
+            // [ICLRMetaHost]
+            RequestRuntimeLoadedNotification = 7,
+            // [ICLRMetaHost]
+            QueryLegacyV2RuntimeBinding = 8,
+            // [ICLRMetaHost]
+            ExitProcess = 9
+        }
 
         public ICLRMetaHostComWrapper(IntPtr handle)
             : base(handle)
@@ -29,7 +42,7 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
             Guid riid, 
             [NotNullWhen(returnValue: true)] out ICLRRuntimeInfoComWrapper? runtimeInfo)
         {
-            var function = GetNthElementInVirtualMethodTable(3);
+            var function = GetNthElementInVirtualMethodTable((int)MethodTableICLRMetaHost.GetRuntime);
             using var runtimeVersion = MarshalingUtils.ConvertStringToNativeLpcwstr(pwzVersion);
             if (runtimeVersion.IsInvalid)
             {

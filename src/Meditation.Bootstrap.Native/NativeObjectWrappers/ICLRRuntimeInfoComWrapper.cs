@@ -6,21 +6,39 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
     internal unsafe class ICLRRuntimeInfoComWrapper : IUnknownComWrapper
     {
         // Virtual method table entries:
-        // 0: [IUnknown] QueryInterface
-        // 1: [IUnknown] AddRef
-        // 2: [IUnknown] Release
-        // 3: [ICLRRuntimeInfo] GetVersionString
-        // 4: [ICLRRuntimeInfo] GetRuntimeDirectory
-        // 5: [ICLRRuntimeInfo] IsLoaded
-        // 6: [ICLRRuntimeInfo] LoadErrorString
-        // 7: [ICLRRuntimeInfo] LoadLibrary
-        // 8: [ICLRRuntimeInfo] GetProcAddress
-        // 9: [ICLRRuntimeInfo] GetInterface
-        // 10: [ICLRRuntimeInfo] IsLoadable
-        // 11: [ICLRRuntimeInfo] SetDefaultStartupFlags
-        // 12: [ICLRRuntimeInfo] GetDefaultStartupFlags
-        // 13: [ICLRRuntimeInfo] BindAsLegacyV2Runtime
-        // 14: [ICLRRuntimeInfo] IsStarted
+        enum MethodTableICLRRuntimeInfo
+        {
+            // [IUnknown]
+            QueryInterface = 0,
+            // [IUnknown]
+            AddRef = 1,
+            // [IUnknown]
+            Release = 2,
+            // [ICLRRuntimeInfo]
+            GetVersionString = 3,
+            // [ICLRRuntimeInfo]
+            GetRuntimeDirectory = 4,
+            // [ICLRRuntimeInfo]
+            IsLoaded = 5,
+            // [ICLRRuntimeInfo]
+            LoadErrorString = 6,
+            // [ICLRRuntimeInfo]
+            LoadLibrary = 7,
+            // [ICLRRuntimeInfo]
+            GetProcAddress = 8,
+            // [ICLRRuntimeInfo]
+            GetInterface = 9,
+            // [ICLRRuntimeInfo]
+            IsLoadable = 10,
+            // [ICLRRuntimeInfo]
+            SetDefaultStartupFlags = 11,
+            // [ICLRRuntimeInfo]
+            GetDefaultStartupFlags = 12,
+            // [ICLRRuntimeInfo]
+            BindAsLegacyV2Runtime = 13,
+            // [ICLRRuntimeInfo]
+            IsStarted = 14
+        }
 
         public ICLRRuntimeInfoComWrapper(IntPtr handle)
             : base(handle)
@@ -35,7 +53,7 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
             [NotNullWhen(returnValue: true)] out TInterface? ppUnk)
             where TInterface : NativeObjectWrapperBase
         {
-            var function = GetNthElementInVirtualMethodTable(9);
+            var function = GetNthElementInVirtualMethodTable((int)MethodTableICLRRuntimeInfo.GetInterface);
             var result = ((delegate* unmanaged<IntPtr, Guid, Guid, out IntPtr, int>)(function))(
                 Handle,
                 rclsid,

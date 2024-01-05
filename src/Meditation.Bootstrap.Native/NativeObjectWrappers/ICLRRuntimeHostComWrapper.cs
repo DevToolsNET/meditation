@@ -7,18 +7,33 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
     internal unsafe class ICLRRuntimeHostComWrapper : IUnknownComWrapper
     {
         // Virtual method table entries:
-        // 0: [IUnknown] QueryInterface
-        // 1: [IUnknown] AddRef
-        // 2: [IUnknown] Release
-        // 3: [ICLRRuntimeHost] Start
-        // 4: [ICLRRuntimeHost] Stop
-        // 5: [ICLRRuntimeHost] SetHostControl
-        // 6: [ICLRRuntimeHost] GetCLRControl
-        // 7: [ICLRRuntimeHost] UnloadAppDomain
-        // 8: [ICLRRuntimeHost] ExecuteInAppDomain
-        // 9: [ICLRRuntimeHost] GetCurrentAppDomainId
-        // 10: [ICLRRuntimeHost] ExecuteApplication
-        // 11: [ICLRRuntimeHost] ExecuteInDefaultAppDomain
+        enum MethodTableICLRRuntimeHost
+        {
+            // [IUnknown]
+            QueryInterface = 0,
+            // [IUnknown]
+            AddRef = 1,
+            // [IUnknown]
+            Release = 2,
+            // [ICLRRuntimeHost]
+            Start = 3,
+            // [ICLRRuntimeHost]
+            Stop = 4,
+            // [ICLRRuntimeHost]
+            SetHostControl = 5,
+            // [ICLRRuntimeHost]
+            GetCLRControl = 6,
+            // [ICLRRuntimeHost]
+            UnloadAppDomain = 7,
+            // [ICLRRuntimeHost]
+            ExecuteInAppDomain = 8,
+            // [ICLRRuntimeHost]
+            GetCurrentAppDomainId = 9,
+            // [ICLRRuntimeHost]
+            ExecuteApplication = 10,
+            // [ICLRRuntimeHost]
+            ExecuteInDefaultAppDomain = 11,
+        }
 
         public ICLRRuntimeHostComWrapper(IntPtr handle)
             : base(handle)
@@ -33,7 +48,7 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
             string argument, 
             [NotNullWhen(returnValue: true)] out int? returnValue)
         {
-            var function = GetNthElementInVirtualMethodTable(11);
+            var function = GetNthElementInVirtualMethodTable((int)MethodTableICLRRuntimeHost.ExecuteInDefaultAppDomain);
             using var assemblyPathNativeStringHandle = MarshalingUtils.ConvertStringToNativeLpcwstr(assemblyPath);
             using var typeNameNativeStringHandle = MarshalingUtils.ConvertStringToNativeLpcwstr(typeFullName);
             using var methodNameNativeStringHandle = MarshalingUtils.ConvertStringToNativeLpcwstr(methodName);
