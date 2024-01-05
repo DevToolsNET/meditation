@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PublishAot>true</PublishAot>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Meditation.Interop\Meditation.Interop.csproj" />
+	</ItemGroup>
+
+</Project>
