@@ -47,7 +47,7 @@ namespace Meditation.Bootstrap.Native
 
                 return ErrorCode.NotSupported_OperatingSystem;
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 // Unhandled exception during hooking
                 // FIXME [#16]: logging

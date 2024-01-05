@@ -2,7 +2,7 @@
 
 namespace Meditation.Bootstrap.Native.NativeObjectWrappers
 {
-    internal unsafe class IUnknownComWrapper : NativeObjectWrapperBase
+    internal abstract unsafe class IUnknownComWrapper : IDisposable
     {
         // Virtual method table entries:
         enum MethodTableIUnknown
@@ -15,16 +15,44 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
             Release = 2
         }
 
-        public IUnknownComWrapper(IntPtr handle)
-            : base(handle)
-        {
+        protected IntPtr Handle { get; private set; }
 
+        protected IUnknownComWrapper(IntPtr handle)
+        {
+            Handle = handle;
         }
 
-        public override uint Release()
+        ~IUnknownComWrapper()
+        {
+            Dispose(false);
+        }
+
+        protected void* GetNthElementInVirtualMethodTable(int index)
+        {
+            var instance = Handle;
+            var vtable = *(void***)instance;
+            return *(vtable + index);
+        }
+
+        private uint Release()
         {
             var function = GetNthElementInVirtualMethodTable((int)MethodTableIUnknown.Release);
             return ((delegate* unmanaged<IntPtr, uint>)(function))(Handle);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Handle == IntPtr.Zero)
+                return;
+
+            Release();
+            Handle = IntPtr.Zero;
         }
     }
 }

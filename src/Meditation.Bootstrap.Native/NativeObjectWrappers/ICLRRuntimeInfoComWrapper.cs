@@ -51,7 +51,7 @@ namespace Meditation.Bootstrap.Native.NativeObjectWrappers
             Guid riid, 
             Func<IntPtr, TInterface> activator, 
             out TInterface? ppUnk)
-            where TInterface : NativeObjectWrapperBase
+            where TInterface : IUnknownComWrapper
         {
             var function = GetNthElementInVirtualMethodTable((int)MethodTableICLRRuntimeInfo.GetInterface);
             var result = ((delegate* unmanaged<IntPtr, Guid, Guid, out IntPtr, int>)(function))(
