@@ -15,7 +15,7 @@ namespace Meditation.InjectorService.Tests
         private const string ipcTerminationSignaller = "/meditation/tests-ipc-signal";
 
         [Theory]
-        [InlineData("net7.0")]
+        [InlineData("net8.0")]
 #if WINDOWS
         [InlineData("net472")]
 #endif
@@ -42,7 +42,7 @@ namespace Meditation.InjectorService.Tests
         }
 
         [Theory]
-        [InlineData("net7.0")]
+        [InlineData("net8.0")]
 #if WINDOWS
         [InlineData("net472")]
 #endif
@@ -85,7 +85,7 @@ namespace Meditation.InjectorService.Tests
         }
 
         [Theory]
-        [InlineData("net7.0")]
+        [InlineData("net8.0")]
 #if WINDOWS
         [InlineData("net472")]
 #endif
@@ -132,7 +132,7 @@ namespace Meditation.InjectorService.Tests
 
         private static string GetMeditationBootstrapNativeModulePath()
         {
-            const string netSdkIdentifier = "net7.0";
+            const string netSdkIdentifier = "net8.0";
             string runtimeIdentifier;
             string moduleExtension;
 
