@@ -15,10 +15,11 @@ namespace Meditation.UI.Services
         public event Action<ProcessId>? ProcessAttaching;
         public event Action<ProcessId>? ProcessAttached;
         public event Action<ProcessId>? ProcessDetached;
-        public event Action<ProcessId, AssemblyMetadataEntry>? AssemblyLoaded;
+        public event Action<ProcessId, MetadataEntryBase>? AssemblyOrNetModuleLoaded;
 
         public IProcessSnapshot? ProcessSnapshot { get; private set; }
         public ImmutableArray<AssemblyMetadataEntry> Assemblies { get; private set; }
+        public ImmutableArray<ModuleMetadataEntry> NetModules { get; private set; }
         private readonly IMetadataLoader _metadataLoader;
         private readonly object _syncObject;
 
@@ -58,19 +59,32 @@ namespace Meditation.UI.Services
 
         private void LoadAssemblies(IProcessSnapshot processSnapshot)
         {
-            var builder = new List<AssemblyMetadataEntry>();
+            var assembliesBuilder = new List<AssemblyMetadataEntry>();
+            var netModulesBuilder = new List<ModuleMetadataEntry>();
             var managedModulePaths = processSnapshot.EnumerateModules()
                 .Where(m => m.IsManaged)
                 .OrderBy(m => Path.GetFileName(m.FileName))
                 .Select(m => m.FileName);
 
-            foreach (var assemblyMetadata in _metadataLoader.LoadMetadataFromProcess(managedModulePaths))
+            foreach (var metadata in _metadataLoader.LoadMetadataFromProcess(managedModulePaths))
             {
-                AssemblyLoaded?.Invoke(processSnapshot.ProcessId, assemblyMetadata);
-                builder.Add(assemblyMetadata);
+                switch (metadata)
+                {
+                    case AssemblyMetadataEntry assemblyMetadata:
+                        assembliesBuilder.Add(assemblyMetadata);
+                        break;
+                    case ModuleMetadataEntry moduleMetadata:
+                        netModulesBuilder.Add(moduleMetadata);
+                        break;
+                    default:
+                        throw new NotSupportedException(metadata.GetType().FullName);
+                }
+
+                AssemblyOrNetModuleLoaded?.Invoke(processSnapshot.ProcessId, metadata);
             }
 
-            Assemblies = builder.ToImmutableArray();
+            Assemblies = assembliesBuilder.ToImmutableArray();
+            NetModules = netModulesBuilder.ToImmutableArray();
         }
     }
 }

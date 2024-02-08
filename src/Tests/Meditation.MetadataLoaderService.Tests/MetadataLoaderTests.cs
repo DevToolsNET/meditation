@@ -17,7 +17,7 @@ namespace Meditation.MetadataLoaderService.Tests
             var loader = ServiceProvider.GetRequiredService<IMetadataLoader>();
 
             // Act
-            var assemblyMetadata = loader.LoadMetadataFromAssembly(assemblyLocation);
+            var assemblyMetadata = loader.LoadMetadataFromPath(assemblyLocation);
             var moduleMetadata = assemblyMetadata.Children.FirstOrDefault();
             var typeMetadata = moduleMetadata?.Children.FirstOrDefault(child => child is TypeMetadataEntry typeEntry && typeEntry.FullName == typeFullName);
             var methodMetadata = typeMetadata?.Children.FirstOrDefault(child => child is MethodMetadataEntry { Name: methodName });

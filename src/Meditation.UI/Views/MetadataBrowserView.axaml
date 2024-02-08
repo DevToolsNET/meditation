@@ -43,7 +43,7 @@
             IsEnabled="{Binding !IsLoadingData}" 
             SelectionMode="Single"
             SelectedItem="{Binding SelectedItem}"
-            ItemsSource="{Binding Assemblies.View}">
+            ItemsSource="{Binding Items.View}">
             <TreeView.DataTemplates>
                 <!-- Assembly -->
                 <TreeDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type models:AssemblyMetadataEntry}">

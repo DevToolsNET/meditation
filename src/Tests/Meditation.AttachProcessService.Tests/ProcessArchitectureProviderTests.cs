@@ -17,7 +17,7 @@ namespace Meditation.AttachProcessService.Tests
             // Prepare
             var pid = new ProcessId(Environment.ProcessId);
             var currentArchitecture = RuntimeInformation.ProcessArchitecture;
-            var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
+            var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessesAggregator>();
             var architectureProvider = ServiceProvider.GetRequiredService<IProcessArchitectureProvider>();
 
             // Act

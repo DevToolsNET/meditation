@@ -8,7 +8,7 @@ namespace Meditation.UI.ViewModels
 {
     public partial class MetadataBrowserViewModel : ViewModelBase
     {
-        [ObservableProperty] private FilterableObservableCollection<AssemblyMetadataEntry> _assemblies;
+        [ObservableProperty] private FilterableObservableCollection<MetadataEntryBase> _items;
         [ObservableProperty] private string? _metadataNameFilter;
         [ObservableProperty] private bool _isLoadingData;
         [ObservableProperty] private bool _hasData;
@@ -18,7 +18,7 @@ namespace Meditation.UI.ViewModels
         public MetadataBrowserViewModel(IAttachedProcessContext attachedProcessContext)
         {
             _attachedProcessContext = attachedProcessContext;
-            _assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
+            _items = new FilterableObservableCollection<MetadataEntryBase>(Enumerable.Empty<MetadataEntryBase>());
             RegisterEventHandlers();
         }
 
@@ -31,16 +31,16 @@ namespace Meditation.UI.ViewModels
             _attachedProcessContext.ProcessAttached += _ => IsLoadingData = false;
 
             // Add assembly on process assembly loaded
-            _attachedProcessContext.AssemblyLoaded += (_, assembly) =>
+            _attachedProcessContext.AssemblyOrNetModuleLoaded += (_, metadata) =>
             {
-                Assemblies.Add(assembly);
+                Items.Add(metadata);
                 HasData = true;
             };
 
             // Clear data on process detach
             _attachedProcessContext.ProcessDetached += _ =>
             {
-                Assemblies = new FilterableObservableCollection<AssemblyMetadataEntry>(Enumerable.Empty<AssemblyMetadataEntry>());
+                Items = new FilterableObservableCollection<MetadataEntryBase>(Enumerable.Empty<MetadataEntryBase>());
                 HasData = false;
             };
         }
@@ -48,7 +48,7 @@ namespace Meditation.UI.ViewModels
         [RelayCommand]
         public void FilterMetadata()
         {
-            Assemblies.ApplyFilter(p => MetadataNameFilter == null || p.Name.Contains(MetadataNameFilter));
+            Items.ApplyFilter(p => MetadataNameFilter == null || p.Name.Contains(MetadataNameFilter));
         }
     }
 }

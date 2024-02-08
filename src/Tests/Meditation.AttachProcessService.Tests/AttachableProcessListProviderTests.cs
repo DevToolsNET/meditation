@@ -15,7 +15,7 @@ namespace Meditation.AttachProcessService.Tests
         {
             // Prepare
             var pid = new ProcessId(Environment.ProcessId);
-            var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessListProvider>();
+            var attachableProcessListProvider = ServiceProvider.GetRequiredService<IAttachableProcessesAggregator>();
 
             // Act
             var processes = await attachableProcessListProvider.GetAttachableProcessesAsync(CancellationToken.None);
