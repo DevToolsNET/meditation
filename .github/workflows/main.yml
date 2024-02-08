@@ -27,7 +27,9 @@ jobs:
         dotnet-version: 7.0.*
     - name: Restore dependencies
       run: dotnet restore src/Meditation.sln
-    - name: Build (dotnet)
+    - name: Build (managed)
       run: dotnet build src/Meditation.sln --no-restore --no-incremental /property:WarningLevel=0
+    - name: Build (native)
+      run: dotnet publish ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
     - name: Test
       run: dotnet test src/Meditation.sln --no-build --verbosity normal
