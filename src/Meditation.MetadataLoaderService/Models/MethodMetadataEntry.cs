@@ -1,6 +1,5 @@
-﻿using System.Collections;
+﻿using dnlib.DotNet;
 using System.Collections.Generic;
-using dnlib.DotNet;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -16,7 +15,6 @@ namespace Meditation.MetadataLoaderService.Models
             MethodDef = methodDef;
         }
 
-        public string? ReturnType => MethodDef.ReturnType?.ReflectionFullName;
         public string DeclaringTypeFullName => MethodDef.DeclaringType.ReflectionFullName;
         public IEnumerable<string> ParameterTypeFullNames => MethodDef.Parameters.Select(p => p.Type.ReflectionFullName);
         public bool IsStatic => MethodDef.IsStatic;

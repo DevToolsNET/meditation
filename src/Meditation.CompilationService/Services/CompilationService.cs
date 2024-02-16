@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Meditation.PatchLibrary;
 
 namespace Meditation.CompilationService.Services
 {
@@ -31,12 +30,8 @@ namespace Meditation.CompilationService.Services
             _assemblyNames = new Dictionary<ProjectId, string>();
         }
 
-        public ProjectId AddProject(string projectName, string assemblyName, string coreLibraryPath, ImmutableArray<string> additionalReferencedAssemblyPaths)
+        public ProjectId AddProject(string projectName, string assemblyName, ImmutableArray<string> referencedAssemblies)
         {
-            var patchLibraryPath = typeof(MeditationPatchAssemblyTargetAttribute).Assembly.Location;
-            var harmonyLibraryPath = typeof(HarmonyLib.Harmony).Assembly.Location;
-            additionalReferencedAssemblyPaths = additionalReferencedAssemblyPaths.AddRange(patchLibraryPath, harmonyLibraryPath);
-
             var projectId = ProjectId.CreateNewId();
             var versionStamp = VersionStamp.Create();
             var projectInfo = ProjectInfo.Create(
@@ -48,7 +43,7 @@ namespace Meditation.CompilationService.Services
                 compilationOptions: new CSharpCompilationOptions(
                     outputKind: OutputKind.DynamicallyLinkedLibrary,
                     platform: Platform.AnyCpu),
-                metadataReferences: CreateProjectReferences(coreLibraryPath, additionalReferencedAssemblyPaths));
+                metadataReferences: referencedAssemblies.Select(ra => MetadataReference.CreateFromFile(ra)));
             _assemblyNames.Add(projectId, assemblyName);
             _workspace.AddProject(projectInfo);
             return projectId;
@@ -136,37 +131,6 @@ namespace Meditation.CompilationService.Services
                 Assemblies: _assemblies.ToImmutableDictionary(),
                 Result: _emitResults.ToImmutableDictionary());
             return result;
-        }
-
-        private static ImmutableArray<MetadataReference> CreateProjectReferences(string coreLibraryPath, ImmutableArray<string> additionalReferences)
-        {
-            var builder = ImmutableArray.CreateBuilder<MetadataReference>();
-            builder.Add(MetadataReference.CreateFromFile(coreLibraryPath));
-
-            var coreLibraryModuleName = Path.GetFileNameWithoutExtension(coreLibraryPath);
-            var sdkFolder = Path.GetDirectoryName(coreLibraryPath)!;
-
-            builder.Add(MetadataReference.CreateFromFile(Path.Combine(sdkFolder, "netstandard.dll")));
-            if (coreLibraryModuleName.Equals("System.Runtime", StringComparison.OrdinalIgnoreCase))
-            {
-                // Set additional .NET Core references
-                builder.Add(MetadataReference.CreateFromFile(Path.Combine(sdkFolder, "System.Private.CoreLib.dll")));
-                builder.Add(MetadataReference.CreateFromFile(Path.Combine(sdkFolder, "System.Runtime.dll")));
-            }
-            else if (coreLibraryModuleName.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
-            {
-                // Set additional .NET Framework references
-                builder.Add(MetadataReference.CreateFromFile(Path.Combine(sdkFolder, "mscorlib.dll")));
-            }
-            else
-            {
-                // Unknown implementation, try to advance and hope that it works
-                // FIXME [#16]: logging
-            }
-
-            foreach (var item in additionalReferences)
-                builder.Add(MetadataReference.CreateFromFile(item));
-            return builder.ToImmutableArray();
         }
 
         public void Dispose()

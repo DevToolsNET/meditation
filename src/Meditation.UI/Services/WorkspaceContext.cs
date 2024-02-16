@@ -2,6 +2,7 @@
 using Meditation.MetadataLoaderService;
 using Meditation.MetadataLoaderService.Models;
 using Microsoft.CodeAnalysis;
+using Microsoft.Diagnostics.Runtime.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Immutable;
@@ -17,6 +18,7 @@ namespace Meditation.UI.Services
         public event Action<MethodMetadataEntry>? WorkspaceDestroyed;
         private readonly IServiceProvider _serviceProvider;
         private ICompilationService? _compilationService;
+        private IDependencyResolver? _dependencyResolver;
         private IMetadataLoader? _metadataLoader;
         private ProjectId? _mainProjectId;
         private bool _disposed;
@@ -35,13 +37,28 @@ namespace Meditation.UI.Services
             Method = hookedMethod;
             _compilationService = _serviceProvider.GetRequiredService<ICompilationService>();
             _metadataLoader = _serviceProvider.GetRequiredService<IMetadataLoader>();
+            _dependencyResolver = _serviceProvider.GetRequiredService<IDependencyResolver>();
 
             // Prepare metadata references for the workspace
             // TODO: we should ideally work with so called "reference assemblies" and not directly implementations, however it works
-            var coreLibPath = _metadataLoader.GetCoreLibrary(hookedMethod).Path;
+            var coreLibPath = _dependencyResolver.GetCoreLibrary(hookedMethod).Path;
             var targetPath = hookedMethod.ModulePath;
 
-            _mainProjectId = _compilationService!.AddProject(projectName, assemblyName, coreLibPath, ImmutableArray.Create(targetPath));
+            if (!_metadataLoader.TryGetLoadedMetadataFromPath(targetPath, out var targetMetadataEntry))
+                throw new Exception($"Can not resolve metadata for module \"{targetPath}\".");
+            var targetModule = (targetMetadataEntry is AssemblyMetadataEntry ame) ? ame.ManifestModule :
+                               targetMetadataEntry as ModuleMetadataEntry ??
+                               throw new NotSupportedException($"Unsupported metadata entry \"{targetMetadataEntry.GetType()}\".");
+
+            var referencesBuilder = ImmutableArray.CreateBuilder<string>();
+            var meditationDependencies = _dependencyResolver.MeditationAssemblies;
+            var targetDependencies = _dependencyResolver.GetReferencedAssemblies(targetModule);
+            referencesBuilder.Add(coreLibPath);
+            referencesBuilder.Add(targetPath);
+            referencesBuilder.AddRange(meditationDependencies);
+            referencesBuilder.AddRange(targetDependencies);
+
+            _mainProjectId = _compilationService!.AddProject(projectName, assemblyName, referencesBuilder.ToImmutable());
             WorkspaceCreated?.Invoke(hookedMethod);
         }
 
@@ -52,6 +69,7 @@ namespace Meditation.UI.Services
 
             WorkspaceDestroyed?.Invoke(Method!);
             _compilationService = null;
+            _dependencyResolver = null;
             _metadataLoader = null;
             _mainProjectId = null;
             Method = null;

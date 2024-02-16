@@ -4,41 +4,44 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
 namespace Meditation.MetadataLoaderService.Services
 {
-    internal class MetadataLoader : IMetadataLoader
+    internal class MetadataLoader : IMetadataLoaderInternal
     {
         private readonly ConcurrentDictionary<string, ModuleDef> _modules;
         private readonly ConcurrentDictionary<string, MetadataEntryBase> _metadataModels;
+        private readonly ModuleContext _moduleContext;
+        private readonly AssemblyResolver _assemblyResolver;
         private readonly object _syncObject;
+        private ImmutableArray<string> _modulePaths;
+
+        public ImmutableArray<string> ModulePaths => _modulePaths;
+        public ICollection<ModuleDef> LoadedModules => _modules.Values;
+        public AssemblyResolver AssemblyResolver => _assemblyResolver;
 
         public MetadataLoader()
         {
             _modules = new ConcurrentDictionary<string, ModuleDef>();
             _metadataModels = new ConcurrentDictionary<string, MetadataEntryBase>();
+            _moduleContext = new ModuleContext() { };
+            _assemblyResolver = new AssemblyResolver(_moduleContext)
+            {
+                EnableFrameworkRedirect = true,
+                FindExactMatch = false,
+                UseGAC = false
+            };
+            _moduleContext.AssemblyResolver = _assemblyResolver;
+            _modulePaths = ImmutableArray<string>.Empty;
+            ;
             _syncObject = new object();
         }
 
-        public ModuleMetadataEntry GetCoreLibrary(MethodMetadataEntry method)
-        {
-            var coreLibRef = method.MethodDef.Module.GetAssemblyRefs().SingleOrDefault(ar => ar.IsCorLib());
-            if (coreLibRef == null)
-                throw new NotSupportedException($"Could not determine core library for module \"{method.ModulePath}\".");
-
-            var coreLibDef = _modules.Values.SingleOrDefault(ad => ad.Name == coreLibRef.Name);
-            if (coreLibDef == null || !_metadataModels.TryGetValue(coreLibDef.Location, out var metadataEntry))
-                throw new InvalidOperationException("Core library has not been loaded yet.");
-
-            return metadataEntry switch
-            {
-                ModuleMetadataEntry moduleMetadataEntry => moduleMetadataEntry,
-                AssemblyMetadataEntry assemblyMetadataEntry => assemblyMetadataEntry.ManifestModule,
-                _ => throw new Exception($"Could not resolve {metadataEntry} to a core library module."),
-            };
-        }
+        public bool TryGetLoadedMetadataFromPath(string path, [NotNullWhen(true)] out MetadataEntryBase? metadata)
+            => _metadataModels.TryGetValue(path, out metadata);
 
         public IEnumerable<MetadataEntryBase> LoadMetadataFromProcess(IEnumerable<string> modulePaths)
         {
@@ -93,7 +96,11 @@ namespace Meditation.MetadataLoaderService.Services
             // Slow-path: only single thread should construct metadata model
             lock (_syncObject)
             {
-                moduleDef = _modules.GetOrAdd(path, _ => ModuleDefMD.Load(path));
+                var directory = Path.GetDirectoryName(path);
+                if (!_modulePaths.Contains(directory))
+                    _modulePaths = _modulePaths.Add(directory);
+
+                moduleDef = _modules.GetOrAdd(path, _ => ModuleDefMD.Load(path, _moduleContext));
                 metadataModel = _metadataModels.GetOrAdd(path, _ =>
                 {
                     if (moduleDef.Assembly != null)

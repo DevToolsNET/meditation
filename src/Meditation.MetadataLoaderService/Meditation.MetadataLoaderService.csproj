@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
+		<PackageReference Include="Lib.Harmony" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
 		<PackageReference Include="dnlib" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Meditation.PatchLibrary\Meditation.PatchLibrary.csproj" />
 	</ItemGroup>
 </Project>

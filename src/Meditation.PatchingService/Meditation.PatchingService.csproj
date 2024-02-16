@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Meditation.Bootstrap.Managed\Meditation.Bootstrap.Managed.csproj" />
+    <ProjectReference Include="..\Meditation.InjectorService\Meditation.InjectorService.csproj" />
+    <ProjectReference Include="..\Meditation.PatchLibrary\Meditation.PatchLibrary.csproj" />
+  </ItemGroup>
+</Project>

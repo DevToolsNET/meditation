@@ -35,6 +35,7 @@
         <ProjectReference Include="..\Meditation.AttachProcessService\Meditation.AttachProcessService.csproj" />
         <ProjectReference Include="..\Meditation.CompilationService\Meditation.CompilationService.csproj" />
         <ProjectReference Include="..\Meditation.MetadataLoaderService\Meditation.MetadataLoaderService.csproj" />
+        <ProjectReference Include="..\Meditation.PatchingService\Meditation.PatchingService.csproj" />
     </ItemGroup>
 
     <ItemGroup>

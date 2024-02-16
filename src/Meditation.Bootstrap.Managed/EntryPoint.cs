@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿using HarmonyLib;
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace Meditation.Bootstrap.Managed
 {
@@ -16,18 +20,23 @@ namespace Meditation.Bootstrap.Managed
         /// <returns>Zero on success, other values on failures</returns>
         public static int Hook(string argument)
         {
-            // Note: the following implementation is only temporary PoC and will be changed in the upcoming milestone
             try
             {
-                // This hook expects name of an executable to run as the argument. The process will be spawned as a child process by the hooked application
-                // Example argument: "calc.exe" (Windows-only) will spawn new process with calculator
-                Process.Start(argument);
+                var harmony = new Harmony("Test");
+                Harmony.DEBUG = true;
+                FileLog.Log($"Called with args: {argument}");
+                harmony.PatchAll(Assembly.LoadFile(argument));
+                FileLog.Log($"Patched methods: {string.Join(",", Harmony.GetAllPatchedMethods().Select(m => m.FullDescription()))}");
                 return 0;
             }
-            catch
+            catch (Exception e)
             {
-                // Unable to start desired process, indicate failure to the caller
+                File.AppendAllText(@"C:\Users\andrej.cizmarik\Desktop\OutHarmony.txt", e.ToString());
                 return 1;
+            }
+            finally
+            {
+                FileLog.FlushBuffer();;
             }
         }
     }
