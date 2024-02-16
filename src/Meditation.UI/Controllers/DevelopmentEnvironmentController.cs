@@ -11,21 +11,31 @@ using Meditation.UI.ViewModels.IDE;
 using System;
 using System.IO;
 using Meditation.CompilationService;
+using Meditation.PatchingService;
 using Microsoft.CodeAnalysis;
 
 namespace Meditation.UI.Controllers
 {
     public partial class DevelopmentEnvironmentController
     {
-        private readonly IAvaloniaDialogService _dialogService;
         private readonly IWorkspaceContext _compilationContext;
+        private readonly IAttachedProcessContext _attachedProcessContext;
+        private readonly IPatchStorage _patchStorage;
+        private readonly IPatchListProvider _patchListProvider;
+        private readonly IPatchApplier _patchApplier;
 
         public DevelopmentEnvironmentController(
             IWorkspaceContext compilationContext, 
-            IAvaloniaDialogService dialogService)
+            IAttachedProcessContext attachedProcessContext, 
+            IPatchListProvider patchListProvider, 
+            IPatchStorage patchStorage,
+            IPatchApplier patchApplier)
         {
-            _dialogService = dialogService;
             _compilationContext = compilationContext;
+            _attachedProcessContext = attachedProcessContext;
+            _patchListProvider = patchListProvider;
+            _patchStorage = patchStorage;
+            _patchApplier = patchApplier;
         }
 
         [RelayCommand]
@@ -62,25 +72,7 @@ namespace Meditation.UI.Controllers
                 UpdateUserInterfaceAfterBuild(ideViewModel, compilationResult);
 
                 if (compilationResult.Success)
-                {
-                    var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                        title: "Patch prepared", 
-                        text: "Would you like to save it?", 
-                        @enum: ButtonEnum.YesNo);
-                    var result = await messageBox.ShowAsync();
-                    if (result == ButtonResult.Yes)
-                    {
-                        const string filename = "TestPatch.dll";
-                        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Meditation");
-                        if (!Directory.Exists(folder))
-                            Directory.CreateDirectory(folder);
-                        var fullPath = Path.Combine(folder, filename);
-
-                        var data = _compilationContext.GetProjectAssembly();
-                        await File.WriteAllBytesAsync(fullPath, data, ct);
-                        ideViewModel.StatusBarViewModel.SetSuccessStatus($"Saved as {fullPath}.");
-                    }
-                }
+                    await UpdateUserInterfaceAfterSuccessfulBuild(ideViewModel, ct);
             }
             catch (Exception exception)
             {
@@ -110,6 +102,37 @@ namespace Meditation.UI.Controllers
             {
                 await ShowUnhandledExceptionMessageBox(exception);
             }
+        }
+
+        private async Task UpdateUserInterfaceAfterSuccessfulBuild(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)
+        {
+            var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                title: "Patch was successfully built",
+                text: "Do you want to save it?",
+                @enum: ButtonEnum.YesNo);
+            var result = await messageBox.ShowAsync();
+            if (result != ButtonResult.Yes)
+                return;
+
+            // TODO: let user choose name
+            const string filename = "TestPatch.dll";
+
+            var data = _compilationContext.GetProjectAssembly();
+            await _patchStorage.StorePatch(filename, data, overwriteExistingFile: true, ct);
+            var fullName = Path.Combine(_patchStorage.GetRootFolderForPatches(), filename);
+            ideViewModel.StatusBarViewModel.SetSuccessStatus($"Saved as {fullName}.");
+
+            messageBox = MessageBoxManager.GetMessageBoxStandard(
+                title: "Patch was successfully stored",
+                text: "Do you want to apply it?",
+                @enum: ButtonEnum.YesNo);
+            result = await messageBox.ShowAsync();
+            if (result != ButtonResult.Yes)
+                return;
+
+            var pid = _attachedProcessContext.ProcessSnapshot!.ProcessId.Value;
+            var patch = _patchListProvider.GetAllPatches().Single(p => p.Path == fullName);
+            _patchApplier.ApplyPatch(pid, patch);
         }
 
         private void UpdateUserInterfaceAfterBuild(DevelopmentEnvironmentViewModel ideViewModel, CompilationResult compilationResult)

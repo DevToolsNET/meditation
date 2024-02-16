@@ -8,7 +8,7 @@ namespace Meditation.CompilationService
 {
     public interface ICompilationService
     {
-        ProjectId AddProject(string projectName, string assemblyName, string coreLibraryPath, ImmutableArray<string> additionalAssemblyReferences);
+        ProjectId AddProject(string projectName, string assemblyName, ImmutableArray<string> referencedAssemblies);
         DocumentId AddDocument(ProjectId projectId, string content, Encoding? encoding = null);
         Task<CompilationResult> Build(CancellationToken ct);
         byte[] GetProjectAssembly(ProjectId projectId);

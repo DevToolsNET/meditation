@@ -11,6 +11,8 @@ using Meditation.UI.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Meditation.CompilationService.Configuration;
+using Meditation.InjectorService.Configuration;
+using Meditation.PatchingService.Configuration;
 
 namespace Meditation.UI
 {
@@ -45,6 +47,8 @@ namespace Meditation.UI
             serviceCollection.AddMeditationMetadataLoaderServices();
             serviceCollection.AddMeditationCompilationServices();
             serviceCollection.AddMeditationUserInterfaceServices();
+            serviceCollection.AddMeditationInjectorServices();
+            serviceCollection.AddMeditationPatchingServices();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Resources[typeof(IServiceProvider)] = serviceProvider;
         }
