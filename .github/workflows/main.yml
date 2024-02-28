@@ -32,4 +32,4 @@ jobs:
     - name: Build (native)
       run: dotnet publish -c Debug ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
     - name: Test
-      run: dotnet test src/Meditation.sln --no-build --verbosity normal
+      run: dotnet test src/Meditation.sln --no-build --verbosity normal --logger GitHubActions
