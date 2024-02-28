@@ -10,11 +10,11 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.*
+        dotnet-version: 8.0.*
     - name: Restore dependencies
       run: dotnet restore src/Meditation.sln
     - name: Build
-      run: dotnet build src/Meditation.sln --no-restore --no-incremental /warnaserror
+      run: dotnet build -c Debug src/Meditation.sln --no-restore --no-incremental /warnaserror
       
       
   tests:
@@ -24,12 +24,12 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 7.0.*
+        dotnet-version: 8.0.*
     - name: Restore dependencies
       run: dotnet restore src/Meditation.sln
     - name: Build (managed)
-      run: dotnet build src/Meditation.sln --no-restore --no-incremental /property:WarningLevel=0
+      run: dotnet build -c Debug src/Meditation.sln --no-restore --no-incremental /property:WarningLevel=0
     - name: Build (native)
-      run: dotnet publish ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
+      run: dotnet publish -c Debug ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
     - name: Test
       run: dotnet test src/Meditation.sln --no-build --verbosity normal
