@@ -9,12 +9,13 @@ namespace Meditation.UI
 {
     public interface IWorkspaceContext
     {
+        event Action<MethodMetadataEntry>? WorkspaceCreating;
         event Action<MethodMetadataEntry>? WorkspaceCreated;
         event Action<MethodMetadataEntry>? WorkspaceDestroyed;
 
         MethodMetadataEntry? Method { get; }
 
-        void CreateWorkspace(MethodMetadataEntry hookedMethod, string projectName, string assemblyName);
+        Task CreateWorkspace(MethodMetadataEntry hookedMethod, string projectName, string assemblyName, CancellationToken ct);
         void DestroyWorkspace();
         void AddDocument(string content, Encoding? encoding = null);
         Task<CompilationResult> Build(CancellationToken ct);

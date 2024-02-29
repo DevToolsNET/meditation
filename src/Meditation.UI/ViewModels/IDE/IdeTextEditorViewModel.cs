@@ -11,6 +11,7 @@ namespace Meditation.UI.ViewModels.IDE
         public event Action<bool>? EnabledChanged;
         [ObservableProperty] private string? _text;
         [ObservableProperty] private bool _enabled;
+        [ObservableProperty] private bool _isInitializingWorkspace;
         private readonly IWorkspaceContext _workspaceContext;
         private readonly ICodeTemplateProvider _codeTemplateProvider;
 
@@ -26,6 +27,7 @@ namespace Meditation.UI.ViewModels.IDE
 
         private void RegisterEventHandlers()
         {
+            _workspaceContext.WorkspaceCreating += OnWorkspaceCreating;
             _workspaceContext.WorkspaceCreated += OnWorkspaceCreated;
             _workspaceContext.WorkspaceDestroyed += OnWorkspaceDestroyed;
         }
@@ -47,9 +49,16 @@ namespace Meditation.UI.ViewModels.IDE
                    """;
         }
 
+        private void OnWorkspaceCreating(MethodMetadataEntry obj)
+        {
+            Text = string.Empty;
+            IsInitializingWorkspace = true;
+        }
+
         private void OnWorkspaceCreated(MethodMetadataEntry method)
         {
             Enabled = true;
+            IsInitializingWorkspace = false;
             Text = _codeTemplateProvider.GenerateCodeTemplateForPatch(method);
         }
 

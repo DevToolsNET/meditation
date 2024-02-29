@@ -39,7 +39,7 @@ namespace Meditation.UI.Controllers
         }
 
         [RelayCommand]
-        public async Task CreateWorkspace(MetadataBrowserViewModel metadataBrowserViewModel)
+        public async Task CreateWorkspace(MetadataBrowserViewModel metadataBrowserViewModel, CancellationToken ct)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace Meditation.UI.Controllers
                     return;
                 }
 
-                _compilationContext.CreateWorkspace(method, "MeditationTemporaryProject", "MeditationPatch");
+                await _compilationContext.CreateWorkspace(method, "MeditationTemporaryProject", "MeditationPatch", ct);
             }
             catch (Exception exception)
             {

@@ -2,7 +2,6 @@
 using Meditation.MetadataLoaderService;
 using Meditation.MetadataLoaderService.Models;
 using Microsoft.CodeAnalysis;
-using Microsoft.Diagnostics.Runtime.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Immutable;
@@ -14,6 +13,7 @@ namespace Meditation.UI.Services
 {
     internal class WorkspaceContext : IWorkspaceContext, IDisposable
     {
+        public event Action<MethodMetadataEntry>? WorkspaceCreating;
         public event Action<MethodMetadataEntry>? WorkspaceCreated;
         public event Action<MethodMetadataEntry>? WorkspaceDestroyed;
         private readonly IServiceProvider _serviceProvider;
@@ -30,18 +30,17 @@ namespace Meditation.UI.Services
 
         public MethodMetadataEntry? Method { get; private set; }
 
-        public void CreateWorkspace(MethodMetadataEntry hookedMethod, string projectName, string assemblyName)
+        public async Task CreateWorkspace(MethodMetadataEntry hookedMethod, string projectName, string assemblyName, CancellationToken ct)
         {
             EnsureNotDisposed();
 
+            WorkspaceCreating?.Invoke(hookedMethod);
             Method = hookedMethod;
             _compilationService = _serviceProvider.GetRequiredService<ICompilationService>();
             _metadataLoader = _serviceProvider.GetRequiredService<IMetadataLoader>();
             _dependencyResolver = _serviceProvider.GetRequiredService<IDependencyResolver>();
 
             // Prepare metadata references for the workspace
-            // TODO: we should ideally work with so called "reference assemblies" and not directly implementations, however it works
-            var coreLibPath = _dependencyResolver.GetCoreLibrary(hookedMethod).Path;
             var targetPath = hookedMethod.ModulePath;
 
             if (!_metadataLoader.TryGetLoadedMetadataFromPath(targetPath, out var targetMetadataEntry))
@@ -52,8 +51,7 @@ namespace Meditation.UI.Services
 
             var referencesBuilder = ImmutableArray.CreateBuilder<string>();
             var meditationDependencies = _dependencyResolver.MeditationAssemblies;
-            var targetDependencies = _dependencyResolver.GetReferencedAssemblies(targetModule);
-            referencesBuilder.Add(coreLibPath);
+            var targetDependencies = await Task.Run(() => _dependencyResolver.GetReferencedAssemblies(targetModule), ct);
             referencesBuilder.Add(targetPath);
             referencesBuilder.AddRange(meditationDependencies);
             referencesBuilder.AddRange(targetDependencies);

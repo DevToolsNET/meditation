@@ -7,10 +7,19 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:IdeTextEditorViewModel"
              x:Class="Meditation.UI.Views.IDE.IdeTextEditorView">
-    <avaloniaEdit:TextEditor
-        Name="TextEditor"
-        ShowLineNumbers="True"
-        VerticalScrollBarVisibility="Visible"
-        HorizontalScrollBarVisibility="Visible"
-        FontFamily="Cascadia Code,Consolas,Menlo,Monospace"/>
+    <Grid>
+        <avaloniaEdit:TextEditor
+            Name="TextEditor"
+            ShowLineNumbers="True"
+            VerticalScrollBarVisibility="Visible"
+            HorizontalScrollBarVisibility="Visible"
+            FontFamily="Cascadia Code,Consolas,Menlo,Monospace"/>
+        <Border IsVisible="{Binding IsInitializingWorkspace}" Background="#40000000">
+            <TextBlock 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                Creating workspace...
+            </TextBlock>
+        </Border>
+    </Grid>
 </UserControl>
