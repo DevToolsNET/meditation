@@ -18,7 +18,7 @@ namespace Meditation.PatchingService.Services
         public void ApplyPatch(int pid, PatchInfo patch)
         {
             const string nativeHookEntryPoint = "MeditationInitialize";
-            const string nativeHookLibrary = @"F:\Workspace\meditation\src\Meditation.Bootstrap.Native\bin\Debug\net7.0\win-x64\native\Meditation.Bootstrap.Native.dll";
+            const string nativeHookLibrary = @"Meditation.Bootstrap.Native.dll";
             var managedHookLibrary = typeof(Bootstrap.Managed.EntryPoint).Assembly.Location;
             var hookArguments = $"{managedHookLibrary}#Meditation.Bootstrap.Managed.EntryPoint#Hook#{patch.Path}";
 
