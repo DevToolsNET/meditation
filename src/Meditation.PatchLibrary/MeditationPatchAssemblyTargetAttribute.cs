@@ -2,7 +2,7 @@
 
 namespace Meditation.PatchLibrary
 {
-    [AttributeUsage(AttributeTargets.Assembly)]
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
     public sealed class MeditationPatchAssemblyTargetAttribute : Attribute
     {
         public string AssemblyFullName { get; }

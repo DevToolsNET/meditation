@@ -27,6 +27,9 @@ namespace Meditation.CompilationService.Services
                           $"name: \"{method.Name}\", " +
                           $"isStatic: {method.IsStatic.ToString().ToLowerInvariant()}, " +
                           $"parametersCount: {method.ParametersCount})]");
+            var parameterIndex = 0;
+            foreach (var parameter in method.ParameterTypeFullNames)
+                sb.AppendLine($"[assembly: {nameof(MeditationPatchMethodParameterTargetAttribute)}(index: {parameterIndex++}, typeFullName: \"{parameter}\")]");
             sb.AppendLine();
             sb.AppendLine($"[{nameof(HarmonyPatch)}]");
             sb.AppendLine("public sealed class Patch");
@@ -60,11 +63,12 @@ namespace Meditation.CompilationService.Services
                 var bindingFlags = (method.IsStatic) ? $"{nameof(BindingFlags)}.{nameof(BindingFlags.Static)}" : $"{nameof(BindingFlags)}.{nameof(BindingFlags.Instance)}";
                 bindingFlags += $" | {nameof(BindingFlags)}.{nameof(BindingFlags.Public)} | {nameof(BindingFlags)}.{nameof(BindingFlags.NonPublic)}";
 
-                sb.AppendLine($"return typeof({method.DeclaringTypeFullName}).GetMethod(\"{method.Name}\", " +
-                              $"{bindingFlags}, " +
-                              $"{nameof(Type)}.{nameof(Type.DefaultBinder)}, " +
-                              $"new[] {{ {methodTypes} }}, " +
-                              $"null);");
+                sb.AppendLine($"return typeof({method.DeclaringTypeFullName}).GetMethod(");
+                sb.AppendLine($"\tname: \"{method.Name}\",");
+                sb.AppendLine($"\tbindingAttr: {bindingFlags},");
+                sb.AppendLine($"\tbinder: {nameof(Type)}.{nameof(Type.DefaultBinder)},");
+                sb.AppendLine($"\ttypes: {((methodTypes.Length > 0) ? $"new[] {{ {methodTypes} }}" : "Array.Empty<Type>()")},");
+                sb.AppendLine("\tmodifiers: null);");
             }
         }
 

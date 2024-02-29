@@ -29,11 +29,6 @@ namespace Meditation.Bootstrap.Managed
                 FileLog.Log($"Patched methods: {string.Join(",", Harmony.GetAllPatchedMethods().Select(m => m.FullDescription()))}");
                 return 0;
             }
-            catch (Exception e)
-            {
-                File.AppendAllText(@"C:\Users\andrej.cizmarik\Desktop\OutHarmony.txt", e.ToString());
-                return 1;
-            }
             finally
             {
                 FileLog.FlushBuffer();;
