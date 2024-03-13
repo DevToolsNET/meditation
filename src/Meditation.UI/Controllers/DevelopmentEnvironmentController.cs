@@ -85,7 +85,7 @@ namespace Meditation.UI.Controllers
         {
             try
             {
-                if (_compilationContext.Method is not { } method)
+                if (_compilationContext.Method is null)
                 {
                     var messageBox = MessageBoxManager.GetMessageBoxStandard(
                         title: "No workspace is active",
