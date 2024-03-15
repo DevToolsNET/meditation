@@ -9,4 +9,8 @@
 	  <PackageReference Include="Lib.Harmony" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Meditation.TestInjectionTarget\Meditation.TestInjectionTarget.csproj" />
+	</ItemGroup>
+
 </Project>

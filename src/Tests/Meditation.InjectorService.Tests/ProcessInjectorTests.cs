@@ -1,9 +1,10 @@
-﻿using CliWrap;
-using Meditation.Interop;
+﻿using Meditation.Interop;
+using Meditation.PatchingService;
+using Meditation.PatchingService.Models;
+using Meditation.TestBootstrapManaged;
+using Meditation.TestUtils;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -27,7 +28,7 @@ namespace Meditation.InjectorService.Tests
             using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
             // Act
-            using var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
+            using var executionTask = TestSubjectHelpers.GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
             var processId = executionTask.ProcessId;
             var result = processInjector.TryInjectModule(processId, injectedAssemblyPath, out var remoteModuleHandle);
             using var moduleHandle = remoteModuleHandle;
@@ -51,13 +52,13 @@ namespace Meditation.InjectorService.Tests
             // Prepare
             const string exportedMethod = "MeditationSanityCheck";
             var hookArgument = string.Empty;
-            var injectedModulePath = GetMeditationBootstrapNativeModulePath();
+            var injectedModulePath = BootstrapNativeHelpers.GetMeditationNativeModulePath();
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
             using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
             // Act (module injection)
-            using var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
+            using var executionTask = TestSubjectHelpers.GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
             var processId = executionTask.ProcessId;
             var moduleInjectionResult = processInjector.TryInjectModule(processId, injectedModulePath, out var remoteModuleHandle);
             // Act (code execution)
@@ -81,6 +82,7 @@ namespace Meditation.InjectorService.Tests
             // Assert
             Assert.True(moduleInjectionResult);
             Assert.True(executionResult);
+            Assert.True(returnCode.HasValue);
             Assert.Equal(0xABCD_EF98, returnCode);
         }
 
@@ -92,17 +94,28 @@ namespace Meditation.InjectorService.Tests
         public async Task ProcessInjecteeExecutor_ExecuteCodeFromManagedAssembly(string netSdkIdentifier)
         {
             // Prepare
-            const string exportedMethod = "MeditationInitialize";
-            var hookArgument = $"{GetMeditationBootstrapManagedAssemblyPath()}#Meditation.Bootstrap.Managed.EntryPoint#Hook#calc.exe";
-            var injectedModulePath = GetMeditationBootstrapNativeModulePath();
+            var patchingConfiguration = new PatchingConfiguration(
+                PatchInfo: new PatchInfo(
+                    Path: string.Empty,
+                    TargetFullAssemblyName: string.Empty,
+                    Method: null!),
+                NativeBootstrapLibraryPath: BootstrapNativeHelpers.GetMeditationNativeModulePath(),
+                NativeExportedEntryPointSymbol: "MeditationInitialize",
+                ManagedBootstrapEntryPointTypeFullName: "Meditation.TestBootstrapManaged.EntryPoint",
+                ManagedBootstrapEntryPointMethod: "TestHook",
+                CompanyUniqueIdentifier: "net.devtools.meditation.unittests",
+                NativeBootstrapLibraryLoggingPath: "native-tests.log",
+                ManagedBootstrapLibraryLoggingPath: "managed.tests.log");
+            var hookArgs = PatchingConfiguration.ConstructHookArgs(typeof(EntryPoint).Assembly, patchingConfiguration);
+
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
             using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
             // Act (module injection)
-            using var executionTask = GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
+            using var executionTask = TestSubjectHelpers.GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
             var processId = executionTask.ProcessId;
-            var moduleInjectionResult = processInjector.TryInjectModule(processId, injectedModulePath, out var remoteModuleHandle);
+            var moduleInjectionResult = processInjector.TryInjectModule(processId, patchingConfiguration.NativeBootstrapLibraryPath, out var remoteModuleHandle);
             // Act (code execution)
             bool? executionResult = null;
             uint? returnCode = null;
@@ -114,10 +127,10 @@ namespace Meditation.InjectorService.Tests
                 using var moduleHandle = remoteModuleHandle;
                 executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
                     processId, 
-                    injectedModulePath,
+                    patchingConfiguration.NativeBootstrapLibraryPath,
                     moduleHandle!, 
-                    exportedMethod, 
-                    hookArgument,
+                    patchingConfiguration.NativeExportedEntryPointSymbol, 
+                    hookArgs,
                     out returnCode);
             }
             // Wait for target process to exit gracefully
@@ -127,71 +140,9 @@ namespace Meditation.InjectorService.Tests
             // Assert
             Assert.True(moduleInjectionResult);
             Assert.True(executionResult);
+            Assert.True(returnCode.HasValue);
+            Assert.True(returnCode.Value == 0);
             Assert.Equal((uint)NativeHookErrorCode.Ok, returnCode);
-        }
-
-        private static string GetMeditationBootstrapNativeModulePath()
-        {
-            const string netSdkIdentifier = "net8.0";
-            string runtimeIdentifier;
-            string moduleExtension;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.OSArchitecture == Architecture.X64)
-            {
-                runtimeIdentifier = "win-x64";
-                moduleExtension = "dll";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                throw new NotImplementedException();
-            }
-            else
-            {
-                throw new PlatformNotSupportedException();
-            }
-
-            return Path.GetFullPath(
-                Path.Combine(
-                    "../../../../../",
-                    "Meditation.Bootstrap.Native",
-                    "bin",
-                    "Debug",
-                    netSdkIdentifier,
-                    runtimeIdentifier,
-                    "publish",
-                    $"Meditation.Bootstrap.Native.{moduleExtension}"));
-        }
-
-        private static Command GetTestSubjectExecutionCommand(string netSdkIdentifier)
-        {
-            var isNetFramework = netSdkIdentifier.StartsWith("net4");
-            var projectSuffix = isNetFramework ? "NetFramework" : "NetCore";
-            var extension = isNetFramework ? "exe" : "dll";
-            var assemblyPath =  Path.GetFullPath(
-                Path.Combine(
-                    "../../../../",
-                    $"Meditation.TestSubject.{projectSuffix}",
-                    "bin",
-                    "Debug",
-                    netSdkIdentifier,
-                    $"Meditation.TestSubject.{projectSuffix}.{extension}"));
-            var executable = isNetFramework ? assemblyPath : "dotnet";
-            var argument = isNetFramework ? string.Empty : assemblyPath;
-            return Cli.Wrap(executable).WithArguments(argument);
-        }
-
-        private static string GetMeditationBootstrapManagedAssemblyPath()
-        {
-            const string netVersion = "netstandard2.0";
-
-            return Path.GetFullPath(
-                Path.Combine(
-                    "../../../../../",
-                    "Meditation.Bootstrap.Managed",
-                    "bin",
-                    "Debug",
-                    netVersion,
-                    "Meditation.Bootstrap.Managed.dll"));
         }
     }
 }

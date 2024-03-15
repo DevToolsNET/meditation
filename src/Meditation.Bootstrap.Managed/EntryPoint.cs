@@ -3,6 +3,7 @@ using Meditation.Bootstrap.Managed.Utils;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 
 namespace Meditation.Bootstrap.Managed
@@ -39,6 +40,7 @@ namespace Meditation.Bootstrap.Managed
                 if (!TryApplyPatchesFromAssembly(harmonyInstance, patchAssembly, logger, out errorCode))
                     return (int)errorCode;
 
+                logger.LogInfo($"Patched methods count: {harmonyInstance.GetPatchedMethods().Count()}.");
                 logger.LogInfo($"Exiting from PID={Process.GetCurrentProcess().Id}.");
                 return (int)ManagedHookErrorCode.Ok;
             }

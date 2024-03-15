@@ -5,4 +5,8 @@
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Meditation.TestInjectionTarget\Meditation.TestInjectionTarget.csproj" />
+  </ItemGroup>
+
 </Project>

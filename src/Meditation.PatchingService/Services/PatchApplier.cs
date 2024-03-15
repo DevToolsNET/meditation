@@ -17,7 +17,7 @@ namespace Meditation.PatchingService.Services
 
         public void ApplyPatch(int pid, PatchingConfiguration configuration)
         {
-            var hookArguments = ConstructHookArgs(configuration);
+            var hookArguments = PatchingConfiguration.ConstructHookArgs(typeof(EntryPoint).Assembly, configuration);
 
             if (!_processInjector.TryInjectModule(pid: pid, assemblyPath: configuration.NativeBootstrapLibraryPath, out var remoteMeditationBootstrapNativeModuleHandle))
                 throw new Exception("Could not inject patch!");
@@ -35,18 +35,6 @@ namespace Meditation.PatchingService.Services
 
             if (returnCode != 0)
                 throw new Exception($"Patch returned error code that does not indicate success: {returnCode.Value:X}.");
-        }
-
-        private static string ConstructHookArgs(PatchingConfiguration configuration)
-        {
-            return string.Join('#',
-                configuration.NativeBootstrapLibraryLoggingPath,
-                configuration.ManagedBootstrapLibraryLoggingPath,
-                configuration.CompanyUniqueIdentifier,
-                typeof(EntryPoint).Assembly.Location,
-                configuration.ManagedBootstrapEntryPointTypeFullName,
-                configuration.ManagedBootstrapEntryPointMethod,
-                configuration.PatchInfo.Path);
         }
     }
 }

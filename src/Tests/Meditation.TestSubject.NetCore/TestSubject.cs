@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Meditation.TestInjectionTarget;
 
 namespace Meditation.TestSubject.NetCore
 {
@@ -18,6 +19,8 @@ namespace Meditation.TestSubject.NetCore
         public static void Main()
         {
             var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, SynchronizationHandleName);
+            TestClass.Init();
+
             while (!waitHandle.WaitOne(TimeSpan.FromSeconds(value: 1)))
                 Method();
         }
