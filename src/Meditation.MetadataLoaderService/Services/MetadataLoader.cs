@@ -97,7 +97,7 @@ namespace Meditation.MetadataLoaderService.Services
             lock (_syncObject)
             {
                 var directory = Path.GetDirectoryName(path);
-                if (!_modulePaths.Contains(directory))
+                if (directory != null && !_modulePaths.Contains(directory))
                     _modulePaths = _modulePaths.Add(directory);
 
                 moduleDef = _modules.GetOrAdd(path, _ => ModuleDefMD.Load(path, _moduleContext));
