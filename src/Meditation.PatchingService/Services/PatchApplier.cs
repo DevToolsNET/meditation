@@ -6,9 +6,6 @@ namespace Meditation.PatchingService.Services
 {
     internal class PatchApplier : IPatchApplier
     {
-        private const string NativeHookEntryPointSymbol = "MeditationInitialize";
-        private const string ManagedHookEntryPointTypeFullName = "Meditation.Bootstrap.Managed.EntryPoint";
-        private const string ManagedHookEntryPointMethod = "Hook";
         private readonly IProcessInjector _processInjector;
         private readonly IProcessInjecteeExecutor _processInjecteeExecutor;
 
@@ -29,7 +26,7 @@ namespace Meditation.PatchingService.Services
                     pid: pid,
                     modulePath: configuration.NativeBootstrapLibraryPath,
                     injectedModuleHandle: remoteMeditationBootstrapNativeModuleHandle,
-                    exportedMethodName: NativeHookEntryPointSymbol,
+                    exportedMethodName: configuration.NativeExportedEntryPointSymbol,
                     argument: hookArguments,
                     returnCode: out var returnCode))
             {
@@ -47,8 +44,8 @@ namespace Meditation.PatchingService.Services
                 configuration.ManagedBootstrapLibraryLoggingPath,
                 configuration.CompanyUniqueIdentifier,
                 typeof(EntryPoint).Assembly.Location,
-                ManagedHookEntryPointTypeFullName,
-                ManagedHookEntryPointMethod,
+                configuration.ManagedBootstrapEntryPointTypeFullName,
+                configuration.ManagedBootstrapEntryPointMethod,
                 configuration.PatchInfo.Path);
         }
     }

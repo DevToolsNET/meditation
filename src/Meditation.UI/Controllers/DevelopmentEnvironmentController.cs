@@ -164,6 +164,9 @@ namespace Meditation.UI.Controllers
             var patchConfiguration = new PatchingConfiguration(
                 PatchInfo: patch,
                 NativeBootstrapLibraryPath: bootstrapLibrary.Path,
+                NativeExportedEntryPointSymbol: _configuration.Hooking.NativeExportedEntryPointSymbol,
+                ManagedBootstrapEntryPointTypeFullName: _configuration.Hooking.ManagedBootstrapEntryPointTypeFullName,
+                ManagedBootstrapEntryPointMethod: _configuration.Hooking.ManagedBootstrapEntryPointMethod,
                 CompanyUniqueIdentifier: _configuration.UniquePatchingIdentifierScope,
                 NativeBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapNativeFileName,
                 ManagedBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapManagedFileName);

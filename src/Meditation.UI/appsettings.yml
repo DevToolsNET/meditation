@@ -2,6 +2,11 @@
 
 UniquePatchingIdentifierScope: "net.devtools.meditation"
 
+Hooking:
+  NativeExportedEntryPointSymbol: "MeditationInitialize"
+  ManagedBootstrapEntryPointTypeFullName: "Meditation.Bootstrap.Managed.EntryPoint"
+  ManagedBootstrapEntryPointMethod: "Hook"
+
 NativeExecutables:
   - Path: "Meditation.Bootstrap.Native.dll"
     Architecture: "X64"

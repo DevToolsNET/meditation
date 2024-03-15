@@ -45,9 +45,13 @@ namespace Meditation.UI.Services
 
             if (!_metadataLoader.TryGetLoadedMetadataFromPath(targetPath, out var targetMetadataEntry))
                 throw new Exception($"Can not resolve metadata for module \"{targetPath}\".");
-            var targetModule = (targetMetadataEntry is AssemblyMetadataEntry ame) ? ame.ManifestModule :
-                               targetMetadataEntry as ModuleMetadataEntry ??
-                               throw new NotSupportedException($"Unsupported metadata entry \"{targetMetadataEntry.GetType()}\".");
+
+            var targetModule = targetMetadataEntry switch
+            {
+                ModuleMetadataEntry mme => mme,
+                AssemblyMetadataEntry ame => ame.ManifestModule,
+                _ => throw new NotSupportedException($"Unsupported metadata entry \"{targetMetadataEntry.GetType()}\".")
+            };
 
             var referencesBuilder = ImmutableArray.CreateBuilder<string>();
             var meditationDependencies = _dependencyResolver.MeditationAssemblies;

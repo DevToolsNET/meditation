@@ -5,6 +5,7 @@ namespace Meditation.UI.Configuration
     public record ApplicationConfiguration(
         string UniquePatchingIdentifierScope,
         NativeExecutableConfiguration[] NativeExecutables,
+        HookingConfiguration Hooking,
         LoggingConfiguration Logging)
     {
         public void Validate()
@@ -14,6 +15,13 @@ namespace Meditation.UI.Configuration
 
             if (UniquePatchingIdentifierScope.Length == 0)
                 throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: null, settingName: nameof(UniquePatchingIdentifierScope)));
+
+            if (Hooking.NativeExportedEntryPointSymbol.Length == 0)
+                throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.NativeExportedEntryPointSymbol)));
+            if (Hooking.ManagedBootstrapEntryPointTypeFullName.Length == 0)
+                throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.ManagedBootstrapEntryPointTypeFullName)));
+            if (Hooking.ManagedBootstrapEntryPointMethod.Length == 0)
+                throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.ManagedBootstrapEntryPointMethod)));
 
             if (Logging.MainApplicationFileName.Length == 0)
                 throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Logging), settingName: nameof(Logging.MainApplicationFileName)));

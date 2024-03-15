@@ -5,7 +5,10 @@ namespace Meditation.PatchingService
     public record struct PatchingConfiguration(
         PatchInfo PatchInfo, 
         string NativeBootstrapLibraryPath, 
-        string CompanyUniqueIdentifier,
+        string NativeExportedEntryPointSymbol, 
+        string ManagedBootstrapEntryPointTypeFullName,
+        string ManagedBootstrapEntryPointMethod, 
+        string CompanyUniqueIdentifier, 
         string NativeBootstrapLibraryLoggingPath,
         string ManagedBootstrapLibraryLoggingPath);
 }
