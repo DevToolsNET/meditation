@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Meditation.UI.ViewModels.IDE"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="50"
+             x:DataType="vm:IdeTitleViewModel"
+             x:Class="Meditation.UI.Views.IDE.IdeTitleView">
+    <Border
+        BorderThickness="1"
+        BorderBrush="Black"
+        Background="LightGray"
+        CornerRadius="1">
+        <TextBlock
+            Text="{Binding Title}"
+            Margin="5,5,5,5"/>
+    </Border>
+</UserControl>

@@ -7,7 +7,9 @@ namespace Meditation.MetadataLoaderService.Configuration
     {
         public static void AddMeditationMetadataLoaderServices(this IServiceCollection services)
         {
-            services.AddScoped<IMetadataLoader, MetadataLoader>();
+            services.AddScoped<IMetadataLoaderInternal, MetadataLoader>();
+            services.AddScoped<IMetadataLoader>(p => p.GetRequiredService<IMetadataLoaderInternal>());
+            services.AddScoped<IDependencyResolver, DependencyResolver>();
         }
     }
 }

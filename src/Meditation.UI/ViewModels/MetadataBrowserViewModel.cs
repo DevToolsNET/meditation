@@ -10,7 +10,9 @@ namespace Meditation.UI.ViewModels
     {
         [ObservableProperty] private FilterableObservableCollection<MetadataEntryBase> _items;
         [ObservableProperty] private string? _metadataNameFilter;
-        [ObservableProperty] private bool? _isLoadingData;
+        [ObservableProperty] private bool _isLoadingData;
+        [ObservableProperty] private bool _hasData;
+        [ObservableProperty] private MetadataEntryBase? _selectedItem;
         private readonly IAttachedProcessContext _attachedProcessContext;
 
         public MetadataBrowserViewModel(IAttachedProcessContext attachedProcessContext)
@@ -29,11 +31,18 @@ namespace Meditation.UI.ViewModels
             _attachedProcessContext.ProcessAttached += _ => IsLoadingData = false;
 
             // Add assembly on process assembly loaded
-            _attachedProcessContext.AssemblyOrNetModuleLoaded += (_, metadata) => Items.Add(metadata);
+            _attachedProcessContext.AssemblyOrNetModuleLoaded += (_, metadata) =>
+            {
+                Items.Add(metadata);
+                HasData = true;
+            };
 
             // Clear data on process detach
-            _attachedProcessContext.ProcessDetached +=
-                _ => Items = new FilterableObservableCollection<MetadataEntryBase>(Enumerable.Empty<MetadataEntryBase>());
+            _attachedProcessContext.ProcessDetached += _ =>
+            {
+                Items = new FilterableObservableCollection<MetadataEntryBase>(Enumerable.Empty<MetadataEntryBase>());
+                HasData = false;
+            };
         }
 
         [RelayCommand]

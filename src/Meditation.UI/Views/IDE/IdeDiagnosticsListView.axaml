@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Meditation.UI.ViewModels.IDE"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:IdeDiagnosticsSummaryViewModel"
+             x:Class="Meditation.UI.Views.IDE.IdeDiagnosticsListView">
+    <Border
+        BorderThickness="1"
+        BorderBrush="Black"
+        Background="LightGray"
+        CornerRadius="1">
+        <DataGrid
+            ItemsSource="{Binding DiagnosticEntries}"
+            IsReadOnly="True"
+            AutoGenerateColumns="False"
+            CanUserResizeColumns="True"
+            Margin="5,5,5,5">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Severity"  Binding="{Binding Severity}"/>
+                <DataGridTextColumn Header="Code"  Binding="{Binding Code}"/>
+                <DataGridTextColumn Header="Location" Binding="{Binding Location}" />
+                <DataGridTextColumn Header="Message" Binding="{Binding Message}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Border>
+</UserControl>

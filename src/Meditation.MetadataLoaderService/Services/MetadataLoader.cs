@@ -4,23 +4,44 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
 namespace Meditation.MetadataLoaderService.Services
 {
-    internal class MetadataLoader : IMetadataLoader
+    internal class MetadataLoader : IMetadataLoaderInternal
     {
         private readonly ConcurrentDictionary<string, ModuleDef> _modules;
         private readonly ConcurrentDictionary<string, MetadataEntryBase> _metadataModels;
+        private readonly ModuleContext _moduleContext;
+        private readonly AssemblyResolver _assemblyResolver;
         private readonly object _syncObject;
+        private ImmutableArray<string> _modulePaths;
+
+        public ImmutableArray<string> ModulePaths => _modulePaths;
+        public ICollection<ModuleDef> LoadedModules => _modules.Values;
+        public AssemblyResolver AssemblyResolver => _assemblyResolver;
 
         public MetadataLoader()
         {
             _modules = new ConcurrentDictionary<string, ModuleDef>();
             _metadataModels = new ConcurrentDictionary<string, MetadataEntryBase>();
+            _moduleContext = new ModuleContext() { };
+            _assemblyResolver = new AssemblyResolver(_moduleContext)
+            {
+                EnableFrameworkRedirect = true,
+                FindExactMatch = false,
+                UseGAC = false
+            };
+            _moduleContext.AssemblyResolver = _assemblyResolver;
+            _modulePaths = ImmutableArray<string>.Empty;
+            ;
             _syncObject = new object();
         }
+
+        public bool TryGetLoadedMetadataFromPath(string path, [NotNullWhen(true)] out MetadataEntryBase? metadata)
+            => _metadataModels.TryGetValue(path, out metadata);
 
         public IEnumerable<MetadataEntryBase> LoadMetadataFromProcess(IEnumerable<string> modulePaths)
         {
@@ -75,7 +96,11 @@ namespace Meditation.MetadataLoaderService.Services
             // Slow-path: only single thread should construct metadata model
             lock (_syncObject)
             {
-                moduleDef = _modules.GetOrAdd(path, _ => ModuleDefMD.Load(path));
+                var directory = Path.GetDirectoryName(path);
+                if (directory != null && !_modulePaths.Contains(directory))
+                    _modulePaths = _modulePaths.Add(directory);
+
+                moduleDef = _modules.GetOrAdd(path, _ => ModuleDefMD.Load(path, _moduleContext));
                 metadataModel = _metadataModels.GetOrAdd(path, _ =>
                 {
                     if (moduleDef.Assembly != null)
@@ -92,7 +117,7 @@ namespace Meditation.MetadataLoaderService.Services
         {
             var assemblyToken = new AssemblyToken(assembly.MDToken.ToInt32());
             var assemblyMembers = BuildAssemblyMembers(assembly);
-            return new AssemblyMetadataEntry(assembly.Name, assembly.Version, assemblyToken, assembly.FullName, assemblyMembers.ToImmutableArray());
+            return new AssemblyMetadataEntry(assembly, assemblyMembers.ToImmutableArray());
         }
 
         private static List<MetadataEntryBase> BuildAssemblyMembers(AssemblyDef assembly)
@@ -102,7 +127,7 @@ namespace Meditation.MetadataLoaderService.Services
             {
                 var moduleToken = new ModuleToken(module.MDToken.ToInt32());
                 var moduleMembers = BuildModuleMembers(module);
-                assemblyMembers.Add(new ModuleMetadataEntry(module.Name, moduleToken, module.Location, moduleMembers.ToImmutableArray()));
+                assemblyMembers.Add(new ModuleMetadataEntry(module, moduleMembers.ToImmutableArray()));
             }
             SortEntriesBy(assemblyMembers, m => m.Name);
             return assemblyMembers;
@@ -112,7 +137,7 @@ namespace Meditation.MetadataLoaderService.Services
         {
             var moduleToken = new ModuleToken(module.MDToken.ToInt32());
             var moduleMembers = BuildModuleMembers(module);
-            return new ModuleMetadataEntry(module.Name, moduleToken, module.Location, moduleMembers.ToImmutableArray());
+            return new ModuleMetadataEntry(module, moduleMembers.ToImmutableArray());
         }
 
         private static List<MetadataEntryBase> BuildModuleMembers(ModuleDef module)
@@ -132,10 +157,8 @@ namespace Meditation.MetadataLoaderService.Services
         {
             var typeMembers = new List<MetadataEntryBase>(capacity: type.Methods.Count);
             foreach (var method in type.Methods)
-            {
-                var methodDefinitionToken = new MethodDefinitionToken(method.MDToken.ToInt32());
-                typeMembers.Add(new MethodMetadataEntry(method.Name, methodDefinitionToken, ImmutableArray<MetadataEntryBase>.Empty));
-            }
+                typeMembers.Add(new MethodMetadataEntry(method, ImmutableArray<MetadataEntryBase>.Empty));
+
             SortEntriesBy(typeMembers, m => m.Name);
             return typeMembers;
         }

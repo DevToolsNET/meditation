@@ -4,7 +4,6 @@ using Meditation.UI.ViewModels;
 
 namespace Meditation.UI.Views
 {
-
     public partial class MainView : UserControl
     {
         public MainView()

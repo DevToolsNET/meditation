@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:avaloniaEdit="https://github.com/avaloniaui/avaloniaedit"
+             xmlns:vm="clr-namespace:Meditation.UI.ViewModels.IDE"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:IdeTextEditorViewModel"
+             x:Class="Meditation.UI.Views.IDE.IdeTextEditorView">
+    <Grid>
+        <avaloniaEdit:TextEditor
+            Name="TextEditor"
+            ShowLineNumbers="True"
+            VerticalScrollBarVisibility="Visible"
+            HorizontalScrollBarVisibility="Visible"
+            FontFamily="Cascadia Code,Consolas,Menlo,Monospace"/>
+        <Border IsVisible="{Binding IsInitializingWorkspace}" Background="#40000000">
+            <TextBlock 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                Creating workspace...
+            </TextBlock>
+        </Border>
+    </Grid>
+</UserControl>

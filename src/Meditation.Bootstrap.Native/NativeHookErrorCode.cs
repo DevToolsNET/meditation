@@ -1,6 +1,6 @@
 ﻿namespace Meditation.Interop
 {
-    public enum ErrorCode : uint
+    public enum NativeHookErrorCode : uint
     {
         Ok = 0,
         InternalError = 0xDEAD_0001,

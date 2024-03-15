@@ -15,13 +15,13 @@ namespace Meditation.Bootstrap.Native
             [MarshalAs(UnmanagedType.LPStruct), In] Guid riid,
             [Out] out IntPtr ppInterface);
 
-        public static ErrorCode TryInitializeWindowsNetFrameworkProcess(SafeHandle mscoreeModuleHandle, HookArguments args)
+        public static NativeHookErrorCode TryInitializeWindowsNetFrameworkProcess(SafeHandle mscoreeModuleHandle, NativeHookArguments args)
         {
             if (!TryObtainClrMetaHost(mscoreeModuleHandle, out var clrMetaHost))
             {
                 // Could not obtain instance of ICLRMetaHost
                 // FIXME [#16]: logging
-                return ErrorCode.NotFound_MetaHost;
+                return NativeHookErrorCode.NotFound_MetaHost;
             }
 
             using var metaHost = clrMetaHost;
@@ -29,7 +29,7 @@ namespace Meditation.Bootstrap.Native
             {
                 // Could not obtain instance of ICLRRuntimeInfo
                 // FIXME [#16]: logging
-                return ErrorCode.NotFound_Clr;
+                return NativeHookErrorCode.NotFound_Clr;
             }
 
             using var runtimeInfo = info;
@@ -37,7 +37,7 @@ namespace Meditation.Bootstrap.Native
             {
                 // Could not obtain instance of ICLRRuntimeHost
                 // FIXME [#16]: logging
-                return ErrorCode.NotFound_Host;
+                return NativeHookErrorCode.NotFound_Host;
             }
 
             using var runtimeHost = clrHost;

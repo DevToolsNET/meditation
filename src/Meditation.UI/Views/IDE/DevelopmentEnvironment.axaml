@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:views="clr-namespace:Meditation.UI.Views.IDE"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Meditation.UI.ViewModels.IDE"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:DevelopmentEnvironmentViewModel"
+             x:Class="Meditation.UI.Views.IDE.DevelopmentEnvironmentView">
+
+	<Grid 
+        RowDefinitions="Auto,3*,Auto,2*,Auto">
+        <views:IdeTitleView
+            DataContext="{Binding TitleViewModel}"
+            Margin="5,5,5,5"
+            Grid.Row="0"/>
+        <views:IdeTextEditorView 
+            DataContext="{Binding TextEditorViewModel}"
+            Grid.Row="1"/>
+        <GridSplitter
+            Grid.Row="2"
+            Background="LightGray"
+            ResizeDirection="Rows"
+            Margin="5,5,5,5"/>
+		<views:IdeDiagnosticsView
+            DataContext="{Binding DiagnosticsSummaryViewModel}"
+            Margin="0,0,0,5"
+            Grid.Row="3"/>
+        <views:IdeStatusBarView
+			DataContext="{Binding StatusBarViewModel}"
+            Margin="5,5,5,5"
+            Grid.Row="4"/>
+    </Grid>
+
+</UserControl>
