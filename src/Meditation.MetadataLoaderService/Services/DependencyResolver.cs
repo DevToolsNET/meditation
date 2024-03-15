@@ -44,13 +44,13 @@ namespace Meditation.MetadataLoaderService.Services
             foreach (var path in _metadataLoader.ModulePaths)
                 resolver.PreSearchPaths.Add(path);
 
-            foreach (var reference in GetReferencedAssemblies(module.ModuleDef, resolver))
+            foreach (var reference in GetReferencedAssemblies(module.ModuleDef, builder, resolver))
                 builder.Add(reference);
 
             return builder.ToImmutableArray();
         }
 
-        private static IEnumerable<string> GetReferencedAssemblies(ModuleDef module, AssemblyResolver resolver)
+        private static IEnumerable<string> GetReferencedAssemblies(ModuleDef module, HashSet<string> processedAssemblies, AssemblyResolver resolver)
         {
             foreach (var reference in module.GetAssemblyRefs().Select(ar => resolver.Resolve(ar, module)))
             {
@@ -61,9 +61,13 @@ namespace Meditation.MetadataLoaderService.Services
                     continue;
                 }
 
-                yield return reference.ManifestModule.Location;
+                var assemblyLocation = reference.ManifestModule.Location;
+                if (processedAssemblies.Contains(assemblyLocation))
+                    continue;
 
-                foreach (var transitiveReference in GetReferencedAssemblies(reference.ManifestModule, resolver))
+                yield return assemblyLocation;
+
+                foreach (var transitiveReference in GetReferencedAssemblies(reference.ManifestModule, processedAssemblies, resolver))
                     yield return transitiveReference;
             }
         }
