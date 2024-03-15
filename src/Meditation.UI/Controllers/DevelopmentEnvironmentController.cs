@@ -1,38 +1,48 @@
-﻿using System.Linq;
-using System.Text;
-using System.Threading;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
+using Meditation.AttachProcessService;
+using Meditation.AttachProcessService.Models;
+using Meditation.CompilationService;
 using Meditation.MetadataLoaderService.Models;
+using Meditation.PatchingService;
+using Meditation.PatchingService.Models;
+using Meditation.UI.Configuration;
 using Meditation.UI.ViewModels;
+using Meditation.UI.ViewModels.IDE;
+using Microsoft.CodeAnalysis;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
-using System.Threading.Tasks;
-using Meditation.UI.ViewModels.IDE;
 using System;
 using System.IO;
-using Meditation.CompilationService;
-using Meditation.PatchingService;
-using Microsoft.CodeAnalysis;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Meditation.UI.Controllers
 {
     public partial class DevelopmentEnvironmentController
     {
+        private readonly ApplicationConfiguration _configuration;
         private readonly IWorkspaceContext _compilationContext;
         private readonly IAttachedProcessContext _attachedProcessContext;
+        private readonly IProcessListProvider _processListProvider;
         private readonly IPatchStorage _patchStorage;
         private readonly IPatchListProvider _patchListProvider;
         private readonly IPatchApplier _patchApplier;
 
         public DevelopmentEnvironmentController(
+            ApplicationConfiguration configuration, 
             IWorkspaceContext compilationContext, 
-            IAttachedProcessContext attachedProcessContext, 
+            IAttachedProcessContext attachedProcessContext,
+            IProcessListProvider processListProvider,
             IPatchListProvider patchListProvider, 
             IPatchStorage patchStorage,
             IPatchApplier patchApplier)
         {
+            _configuration = configuration;
             _compilationContext = compilationContext;
             _attachedProcessContext = attachedProcessContext;
+            _processListProvider = processListProvider;
             _patchListProvider = patchListProvider;
             _patchStorage = patchStorage;
             _patchApplier = patchApplier;
@@ -122,6 +132,7 @@ namespace Meditation.UI.Controllers
             var fullName = Path.Combine(_patchStorage.GetRootFolderForPatches(), filename);
             ideViewModel.StatusBarViewModel.SetSuccessStatus($"Saved as {fullName}.");
 
+            // TODO: code is temporary and will be refactored in milestone 4
             messageBox = MessageBoxManager.GetMessageBoxStandard(
                 title: "Patch was successfully stored",
                 text: "Do you want to apply it?",
@@ -130,9 +141,34 @@ namespace Meditation.UI.Controllers
             if (result != ButtonResult.Yes)
                 return;
 
-            var pid = _attachedProcessContext.ProcessSnapshot!.ProcessId.Value;
             var patch = _patchListProvider.GetAllPatches().Single(p => p.Path == fullName);
-            _patchApplier.ApplyPatch(pid, patch);
+            await ApplyPatch(patch, ct);
+        }
+
+        private async Task ApplyPatch(PatchInfo patch, CancellationToken ct)
+        {
+            // TODO: this code is temporary and will be refactored in milestone 4
+            var processId = new ProcessId(_attachedProcessContext.ProcessSnapshot!.ProcessId.Value);
+            var processInfo = _processListProvider.GetProcessById(processId);
+            await processInfo.Initialize(ct);
+
+            if (processInfo.Architecture is null)
+                throw new Exception($"Could not determine architecture of the target process {processId}.");
+
+            var bootstrapLibrary = _configuration.NativeExecutables
+                .FirstOrDefault(e => e.Architecture == processInfo.Architecture);
+
+            if (bootstrapLibrary == null)
+                throw new Exception($"Application configuration did not specify native executable for architecture {processInfo.Architecture}.");
+
+            var patchConfiguration = new PatchingConfiguration(
+                PatchInfo: patch,
+                NativeBootstrapLibraryPath: bootstrapLibrary.Path,
+                CompanyUniqueIdentifier: _configuration.UniquePatchingIdentifierScope,
+                NativeBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapNativeFileName,
+                ManagedBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapManagedFileName);
+
+            await Task.Run(() => _patchApplier.ApplyPatch(processId.Value, patchConfiguration), ct);
         }
 
         private void UpdateUserInterfaceAfterBuild(DevelopmentEnvironmentViewModel ideViewModel, CompilationResult compilationResult)

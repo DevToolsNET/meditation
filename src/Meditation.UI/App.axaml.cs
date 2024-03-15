@@ -3,16 +3,16 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Meditation.AttachProcessService.Configuration;
+using Meditation.CompilationService.Configuration;
+using Meditation.InjectorService.Configuration;
 using Meditation.MetadataLoaderService.Configuration;
+using Meditation.PatchingService.Configuration;
 using Meditation.UI.Configuration;
 using Meditation.UI.Utilities;
 using Meditation.UI.ViewModels;
 using Meditation.UI.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Meditation.CompilationService.Configuration;
-using Meditation.InjectorService.Configuration;
-using Meditation.PatchingService.Configuration;
 
 namespace Meditation.UI
 {

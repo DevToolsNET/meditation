@@ -13,6 +13,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
     <PackageVersion Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.505301" />
     <PackageVersion Include="Microsoft.Diagnostics.Runtime" Version="3.1.456101" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Avalonia" Version="11.0.7" />
@@ -25,6 +26,8 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageVersion Include="MessageBox.Avalonia" Version="3.1.5.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="NetEscapades.Configuration.Yaml" Version="3.1.0" />
+    <PackageVersion Include="PolySharp" Version="1.14.1" />
     <PackageVersion Include="TextMateSharp.Grammars" Version="1.0.56" />
     <PackageVersion Include="xunit" Version="2.6.6" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.6" />

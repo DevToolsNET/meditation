@@ -127,7 +127,7 @@ namespace Meditation.InjectorService.Tests
             // Assert
             Assert.True(moduleInjectionResult);
             Assert.True(executionResult);
-            Assert.Equal((uint)ErrorCode.Ok, returnCode);
+            Assert.Equal((uint)NativeHookErrorCode.Ok, returnCode);
         }
 
         private static string GetMeditationBootstrapNativeModulePath()

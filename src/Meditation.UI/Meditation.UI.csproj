@@ -28,6 +28,8 @@
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" />
         <PackageReference Include="MessageBox.Avalonia" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+        <PackageReference Include="NetEscapades.Configuration.Yaml" />
         <PackageReference Include="TextMateSharp.Grammars" />
     </ItemGroup>
 
@@ -48,5 +50,16 @@
         <Compile Update="Views\ProcessListView.axaml.cs">
         <DependentUpon>ProcessListView.axaml</DependentUpon>
         </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.yml">
+        <Generator></Generator>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
     </ItemGroup>
 </Project>
