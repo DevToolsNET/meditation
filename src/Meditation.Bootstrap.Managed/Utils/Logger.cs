@@ -11,8 +11,8 @@ namespace Meditation.Bootstrap.Managed.Utils
         public Logger(string filename)
         {
             var directory = Path.GetDirectoryName(filename);
-            if (directory != null && !Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
+            if (directory != null)
+                DirectoryHelper.EnsureExists(directory);
 
             _loggingStream = new StreamWriter(filename, append: true);
         }
