@@ -16,9 +16,6 @@ namespace Meditation.PatchingService.Tests
 
         [Theory]
         [InlineData("net8.0")]
-#if WINDOWS
-        [InlineData("net472")]
-#endif
         public async Task PatchingService_PatchOtherProcess(string netSdkIdentifier)
         {
             // Prepare

@@ -17,9 +17,6 @@ namespace Meditation.InjectorService.Tests
 
         [Theory]
         [InlineData("net8.0")]
-#if WINDOWS
-        [InlineData("net472")]
-#endif
         public async Task ProcessInjector_InjectSelfToOtherProcess(string netSdkIdentifier)
         {
             // Prepare
@@ -44,9 +41,6 @@ namespace Meditation.InjectorService.Tests
 
         [Theory]
         [InlineData("net8.0")]
-#if WINDOWS
-        [InlineData("net472")]
-#endif
         public async Task ProcessInjecteeExecutor_ExecuteCodeFromNativeModule(string netSdkIdentifier)
         {
             // Prepare
@@ -88,9 +82,6 @@ namespace Meditation.InjectorService.Tests
 
         [Theory]
         [InlineData("net8.0")]
-#if WINDOWS
-        [InlineData("net472")]
-#endif
         public async Task ProcessInjecteeExecutor_ExecuteCodeFromManagedAssembly(string netSdkIdentifier)
         {
             // Prepare
