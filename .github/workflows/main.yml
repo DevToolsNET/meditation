@@ -31,5 +31,11 @@ jobs:
       run: dotnet build -c Debug src/Meditation.sln --no-restore --no-incremental /property:WarningLevel=0
     - name: Build (native)
       run: dotnet publish -c Debug ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
-    - name: Test
-      run: dotnet test src/Meditation.sln --no-build --verbosity normal --logger GitHubActions
+    - name: Test (attach)
+      run: dotnet test src/Tests/Meditation.AttachProcessService.Tests/Meditation.AttachProcessService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
+    - name: Test (metadata)
+      run: dotnet test src/Tests/Meditation.MetadataLoaderService.Tests/Meditation.MetadataLoaderService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
+    - name: Test (injector)
+      run: dotnet test src/Tests/Meditation.InjectorService.Tests/Meditation.InjectorService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
+    - name: Test (patcher)
+      run: dotnet test src/Tests/Meditation.PatchingService.Tests/Meditation.PatchingService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
