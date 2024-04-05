@@ -29,6 +29,7 @@ namespace Meditation.UI.Controllers
         private readonly IPatchStorage _patchStorage;
         private readonly IPatchListProvider _patchListProvider;
         private readonly IPatchApplier _patchApplier;
+        private readonly IAvaloniaDialogService _dialogService;
 
         public DevelopmentEnvironmentController(
             ApplicationConfiguration configuration, 
@@ -37,7 +38,8 @@ namespace Meditation.UI.Controllers
             IProcessListProvider processListProvider,
             IPatchListProvider patchListProvider, 
             IPatchStorage patchStorage,
-            IPatchApplier patchApplier)
+            IPatchApplier patchApplier,
+            IAvaloniaDialogService dialogService)
         {
             _configuration = configuration;
             _compilationContext = compilationContext;
@@ -46,6 +48,7 @@ namespace Meditation.UI.Controllers
             _patchListProvider = patchListProvider;
             _patchStorage = patchStorage;
             _patchApplier = patchApplier;
+            _dialogService = dialogService;
         }
 
         [RelayCommand]
@@ -116,6 +119,7 @@ namespace Meditation.UI.Controllers
 
         private async Task UpdateUserInterfaceAfterSuccessfulBuild(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)
         {
+            // Ask user if we want to save patch
             var messageBox = MessageBoxManager.GetMessageBoxStandard(
                 title: "Patch was successfully built",
                 text: "Do you want to save it?",
@@ -124,13 +128,20 @@ namespace Meditation.UI.Controllers
             if (result != ButtonResult.Yes)
                 return;
 
-            // TODO: let user choose name
-            const string filename = "TestPatch.dll";
+            // Let user choose save directory / filename
+            var fileInfo = await _dialogService.ShowSaveFileDialog(
+                title: "Save patch as...",
+                extension: "dll",
+                folder: _patchStorage.GetRootFolderForPatches(),
+                fileName: "Patch");
+            if (fileInfo == null)
+                return;
 
+            // Store patch
+            var fullPath = fileInfo.Path.AbsolutePath;
             var data = _compilationContext.GetProjectAssembly();
-            await _patchStorage.StorePatch(filename, data, overwriteExistingFile: true, ct);
-            var fullName = Path.Combine(_patchStorage.GetRootFolderForPatches(), filename);
-            ideViewModel.StatusBarViewModel.SetSuccessStatus($"Saved as {fullName}.");
+            await _patchStorage.StorePatch(fullPath, data, overwriteExistingFile: true, ct);
+            ideViewModel.StatusBarViewModel.SetSuccessStatus($"Saved as {fullPath}.");
 
             // TODO: code is temporary and will be refactored in milestone 4
             messageBox = MessageBoxManager.GetMessageBoxStandard(
@@ -141,7 +152,11 @@ namespace Meditation.UI.Controllers
             if (result != ButtonResult.Yes)
                 return;
 
-            var patch = _patchListProvider.GetAllPatches().Single(p => p.Path == fullName);
+            var patch = _patchListProvider.GetAllPatches().Single(p => string.Equals(
+                Path.GetFullPath(p.Path), 
+                Path.GetFullPath(fileInfo.Path.AbsolutePath), 
+                StringComparison.InvariantCultureIgnoreCase));
+
             await ApplyPatch(patch, ct);
         }
 

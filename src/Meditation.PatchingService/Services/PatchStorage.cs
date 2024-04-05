@@ -31,15 +31,14 @@ namespace Meditation.PatchingService.Services
             bool overwriteExistingFile = false,
             CancellationToken ct = default)
         {
-            var fullFileName = Path.Combine(RootFolder, fileName);
             if (PatchExists(fileName))
             {
                 if (!overwriteExistingFile)
                     throw new IOException($"File {fileName} already exists.");
-                File.Delete(fullFileName);
+                File.Delete(fileName);
             }
 
-            return File.WriteAllBytesAsync(fullFileName, data, ct);
+            return File.WriteAllBytesAsync(fileName, data, ct);
         }
     }
 }

@@ -2,6 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using System;
+using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 
 namespace Meditation.UI.Services.Dialogs
 {
@@ -20,6 +22,27 @@ namespace Meditation.UI.Services.Dialogs
             {
                 var owner = GetRootWindow();
                 return new DialogLifetime(typeof(TWindow), owner, _serviceProvider);
+            }
+            catch (Exception ex)
+            {
+                // FIXME [#16]: add logging
+                throw new InvalidOperationException("Could not open dialog.", ex);
+            }
+        }
+
+        public async Task<IStorageFile?> ShowSaveFileDialog(string title, string extension, string folder, string fileName)
+        {
+            try
+            {
+                var owner = GetRootWindow();
+                return await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
+                {
+                    Title = title,
+                    DefaultExtension = extension,
+                    ShowOverwritePrompt = true,
+                    SuggestedFileName = fileName,
+                    SuggestedStartLocation = await owner.StorageProvider.TryGetFolderFromPathAsync(folder)
+                });
             }
             catch (Exception ex)
             {
