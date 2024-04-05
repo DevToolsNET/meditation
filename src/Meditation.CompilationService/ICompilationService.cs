@@ -10,7 +10,7 @@ namespace Meditation.CompilationService
     {
         ProjectId AddProject(string projectName, string assemblyName, ImmutableArray<string> referencedAssemblies);
         DocumentId AddDocument(ProjectId projectId, string content, Encoding? encoding = null);
-        Task<CompilationResult> Build(CancellationToken ct);
+        Task<CompilationResult> BuildAsync(CancellationToken ct);
         byte[] GetProjectAssembly(ProjectId projectId);
     }
 }

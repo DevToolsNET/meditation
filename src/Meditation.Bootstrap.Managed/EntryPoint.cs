@@ -30,7 +30,7 @@ namespace Meditation.Bootstrap.Managed
                     return (int)errorCode;
 
                 logger = new Logger(arguments.LoggingFileName);
-                logger.LogInfo($"Running in PID={Process.GetCurrentProcess().Id}.");
+                logger.LogInfo($"Running in PID = {Process.GetCurrentProcess().Id}.");
                 logger.LogInfo($"Arguments: {arguments}.");
 
                 if (!TryLoadPatchAssembly(arguments.Argument, logger, out errorCode, out var patchAssembly))
@@ -41,7 +41,7 @@ namespace Meditation.Bootstrap.Managed
                     return (int)errorCode;
 
                 logger.LogInfo($"Patched methods count: {harmonyInstance.GetPatchedMethods().Count()}.");
-                logger.LogInfo($"Exiting from PID={Process.GetCurrentProcess().Id}.");
+                logger.LogInfo($"Exiting from PID = {Process.GetCurrentProcess().Id}.");
                 return (int)ManagedHookErrorCode.Ok;
             }
             finally

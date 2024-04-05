@@ -28,7 +28,7 @@ namespace Meditation.CompilationService.Services
                           $"isStatic: {method.IsStatic.ToString().ToLowerInvariant()}, " +
                           $"parametersCount: {method.ParametersCount})]");
             var parameterIndex = 0;
-            foreach (var parameter in method.ParameterTypeFullNames)
+            foreach (var parameter in method.EnumerateParameterTypeFullNames())
                 sb.AppendLine($"[assembly: {nameof(MeditationPatchMethodParameterTargetAttribute)}(index: {parameterIndex++}, typeFullName: \"{parameter}\")]");
             sb.AppendLine();
             sb.AppendLine($"[{nameof(HarmonyPatch)}]");
@@ -59,7 +59,7 @@ namespace Meditation.CompilationService.Services
             sb.AppendLine("public static MethodBase GetTargetMethod()");
             using (new FormattedStringBuilderIndentationScope(sb))
             {
-                var methodTypes = string.Join(',', method.ParameterTypeFullNames.Select(t => $"typeof({t})"));
+                var methodTypes = string.Join(',', method.EnumerateParameterTypeFullNames().Select(t => $"typeof({t})"));
                 var bindingFlags = (method.IsStatic) ? $"{nameof(BindingFlags)}.{nameof(BindingFlags.Static)}" : $"{nameof(BindingFlags)}.{nameof(BindingFlags.Instance)}";
                 bindingFlags += $" | {nameof(BindingFlags)}.{nameof(BindingFlags.Public)} | {nameof(BindingFlags)}.{nameof(BindingFlags.NonPublic)}";
 

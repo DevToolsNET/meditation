@@ -66,11 +66,11 @@ namespace Meditation.UI.Controllers
                     return;
                 }
 
-                await _compilationContext.CreateWorkspace(method, "MeditationTemporaryProject", "MeditationPatch", ct);
+                await _compilationContext.CreateWorkspaceAsync(method, "MeditationTemporaryProject", "MeditationPatch", ct);
             }
             catch (Exception exception)
             {
-                await ShowUnhandledExceptionMessageBox(exception);
+                await ShowUnhandledExceptionMessageBoxAsync(exception);
             }
         }
 
@@ -81,15 +81,15 @@ namespace Meditation.UI.Controllers
             {
                 // Build project
                 _compilationContext.AddDocument(ideViewModel.TextEditorViewModel.Text ?? string.Empty, Encoding.UTF8);
-                var compilationResult = await _compilationContext.Build(ct);
+                var compilationResult = await _compilationContext.BuildAsync(ct);
                 UpdateUserInterfaceAfterBuild(ideViewModel, compilationResult);
 
                 if (compilationResult.Success)
-                    await UpdateUserInterfaceAfterSuccessfulBuild(ideViewModel, ct);
+                    await UpdateUserInterfaceAfterSuccessfulBuildAsync(ideViewModel, ct);
             }
             catch (Exception exception)
             {
-                await ShowUnhandledExceptionMessageBox(exception);
+                await ShowUnhandledExceptionMessageBoxAsync(exception);
             }
         }
 
@@ -98,7 +98,7 @@ namespace Meditation.UI.Controllers
         {
             try
             {
-                if (_compilationContext.Method is not { } method)
+                if (_compilationContext.Method is null)
                 {
                     var messageBox = MessageBoxManager.GetMessageBoxStandard(
                         title: "No workspace is active",
@@ -113,11 +113,11 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                await ShowUnhandledExceptionMessageBox(exception);
+                await ShowUnhandledExceptionMessageBoxAsync(exception);
             }
         }
 
-        private async Task UpdateUserInterfaceAfterSuccessfulBuild(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)
+        private async Task UpdateUserInterfaceAfterSuccessfulBuildAsync(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)
         {
             // Ask user if we want to save patch
             var messageBox = MessageBoxManager.GetMessageBoxStandard(
@@ -157,10 +157,10 @@ namespace Meditation.UI.Controllers
                 Path.GetFullPath(fileInfo.Path.AbsolutePath), 
                 StringComparison.InvariantCultureIgnoreCase));
 
-            await ApplyPatch(patch, ct);
+            await ApplyPatchAsync(patch, ct);
         }
 
-        private async Task ApplyPatch(PatchInfo patch, CancellationToken ct)
+        private async Task ApplyPatchAsync(PatchInfo patch, CancellationToken ct)
         {
             // TODO: this code is temporary and will be refactored in milestone 4
             var processId = new ProcessId(_attachedProcessContext.ProcessSnapshot!.ProcessId.Value);
@@ -216,15 +216,15 @@ namespace Meditation.UI.Controllers
                 ideViewModel.StatusBarViewModel.SetSuccessStatus("Build succeeded.");
         }
 
-        private static Task<ButtonResult> ShowMessageBox(string title, string content, ButtonEnum buttonEnum = ButtonEnum.Ok)
+        private static Task<ButtonResult> ShowMessageBoxAsync(string title, string content, ButtonEnum buttonEnum = ButtonEnum.Ok)
         {
             var messageBox = MessageBoxManager.GetMessageBoxStandard(title: title, text: content, @enum: buttonEnum);
             return messageBox.ShowAsync();
         }
 
-        private static Task ShowUnhandledExceptionMessageBox(Exception exception)
+        private static Task ShowUnhandledExceptionMessageBoxAsync(Exception exception)
         {
-            return ShowMessageBox(title: "Unhandled exception", content: exception.ToString());
+            return ShowMessageBoxAsync(title: "Unhandled exception", content: exception.ToString());
         }
     }
 }

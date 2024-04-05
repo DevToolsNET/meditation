@@ -30,7 +30,7 @@ namespace Meditation.UI.Services
 
         public MethodMetadataEntry? Method { get; private set; }
 
-        public async Task CreateWorkspace(MethodMetadataEntry hookedMethod, string projectName, string assemblyName, CancellationToken ct)
+        public async Task CreateWorkspaceAsync(MethodMetadataEntry hookedMethod, string projectName, string assemblyName, CancellationToken ct)
         {
             EnsureNotDisposed();
 
@@ -85,12 +85,12 @@ namespace Meditation.UI.Services
             _compilationService!.AddDocument(_mainProjectId!, content, encoding ?? Encoding.UTF8);
         }
 
-        public Task<CompilationResult> Build(CancellationToken ct)
+        public Task<CompilationResult> BuildAsync(CancellationToken ct)
         {
             EnsureNotDisposed();
             EnsureWorkspaceCreated();
 
-            return _compilationService!.Build(ct);
+            return _compilationService!.BuildAsync(ct);
         }
 
         private void EnsureNotDisposed()

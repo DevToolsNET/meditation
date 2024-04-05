@@ -19,9 +19,9 @@ namespace Meditation.PatchingService.Services
 
         public PatchListProvider(IPatchStorage patchStorage)
         {
-            _isReloadRequested = true;
             _patchStorage = patchStorage;
             _assemblyLoadContext = new AssemblyLoadContext(name: nameof(PatchListProvider));
+            _isReloadRequested = true;
         }
 
         public void Reload()

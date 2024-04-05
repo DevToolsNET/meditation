@@ -32,20 +32,28 @@ namespace Meditation.CompilationService.Services
 
         public ProjectId AddProject(string projectName, string assemblyName, ImmutableArray<string> referencedAssemblies)
         {
+            const string language = LanguageNames.CSharp;
             var projectId = ProjectId.CreateNewId();
             var versionStamp = VersionStamp.Create();
+
+            var compilationOptions = new CSharpCompilationOptions(
+                outputKind: OutputKind.DynamicallyLinkedLibrary,
+                platform: Platform.AnyCpu);
+
+            var metadataReferences = referencedAssemblies.Select(ra => MetadataReference.CreateFromFile(ra));
+            
             var projectInfo = ProjectInfo.Create(
                 id: projectId,
                 version: versionStamp,
                 name: projectName,
                 assemblyName: projectName,
-                language: LanguageNames.CSharp,
-                compilationOptions: new CSharpCompilationOptions(
-                    outputKind: OutputKind.DynamicallyLinkedLibrary,
-                    platform: Platform.AnyCpu),
-                metadataReferences: referencedAssemblies.Select(ra => MetadataReference.CreateFromFile(ra)));
+                language: language,
+                compilationOptions: compilationOptions,
+                metadataReferences: metadataReferences);
+
             _assemblyNames.Add(projectId, assemblyName);
             _workspace.AddProject(projectInfo);
+
             return projectId;
         }
 
@@ -78,7 +86,7 @@ namespace Meditation.CompilationService.Services
             return rawAssemblyData;
         }
 
-        public async Task<CompilationResult> Build(CancellationToken ct)
+        public async Task<CompilationResult> BuildAsync(CancellationToken ct)
         {
             _emitResults.Clear();
             _assemblies.Clear();

@@ -16,7 +16,6 @@ namespace Meditation.MetadataLoaderService.Models
         }
 
         public string DeclaringTypeFullName => MethodDef.DeclaringType.ReflectionFullName;
-        public IEnumerable<string> ParameterTypeFullNames => MethodDef.Parameters.Where(p => p.IsNormalMethodParameter).Select(p => p.Type.ReflectionFullName);
         public bool IsStatic => MethodDef.IsStatic;
         public bool HasParameters => MethodDef.HasParamDefs;
         public int ParametersCount => MethodDef.Parameters.Count;
@@ -25,5 +24,10 @@ namespace Meditation.MetadataLoaderService.Models
         public string AssemblyName => MethodDef.Module.Assembly.FullName;
 
         public string ToFullDisplayString() => MethodDef.FullName;
+
+        public IEnumerable<string> EnumerateParameterTypeFullNames()
+        {
+            return MethodDef.Parameters.Where(p => p.IsNormalMethodParameter).Select(p => p.Type.ReflectionFullName);
+        }
     }
 }

@@ -15,10 +15,10 @@ namespace Meditation.UI
 
         MethodMetadataEntry? Method { get; }
 
-        Task CreateWorkspace(MethodMetadataEntry hookedMethod, string projectName, string assemblyName, CancellationToken ct);
+        Task CreateWorkspaceAsync(MethodMetadataEntry hookedMethod, string projectName, string assemblyName, CancellationToken ct);
         void DestroyWorkspace();
         void AddDocument(string content, Encoding? encoding = null);
-        Task<CompilationResult> Build(CancellationToken ct);
+        Task<CompilationResult> BuildAsync(CancellationToken ct);
         byte[] GetProjectAssembly();
     }
 }

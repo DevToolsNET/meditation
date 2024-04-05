@@ -5,7 +5,7 @@ namespace Meditation.Bootstrap.Managed.Utils
 {
     internal sealed class Logger : IDisposable
     {
-        private readonly StreamWriter? _loggingStream;
+        private readonly StreamWriter _loggingStream;
         private bool _disposed;
 
         public Logger(string filename)
@@ -18,10 +18,10 @@ namespace Meditation.Bootstrap.Managed.Utils
         }
 
         public void LogInfo(string message)
-            => _loggingStream?.WriteLine(FormatMessage("INF", message));
+            => _loggingStream.WriteLine(FormatMessage("INF", message));
 
         public void LogError(string message)
-            => _loggingStream?.WriteLine(FormatMessage("ERR", message));
+            => _loggingStream.WriteLine(FormatMessage("ERR", message));
 
         private static string FormatMessage(string level, string input)
             => $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}] [{level}]: {input}";
@@ -32,7 +32,7 @@ namespace Meditation.Bootstrap.Managed.Utils
                 return;
 
             _disposed = true;
-            _loggingStream?.Dispose();
+            _loggingStream.Dispose();
         }
     }
 }

@@ -7,5 +7,7 @@ namespace Meditation.InjectorService
     {
         bool TryExecuteExportedMethod(int pid, string modulePath, SafeHandle injectedModuleHandle, string exportedMethodName, string argument,
             [NotNullWhen(returnValue: true)] out uint? returnCode);
+
+        uint ExecuteExportedMethod(int pid, string modulePath, SafeHandle injectedModuleHandle, string exportedMethodName, string argument);
     }
 }

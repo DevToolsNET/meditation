@@ -22,19 +22,15 @@ namespace Meditation.PatchingService.Services
             if (!_processInjector.TryInjectModule(pid: pid, assemblyPath: configuration.NativeBootstrapLibraryPath, out var remoteMeditationBootstrapNativeModuleHandle))
                 throw new Exception("Could not inject patch!");
 
-            if (!_processInjecteeExecutor.TryExecuteExportedMethod(
-                    pid: pid,
-                    modulePath: configuration.NativeBootstrapLibraryPath,
-                    injectedModuleHandle: remoteMeditationBootstrapNativeModuleHandle,
-                    exportedMethodName: configuration.NativeExportedEntryPointSymbol,
-                    argument: hookArguments,
-                    returnCode: out var returnCode))
-            {
-                throw new Exception("Could not initialize patch!");
-            }
+            var returnCode = _processInjecteeExecutor.ExecuteExportedMethod(
+                pid: pid,
+                modulePath: configuration.NativeBootstrapLibraryPath,
+                injectedModuleHandle: remoteMeditationBootstrapNativeModuleHandle,
+                exportedMethodName: configuration.NativeExportedEntryPointSymbol,
+                argument: hookArguments);
 
             if (returnCode != 0)
-                throw new Exception($"Patch returned error code that does not indicate success: {returnCode.Value:X}.");
+                throw new Exception($"Patch returned error code that does not indicate success: {returnCode:X}.");
         }
     }
 }
