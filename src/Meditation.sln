@@ -38,6 +38,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{54FEF927-FCCF-44AF-95C2-29826B33BFAE}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\main.yml = ..\.github\workflows\main.yml
+		..\.github\workflows\release.yml = ..\.github\workflows\release.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meditation.CompilationService", "Meditation.CompilationService\Meditation.CompilationService.csproj", "{1B4E8BAA-761E-4E06-806F-4CA9CB5942FE}"

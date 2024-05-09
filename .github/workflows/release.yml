@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-windows-x64:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.*
+    - name: Restore dependencies
+      run: dotnet restore src/Meditation.sln
+    - name: Build (managed)
+      run: dotnet build -c Release src/Meditation.sln --no-restore --no-incremental /p:WarningLevel=0
+    - name: Build (native)
+      run: dotnet publish -c Release ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
+    - name: Pack release
+      run: |
+        mkdir win-x64-release
+        Copy -Path "./src/Meditation.UI.Desktop/bin/Release/net8.0/" "./win-x64-release/" -Recurse -Force -Verbose
+        Copy -Path "./src/Meditation.Bootstrap.Native/bin/Release/net8.0/win-x64/native/Meditation.Bootstrap.Native.dll" "./win-x64-release/net8.0/" -Force -Verbose
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: win-x64
+        path: win-x64-release
+        retention-days: 7
