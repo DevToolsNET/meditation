@@ -1,4 +1,10 @@
-﻿using System.Diagnostics;
+﻿using HarmonyLib;
+using Meditation.Bootstrap.Managed.Utils;
+using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 
 namespace Meditation.Bootstrap.Managed
 {
@@ -12,22 +18,98 @@ namespace Meditation.Bootstrap.Managed
         /// Note(return values): return 0 to indicate that the hook was successful. Use different values to indicate failures. These values will be interpreted by Meditation's injection service.
         /// References: for more details on these restrictions, see this: https://learn.microsoft.com/en-us/dotnet/framework/unmanaged-api/hosting/iclrruntimehost-executeindefaultappdomain-method
         /// </summary>
-        /// <param name="argument">Hook argument specified during injection</param>
+        /// <param name="input">Hook argument specified during injection</param>
         /// <returns>Zero on success, other values on failures</returns>
-        public static int Hook(string argument)
+        public static int Hook(string input)
         {
-            // Note: the following implementation is only temporary PoC and will be changed in the upcoming milestone
+            Logger? logger = null;
+
             try
             {
-                // This hook expects name of an executable to run as the argument. The process will be spawned as a child process by the hooked application
-                // Example argument: "calc.exe" (Windows-only) will spawn new process with calculator
-                Process.Start(argument);
-                return 0;
+                if (!TryParseHookArguments(input, out var errorCode, out var arguments))
+                    return (int)errorCode;
+
+                logger = new Logger(arguments.LoggingFileName);
+                logger.LogInfo($"Running in PID = {Process.GetCurrentProcess().Id}.");
+                logger.LogInfo($"Arguments: {arguments}.");
+
+                if (!TryLoadPatchAssembly(arguments.Argument, logger, out errorCode, out var patchAssembly))
+                    return (int)errorCode;
+
+                var harmonyInstance = new Harmony(arguments.UniqueIdentifier);
+                if (!TryApplyPatchesFromAssembly(harmonyInstance, patchAssembly, logger, out errorCode))
+                    return (int)errorCode;
+
+                logger.LogInfo($"Patched methods count: {harmonyInstance.GetPatchedMethods().Count()}.");
+                logger.LogInfo($"Exiting from PID = {Process.GetCurrentProcess().Id}.");
+                return (int)ManagedHookErrorCode.Ok;
             }
-            catch
+            finally
             {
-                // Unable to start desired process, indicate failure to the caller
-                return 1;
+                logger?.Dispose();
+            }
+        }
+
+        private static bool TryParseHookArguments(
+            string input, 
+            [NotNullWhen(returnValue: false)] out ManagedHookErrorCode? errorCode,
+            [NotNullWhen(returnValue: true)] out ManagedHookArguments? hookArgs)
+        {
+            if (!ManagedHookArguments.TryParse(input, out var error, out var arguments))
+            {
+                errorCode = error;
+                hookArgs = null;
+                return false;
+            }
+
+            errorCode = null;
+            hookArgs = arguments;
+            return true;
+        }
+
+        private static bool TryLoadPatchAssembly(
+            string assemblyPath, 
+            Logger logger,
+            [NotNullWhen(returnValue: false)] out ManagedHookErrorCode? errorCode,
+            [NotNullWhen(returnValue: true)] out Assembly? patchAssembly)
+        {
+            try
+            {
+                logger.LogInfo($"Loading assembly \"{assemblyPath}\".");
+                patchAssembly = Assembly.LoadFile(assemblyPath);
+                logger.LogInfo($"Successfully loaded assembly \"{assemblyPath}\".");
+                errorCode = null;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                patchAssembly = null;
+                errorCode = ManagedHookErrorCode.PatchAssemblyLoadException;
+                logger.LogError($"An unhandled exception occurred while loading assembly \"{assemblyPath}\": {ex}.");
+                return false;
+            }
+        }
+
+
+        private static bool TryApplyPatchesFromAssembly(
+            Harmony harmonyInstance, 
+            Assembly patchAssembly, 
+            Logger logger,
+            [NotNullWhen(returnValue: false)] out ManagedHookErrorCode? errorCode)
+        {
+            try
+            {
+                logger.LogInfo($"Attempting to apply patches from \"{patchAssembly}\".");
+                harmonyInstance.PatchAll(patchAssembly);
+                logger.LogInfo("Successfully patched target program.");
+                errorCode = null;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"An unhandled exception occurred while patching using \"{patchAssembly}\": {ex}.");
+                errorCode = ManagedHookErrorCode.UnhandledException_ApplyingPatches;
+                return false;
             }
         }
     }

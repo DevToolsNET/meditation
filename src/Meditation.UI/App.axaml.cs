@@ -3,7 +3,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Meditation.AttachProcessService.Configuration;
+using Meditation.CompilationService.Configuration;
+using Meditation.InjectorService.Configuration;
 using Meditation.MetadataLoaderService.Configuration;
+using Meditation.PatchingService.Configuration;
 using Meditation.UI.Configuration;
 using Meditation.UI.Utilities;
 using Meditation.UI.ViewModels;
@@ -42,7 +45,10 @@ namespace Meditation.UI
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMeditationAttachProcessService();
             serviceCollection.AddMeditationMetadataLoaderServices();
+            serviceCollection.AddMeditationCompilationServices();
             serviceCollection.AddMeditationUserInterfaceServices();
+            serviceCollection.AddMeditationInjectorServices();
+            serviceCollection.AddMeditationPatchingServices();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Resources[typeof(IServiceProvider)] = serviceProvider;
         }

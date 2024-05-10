@@ -1,0 +1,17 @@
+﻿---
+
+UniquePatchingIdentifierScope: "net.devtools.meditation"
+
+Hooking:
+  NativeExportedEntryPointSymbol: "MeditationInitialize"
+  ManagedBootstrapEntryPointTypeFullName: "Meditation.Bootstrap.Managed.EntryPoint"
+  ManagedBootstrapEntryPointMethod: "Hook"
+
+NativeExecutables:
+  - Path: "Meditation.Bootstrap.Native.dll"
+    Architecture: "X64"
+
+Logging:
+  MainApplicationFileName: "%localappdata%/Meditation/Meditation.log"
+  BootstrapNativeFileName: "%localappdata%/Meditation/Meditation.Bootstrap.Native.log"
+  BootstrapManagedFileName: "%localappdata%/Meditation/Meditation.Bootstrap.Managed.log"

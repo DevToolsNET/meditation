@@ -16,25 +16,50 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.AvaloniaEdit" />
         <PackageReference Include="Avalonia.Controls.DataGrid" />
         <PackageReference Include="Avalonia.Themes.Fluent" />
         <PackageReference Include="Avalonia.Fonts.Inter" />
         <PackageReference Include="Avalonia.Xaml.Behaviors" />
+        <PackageReference Include="AvaloniaEdit.TextMate" />
         <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
 
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" />
         <PackageReference Include="MessageBox.Avalonia" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+        <PackageReference Include="NetEscapades.Configuration.Yaml" />
+        <PackageReference Include="TextMateSharp.Grammars" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Meditation.AttachProcessService\Meditation.AttachProcessService.csproj" />
+        <ProjectReference Include="..\Meditation.CompilationService\Meditation.CompilationService.csproj" />
         <ProjectReference Include="..\Meditation.MetadataLoaderService\Meditation.MetadataLoaderService.csproj" />
+        <ProjectReference Include="..\Meditation.PatchingService\Meditation.PatchingService.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Update="Views\IDE\IdeDiagnosticsListView.axaml.cs">
+          <DependentUpon>IdeDiagnosticsListView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\IDE\DevelopmentEnvironment.axaml.cs">
+          <DependentUpon>DevelopmentEnvironment.axaml</DependentUpon>
+        </Compile>
         <Compile Update="Views\ProcessListView.axaml.cs">
         <DependentUpon>ProcessListView.axaml</DependentUpon>
         </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.yml">
+        <Generator></Generator>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
     </ItemGroup>
 </Project>

@@ -11,13 +11,13 @@ namespace Meditation.Bootstrap.Native
     {
         private delegate int GetCLRRuntimeHost([MarshalAs(UnmanagedType.LPStruct), In] Guid riid, [Out] out IntPtr ppUnk);
 
-        public static ErrorCode TryInitializeWindowsNetCoreProcess(SafeHandle coreClrModuleHandle, HookArguments args)
+        public static NativeHookErrorCode TryInitializeWindowsNetCoreProcess(SafeHandle coreClrModuleHandle, NativeHookArguments args)
         {
             if (!TryObtainClrRuntimeHostHandle(coreClrModuleHandle, out var clrRuntimeHost))
             {
                 // Could not obtain instance of the CoreCLR Runtime Host
                 // FIXME [#16]: logging
-                return ErrorCode.NotFound_Host;
+                return NativeHookErrorCode.NotFound_Host;
             }
 
             using var runtimeHost = clrRuntimeHost;

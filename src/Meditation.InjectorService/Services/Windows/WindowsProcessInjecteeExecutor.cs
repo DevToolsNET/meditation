@@ -1,4 +1,5 @@
-﻿using Meditation.Interop;
+﻿using System;
+using Meditation.Interop;
 using Meditation.Interop.Windows;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -8,6 +9,14 @@ namespace Meditation.InjectorService.Services.Windows
 {
     internal class WindowsProcessInjecteeExecutor : IProcessInjecteeExecutor
     {
+        public uint ExecuteExportedMethod(int pid, string modulePath, SafeHandle injectedModuleHandle, string exportedMethodName, string argument)
+        {
+            if (!TryExecuteExportedMethod(pid, modulePath, injectedModuleHandle, exportedMethodName, argument, out var returnCode))
+                throw new Exception($"Could not call exported symbol {exportedMethodName} with argument {argument} in PID = {pid}.");
+
+            return returnCode.Value;
+        }
+
         public bool TryExecuteExportedMethod(
             int pid, 
             string modulePath, 

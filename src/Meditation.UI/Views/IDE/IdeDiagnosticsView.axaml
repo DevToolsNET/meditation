@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Meditation.UI.ViewModels.IDE"
+             xmlns:ide="clr-namespace:Meditation.UI.Views.IDE"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:IdeDiagnosticsSummaryViewModel"
+             x:Class="Meditation.UI.Views.IDE.IdeDiagnosticsView">
+    <UserControl.Styles>
+        <Style Selector="TabItem">
+            <!-- Make default TabItem header smaller -->
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinHeight" Value="24" />
+        </Style>
+        <Style Selector="TextBox:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="LightGray" />
+        </Style>
+        <Style Selector="TextBox:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPressed}" />
+        </Style>
+		<Style Selector="TextBox:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPressed}" />
+		</Style>
+    </UserControl.Styles>
+
+    <TabControl>
+        <TabItem Header="Error List">
+            <ide:IdeDiagnosticsListView />
+        </TabItem>
+        <TabItem Header="Output">
+            <TextBox 
+                IsReadOnly="True"
+                Focusable="False"
+                Text="{Binding Output}" />
+        </TabItem>
+    </TabControl>
+</UserControl>

@@ -25,7 +25,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\Meditation.Bootstrap.Native\Meditation.Bootstrap.Native.csproj" />
 	  <ProjectReference Include="..\..\Meditation.InjectorService\Meditation.InjectorService.csproj" />
+	  <ProjectReference Include="..\..\Meditation.PatchingService\Meditation.PatchingService.csproj" />
+	  <ProjectReference Include="..\Meditation.TestBootstrapManaged\Meditation.TestBootstrapManaged.csproj" />
+	  <ProjectReference Include="..\Meditation.TestUtils\Meditation.TestUtils.csproj" />
 	</ItemGroup>
 
 </Project>
