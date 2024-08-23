@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:Meditation.UI.Views"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="150"
+        MaxWidth="450" MaxHeight="200"
+        x:Class="Meditation.UI.Windows.InputTextDialogWindow"
+        Title="InputTextDialogWindow"
+        Name="InputTextDialog">
+	<views:InputTextDialogView DataContext="{Binding #InputTextDialog.DataContext}" />
+</Window>

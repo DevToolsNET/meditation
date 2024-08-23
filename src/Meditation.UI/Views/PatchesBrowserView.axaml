@@ -1,0 +1,126 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Meditation.UI.ViewModels"
+             xmlns:models="clr-namespace:Meditation.PatchingService.Models;assembly=Meditation.PatchingService"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:PatchesBrowserViewModel"
+             x:Class="Meditation.UI.Views.PatchesBrowserView">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Filtering & Refreshing controls -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" >
+            <Grid
+                Grid.Column="0"
+                ColumnDefinitions="Auto,*"
+                IsVisible="{Binding HasData}">
+                <TextBlock
+                    Grid.Column="0"
+                    Text="Filter: "
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Left" />
+                <TextBox
+                    Grid.Column="1"
+                    x:Name="FilterTextBox"
+                    Text="{Binding PatchesNameFilter}"
+                    HorizontalAlignment="Stretch">
+                    <Interaction.Behaviors>
+                        <EventTriggerBehavior
+                            EventName="TextChanged"
+                            SourceObject="{Binding #FilterTextBox}">
+                            <InvokeCommandAction
+                                Command="{Binding FilterPatchesCommand}"/>
+                        </EventTriggerBehavior>
+                    </Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+            <Button 
+                Content="↺" 
+                Grid.Column="1" 
+                IsVisible="{Binding HasData}"
+                Command="{Binding RefreshCommand}"/>
+        </Grid>
+
+        <!-- Metadata browser -->
+        <TreeView
+            Name="PatchesBrowser"
+            Grid.Row="1"
+            IsEnabled="{Binding !IsLoadingData}"
+            SelectionMode="Single"
+            SelectedItem="{Binding SelectedItem}"
+            ItemsSource="{Binding Items.View}">
+            <TreeView.DataTemplates>
+                <!-- Patch package -->
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:PatchPackageMetadataEntry">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem 
+                                    Header="Apply" 
+                                    IsEnabled="True" 
+                                    Command="{Binding $parent[TreeView].((vm:PatchesBrowserViewModel)DataContext).ApplyCommand}"
+                                    CommandParameter="{Binding Path}"/>
+                                <MenuItem 
+                                    Header="Reverse" 
+                                    IsEnabled="False"
+                                    Command="{Binding $parent[TreeView].((vm:PatchesBrowserViewModel)DataContext).ReverseCommand}"
+                                    CommandParameter="{Binding Path}"/>
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
+                        <Image Source="/Assets/PatchPackage.png" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+
+                <!-- Assembly -->
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:PatchAssemblyMetadataEntry">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/Assembly.png" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+
+                <!-- Assembly Error -->
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:PatchAssemblyErrorMetadataEntry">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/AssemblyError.png" />
+                        <TextBlock Text="{Binding Path=Error, StringFormat=' {0}'}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+
+                <!-- Type -->
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:PatchTypeMetadataEntry">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/TypeDefinition.png" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+
+                <!-- Type Error -->
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:PatchTypeErrorMetadataEntry">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/MemberError.png" />
+                        <TextBlock Text="{Binding Path=Error, StringFormat=' {0}'}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+
+                <!-- Method -->
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:PatchMethodMetadataEntry">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/Method.png" />
+                        <TextBlock Text="{Binding Path=Name, StringFormat=' {0}'}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+
+                <!-- Method Error -->
+                <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:PatchMethodErrorMetadataEntry">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Assets/MemberError.png" />
+                        <TextBlock Text="{Binding Path=Error, StringFormat=' {0}'}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+            </TreeView.DataTemplates>
+        </TreeView>
+    </Grid>
+</UserControl>

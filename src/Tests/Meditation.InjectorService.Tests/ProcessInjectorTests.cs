@@ -1,6 +1,5 @@
 ﻿using Meditation.Interop;
 using Meditation.PatchingService;
-using Meditation.PatchingService.Models;
 using Meditation.TestBootstrapManaged;
 using Meditation.TestUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -86,10 +85,7 @@ namespace Meditation.InjectorService.Tests
         {
             // Prepare
             var patchingConfiguration = new PatchingConfiguration(
-                PatchInfo: new PatchInfo(
-                    Path: string.Empty,
-                    TargetFullAssemblyName: string.Empty,
-                    Method: null!),
+                PatchAssemblyPath: null!,
                 NativeBootstrapLibraryPath: BootstrapNativeHelpers.GetMeditationNativeModulePath(),
                 NativeExportedEntryPointSymbol: "MeditationInitialize",
                 ManagedBootstrapEntryPointTypeFullName: "Meditation.TestBootstrapManaged.EntryPoint",

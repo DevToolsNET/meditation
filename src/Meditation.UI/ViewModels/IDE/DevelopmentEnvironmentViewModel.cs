@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Immutable;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Meditation.CompilationService;
 
 namespace Meditation.UI.ViewModels.IDE
@@ -11,7 +8,7 @@ namespace Meditation.UI.ViewModels.IDE
         [ObservableProperty] private IdeTitleViewModel _titleViewModel;
         [ObservableProperty] private IdeTextEditorViewModel _textEditorViewModel;
         [ObservableProperty] private IdeDiagnosticsSummaryViewModel _diagnosticsSummaryViewModel;
-        [ObservableProperty] private IdeStatusBarViewModel _statusBarViewModel;
+        [ObservableProperty] private StatusBarViewModel _statusBarViewModel;
 
         public DevelopmentEnvironmentViewModel(
             IWorkspaceContext workspaceContext,
@@ -24,7 +21,7 @@ namespace Meditation.UI.ViewModels.IDE
                 DiagnosticEntries = new(),
                 Output = string.Empty
             };
-            StatusBarViewModel = new IdeStatusBarViewModel();
+            StatusBarViewModel = new StatusBarViewModel();
         }
     }
 }

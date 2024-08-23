@@ -9,7 +9,7 @@ namespace Meditation.MetadataLoaderService.Models
         internal readonly ModuleDef ModuleDef;
 
         public ModuleMetadataEntry(ModuleDef moduleDef, ImmutableArray<MetadataEntryBase> children)
-            : base(moduleDef.Name, new MetadataToken(moduleDef.MDToken.ToInt32()), children)
+            : base(moduleDef.Name, moduleDef.FullName, Token: null, children)
         {
             ModuleDef = moduleDef;
         }

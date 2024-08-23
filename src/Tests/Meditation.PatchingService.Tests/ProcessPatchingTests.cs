@@ -1,6 +1,5 @@
 using Meditation.Bootstrap.Managed;
 using Meditation.InjectorService;
-using Meditation.PatchingService.Models;
 using Meditation.TestUtils;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -19,13 +18,8 @@ namespace Meditation.PatchingService.Tests
         public async Task PatchingService_PatchOtherProcess(string netSdkIdentifier)
         {
             // Prepare
-            var patchInfo = new PatchInfo(
-                Path: typeof(TestPatch.Harmony.Patch).Assembly.Location,
-                TargetFullAssemblyName: typeof(TestPatch.Harmony.Patch).Assembly.FullName ?? "test-assembly",
-                Method: null! /* Not used by patch applier */);
-
             var patchingConfiguration = new PatchingConfiguration(
-                PatchInfo: patchInfo,
+                PatchAssemblyPath: typeof(TestPatch.Harmony.Patch).Assembly.Location,
                 NativeBootstrapLibraryPath: BootstrapNativeHelpers.GetMeditationNativeModulePath(),
                 NativeExportedEntryPointSymbol: "MeditationInitialize",
                 ManagedBootstrapEntryPointTypeFullName: "Meditation.Bootstrap.Managed.EntryPoint",

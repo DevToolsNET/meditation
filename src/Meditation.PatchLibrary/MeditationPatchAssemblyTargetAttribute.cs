@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Meditation.PatchLibrary
 {
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class)]
     public sealed class MeditationPatchAssemblyTargetAttribute : Attribute
     {
-        public string AssemblyFullName { get; }
+        public AssemblyName AssemblyFullName { get; }
 
         public MeditationPatchAssemblyTargetAttribute(string assemblyFullName)
         {
-            AssemblyFullName = assemblyFullName;
+            AssemblyFullName = new AssemblyName(assemblyFullName);
         }
     }
 }

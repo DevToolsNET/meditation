@@ -21,17 +21,16 @@ namespace Meditation.CompilationService.Services
             sb.AppendLine("using System;");
             sb.AppendLine("using System.Reflection;");
             sb.AppendLine();
-            sb.AppendLine($"[assembly: {nameof(MeditationPatchAssemblyTargetAttribute)}(\"{method.AssemblyName}\")]");
-            sb.AppendLine($"[assembly: {nameof(MeditationPatchTypeTargetAttribute)}(\"{method.DeclaringTypeFullName}\")]");
-            sb.AppendLine($"[assembly: {nameof(MeditationPatchMethodTargetAttribute)}(" +
+            sb.AppendLine($"[{nameof(HarmonyPatch)}]");
+            sb.AppendLine($"[{nameof(MeditationPatchAssemblyTargetAttribute)}(\"{method.AssemblyName}\")]");
+            sb.AppendLine($"[{nameof(MeditationPatchTypeTargetAttribute)}(\"{method.DeclaringTypeFullName}\")]");
+            sb.AppendLine($"[{nameof(MeditationPatchMethodTargetAttribute)}(" +
                           $"name: \"{method.Name}\", " +
                           $"isStatic: {method.IsStatic.ToString().ToLowerInvariant()}, " +
                           $"parametersCount: {method.ParametersCount})]");
             var parameterIndex = 0;
             foreach (var parameter in method.EnumerateParameterTypeFullNames())
-                sb.AppendLine($"[assembly: {nameof(MeditationPatchMethodParameterTargetAttribute)}(index: {parameterIndex++}, typeFullName: \"{parameter}\")]");
-            sb.AppendLine();
-            sb.AppendLine($"[{nameof(HarmonyPatch)}]");
+                sb.AppendLine($"[{nameof(MeditationPatchMethodParameterTargetAttribute)}(index: {parameterIndex++}, typeFullName: \"{parameter}\")]");
             sb.AppendLine("public sealed class Patch");
             using (new FormattedStringBuilderIndentationScope(sb))
             {

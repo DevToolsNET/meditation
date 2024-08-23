@@ -2,10 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:Meditation.UI.ViewModels.IDE"
+             xmlns:vm="clr-namespace:Meditation.UI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="50"
-             x:DataType="vm:IdeStatusBarViewModel"
-             x:Class="Meditation.UI.Views.IDE.IdeStatusBarView">
+             x:DataType="vm:StatusBarViewModel"
+             x:Class="Meditation.UI.Views.StatusBarView">
 	<Border
         BorderThickness="1"
         BorderBrush="Black"

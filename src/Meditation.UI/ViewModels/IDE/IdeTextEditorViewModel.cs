@@ -45,7 +45,10 @@ namespace Meditation.UI.ViewModels.IDE
                    * Build the workspace (Compilation -> Build)
                    
                    If you want to apply a patch:
-                   * TODO
+                   * Attach to a process
+                   * Select a patch from the patcher viewer
+                   * Ensure that there are no errors (target process must contain patched assemblies)
+                   * Right click the patch and press "Apply"
                    """;
         }
 

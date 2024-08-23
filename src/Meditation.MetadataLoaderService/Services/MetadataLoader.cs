@@ -7,11 +7,13 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Meditation.MetadataLoaderService.Services
 {
     internal class MetadataLoader : IMetadataLoaderInternal
     {
+        private readonly ConcurrentDictionary<AssemblyName, string> _assemblyPaths;
         private readonly ConcurrentDictionary<string, ModuleDef> _modules;
         private readonly ConcurrentDictionary<string, MetadataEntryBase> _metadataModels;
         private readonly ModuleContext _moduleContext;
@@ -25,6 +27,7 @@ namespace Meditation.MetadataLoaderService.Services
 
         public MetadataLoader()
         {
+            _assemblyPaths = new ConcurrentDictionary<AssemblyName, string>(new AssemblyNameEqualityComparer());
             _modules = new ConcurrentDictionary<string, ModuleDef>();
             _metadataModels = new ConcurrentDictionary<string, MetadataEntryBase>();
             _moduleContext = new ModuleContext() { };
@@ -104,7 +107,11 @@ namespace Meditation.MetadataLoaderService.Services
                 metadataModel = _metadataModels.GetOrAdd(path, _ =>
                 {
                     if (moduleDef.Assembly != null)
+                    {
+                        var assemblyName = new AssemblyName(moduleDef.Assembly.FullName);
+                        _assemblyPaths.TryAdd(assemblyName, path);
                         return BuildAssemblyMetadata(moduleDef.Assembly);
+                    }
 
                     return BuildModuleMetadata(moduleDef);
                 });
@@ -113,11 +120,18 @@ namespace Meditation.MetadataLoaderService.Services
             }
         }
 
+        public MetadataEntryBase LoadMetadataFromAssemblyName(AssemblyName assemblyName)
+        {
+            if (_assemblyPaths.TryGetValue(assemblyName, out var assemblyPath))
+                return LoadMetadataFromPath(assemblyPath);
+
+            throw new FileNotFoundException($"Could not find {assemblyName}.");
+        }
+
         private static AssemblyMetadataEntry BuildAssemblyMetadata(AssemblyDef assembly)
         {
-            var assemblyToken = new AssemblyToken(assembly.MDToken.ToInt32());
             var assemblyMembers = BuildAssemblyMembers(assembly);
-            return new AssemblyMetadataEntry(assembly, assemblyMembers.ToImmutableArray());
+            return new AssemblyMetadataEntry(assembly.Name, assembly.FullName, assembly.Version, assemblyMembers.ToImmutableArray());
         }
 
         private static List<MetadataEntryBase> BuildAssemblyMembers(AssemblyDef assembly)
@@ -125,7 +139,6 @@ namespace Meditation.MetadataLoaderService.Services
             var assemblyMembers = new List<MetadataEntryBase>(capacity: assembly.Modules.Count);
             foreach (var module in assembly.Modules)
             {
-                var moduleToken = new ModuleToken(module.MDToken.ToInt32());
                 var moduleMembers = BuildModuleMembers(module);
                 assemblyMembers.Add(new ModuleMetadataEntry(module, moduleMembers.ToImmutableArray()));
             }
@@ -135,7 +148,6 @@ namespace Meditation.MetadataLoaderService.Services
 
         private static ModuleMetadataEntry BuildModuleMetadata(ModuleDef module)
         {
-            var moduleToken = new ModuleToken(module.MDToken.ToInt32());
             var moduleMembers = BuildModuleMembers(module);
             return new ModuleMetadataEntry(module, moduleMembers.ToImmutableArray());
         }
