@@ -93,7 +93,7 @@ namespace Meditation.InjectorService.Tests
                 CompanyUniqueIdentifier: "net.devtools.meditation.unittests",
                 NativeBootstrapLibraryLoggingPath: "native-tests.log",
                 ManagedBootstrapLibraryLoggingPath: "managed.tests.log");
-            var hookArgs = PatchingConfiguration.ConstructHookArgs(typeof(EntryPoint).Assembly, patchingConfiguration);
+            var hookArgs = PatchingConfiguration.ConstructArgs(typeof(EntryPoint).Assembly, patchingConfiguration);
 
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();

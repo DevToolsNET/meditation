@@ -3,5 +3,6 @@
     public record HookingConfiguration(
         string NativeExportedEntryPointSymbol,
         string ManagedBootstrapEntryPointTypeFullName,
-        string ManagedBootstrapEntryPointMethod);
+        string ManagedBootstrapEntryPointHookMethod,
+        string ManagedBootstrapEntryPointUnhookMethod);
 }
