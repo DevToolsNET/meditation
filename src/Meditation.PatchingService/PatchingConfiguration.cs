@@ -12,7 +12,7 @@ namespace Meditation.PatchingService
         string NativeBootstrapLibraryLoggingPath,
         string ManagedBootstrapLibraryLoggingPath)
     {
-        public static string ConstructHookArgs(Assembly patchAssembly, PatchingConfiguration configuration)
+        public static string ConstructArgs(Assembly patchAssembly, PatchingConfiguration configuration)
         {
             return string.Join('#',
                 configuration.NativeBootstrapLibraryLoggingPath,

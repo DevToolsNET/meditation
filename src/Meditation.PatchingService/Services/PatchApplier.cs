@@ -17,7 +17,7 @@ namespace Meditation.PatchingService.Services
 
         public void ApplyPatch(int pid, PatchingConfiguration configuration)
         {
-            var hookArguments = PatchingConfiguration.ConstructHookArgs(typeof(EntryPoint).Assembly, configuration);
+            var hookArguments = PatchingConfiguration.ConstructArgs(typeof(EntryPoint).Assembly, configuration);
 
             if (!_processInjector.TryInjectModule(pid: pid, assemblyPath: configuration.NativeBootstrapLibraryPath, out var remoteMeditationBootstrapNativeModuleHandle))
                 throw new Exception("Could not inject patch!");

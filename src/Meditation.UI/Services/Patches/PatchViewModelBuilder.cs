@@ -24,7 +24,8 @@ namespace Meditation.UI.Services.Patches
             foreach (var patchesAssembly in patchInfos.GroupBy(p => p.TargetAssemblyName))
                 childrenBuilder.Add(BuildAssemblyViewModel(patchesAssembly.Key, patchesAssembly.ToImmutableArray()));
 
-            return new PatchPackageMetadataEntry(patchAssembly.Name!, patchAssembly.FullName, patchInfos.First().Path, childrenBuilder.ToImmutable());
+            var isReversible = patchInfos.All(pi => pi.IsReversible);
+            return new PatchPackageMetadataEntry(patchAssembly.Name!, patchAssembly.FullName, patchInfos.First().Path, isReversible, childrenBuilder.ToImmutable());
         }
 
         private MetadataEntryBase BuildAssemblyViewModel(AssemblyName assemblyName, ImmutableArray<PatchInfo> patches)
