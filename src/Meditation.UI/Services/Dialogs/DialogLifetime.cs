@@ -32,11 +32,11 @@ namespace Meditation.UI.Services.Dialogs
 
         public void Close()
         {
-            if (!_isShown || _taskCompletionSource == null)
-                throw new InvalidOperationException("Dialog is in an invalid state.");
+            if (!_isShown)
+                return;
 
             _dialogWindow.Close();
-            _taskCompletionSource.SetResult();
+            _taskCompletionSource?.SetResult();
             _isShown = false;
         }
 

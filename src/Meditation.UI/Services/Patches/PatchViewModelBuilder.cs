@@ -2,6 +2,7 @@
 using Meditation.MetadataLoaderService.Models;
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Meditation.PatchingService.Models;
@@ -64,29 +65,41 @@ namespace Meditation.UI.Services.Patches
             return new PatchTypeMetadataEntry(typeMetadataEntry.Name, typeMetadataEntry.FullName, childrenBuilder.ToImmutable());
         }
 
-        private MetadataEntryBase BuildMethodViewModel(TypeMetadataEntry typeMetadataEntry, PatchInfo patch)
+        private static MetadataEntryBase BuildMethodViewModel(TypeMetadataEntry typeMetadataEntry, PatchInfo patch)
         {
-            var targetMethod = typeMetadataEntry.Children
-                .Where(c => c is MethodMetadataEntry)
-                .Cast<MethodMetadataEntry>()
-                .SingleOrDefault(m =>
-                {
-                    if (m.Name != patch.Method.Name ||
-                        m.ParametersCount != patch.Method.ParametersCount ||
-                        m.IsStatic != patch.Method.IsStatic)
-                    {
-                        return false;
-                    }
-
-                    var paramIndex = 0;
-                    return m.EnumerateParameterTypeFullNames()
-                        .All(param => param == patch.Method.ParameterFullTypeNames[paramIndex++]);
-                });
-
-            if (targetMethod is not { })
+            if (!TryFindTargetMethod(typeMetadataEntry, patch, out var targetMethod))
                 return new PatchMethodErrorMetadataEntry($"Could not find method \"{patch.Method}\".");
 
             return new PatchMethodMetadataEntry(targetMethod.Name, targetMethod.FullName, targetMethod.Children);
+        }
+
+        private static bool TryFindTargetMethod(
+            TypeMetadataEntry typeMetadataEntry, 
+            PatchInfo patch, 
+            [NotNullWhen(returnValue: true)] out MetadataEntryBase? targetMethod)
+        {
+            foreach (var member in typeMetadataEntry.Children)
+            {
+                if (member is not MethodMetadataEntry method)
+                    continue;
+
+                // Try match method metadata
+                if (!method.Name.Equals(patch.Method.Name, StringComparison.Ordinal))
+                    continue;
+                if (method.ParametersCount != patch.Method.ParametersCount)
+                    continue;
+                if (method.IsStatic != patch.Method.IsStatic)
+                    continue;
+                var paramIndex = 0;
+                if (method.EnumerateParameterTypeFullNames().Any(param => param != patch.Method.ParameterFullTypeNames[paramIndex++]))
+                    continue;
+
+                targetMethod = method;
+                return true;
+            }
+
+            targetMethod = null;
+            return false;
         }
     }
 }

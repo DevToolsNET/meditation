@@ -52,7 +52,7 @@ namespace Meditation.UI.Controllers
         {
             try
             {
-                // TODO: implement patch reverse
+                // TODO [#41]: implement patch reverse
                 throw new NotImplementedException("Reversing has not been implemented yet.");
             }
             catch (Exception exception)
