@@ -32,10 +32,8 @@ namespace Meditation.AttachProcessService.Models
             if (_isInitialized)
                 return;
 
-            if (await _processArchitectureProvider.TryGetProcessArchitectureAsync(InternalProcess, out var architecture, ct))
-                Architecture = architecture;
-            if (await _processCommandLineProvider.TryGetCommandLineArgumentsAsync(InternalProcess, out var commandLineArguments, ct))
-                CommandLineArguments = commandLineArguments;
+            Architecture = await _processArchitectureProvider.TryGetProcessArchitectureAsync(InternalProcess, ct);
+            CommandLineArguments = await _processCommandLineProvider.TryGetCommandLineArgumentsAsync(InternalProcess, ct);
 
             _isInitialized = true;
         }

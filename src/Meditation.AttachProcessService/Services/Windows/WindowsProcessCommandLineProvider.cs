@@ -14,10 +14,10 @@ namespace Meditation.AttachProcessService.Services.Windows
     // ReSharper disable InconsistentNaming
     internal class WindowsProcessCommandLineProvider : IProcessCommandLineProvider
     {
-        public Task<bool> TryGetCommandLineArgumentsAsync(Process process, [NotNullWhen(true)] out string? commandLineArguments, CancellationToken ct)
+        public Task<string?> TryGetCommandLineArgumentsAsync(Process process, CancellationToken ct)
         {
-            var result = TryGetCommandLineArgumentsCore(process, out commandLineArguments);
-            return Task.FromResult(result);
+            TryGetCommandLineArgumentsCore(process, out var commandLineArguments);
+            return Task.FromResult(commandLineArguments);
         }
 
         private static bool TryGetCommandLineArgumentsCore(Process process, [NotNullWhen(returnValue: true)] out string? commandLine)

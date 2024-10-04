@@ -16,9 +16,12 @@ An application for runtime patching of .NET programs.
 * Visual Studio 2022 with component "Desktop development with C++"
 	* See for more information: [Native AOT Prerequisites for Windows](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows#prerequisites).
 
-#### Linux :construction:
+#### Linux
 
-*Not supported yet.*
+* .NET 8 SDK
+* clang
+* zlib1g-dev
+* See for more information: [Native AOT Prerequisites for Linux](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=linux-ubuntu%2Cnet8#prerequisites)
 
 ### Building & Setup
 
@@ -35,9 +38,18 @@ cp src/Meditation.Bootstrap.Native/bin/Debug/net8.0/win-x64/native/Meditation.Bo
    src/Meditation.UI.Desktop/bin/Debug/net8.0/Meditation.Bootstrap.Native.dll
 ```
 
-#### Linux :construction:
+#### Linux
 
-*Not supported yet.*
+* Build managed and unmanaged DLLs:
+```bash
+dotnet build -c Debug src/Meditation.sln
+dotnet publish -c Debug src/Meditation.Bootstrap.Native -r linux-x64
+```
+* Install native dependency:
+```bash
+cp src/Meditation.Bootstrap.Native/bin/Debug/net8.0/win-x64/native/Meditation.Bootstrap.Native.so \
+   src/Meditation.UI.Desktop/bin/Debug/net8.0/Meditation.Bootstrap.Native.so
+```
 
 ## State of development
 
@@ -48,7 +60,7 @@ The project is under development in the pre-stable release state. Supported .NET
 | Windows-x86             | :x:                         | :x:                   |
 | Windows-x64             | :construction:              | :white_check_mark:    |
 | Linux-x86               | (not applicable)            | :x:                   |
-| Linux-x64               | (not applicable)            | :construction:        |
+| Linux-x64               | (not applicable)            | :white_check_mark:    |
 
 ## Licensing
 

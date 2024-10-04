@@ -20,10 +20,9 @@ namespace Meditation.AttachProcessService.Tests
 
             // Act
             var process = (await attachableProcessListProvider.GetAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
-            var result = await commandLineArgumentsProvider.TryGetCommandLineArgumentsAsync(process, out var commandLineArguments, CancellationToken.None);
+            var commandLineArguments = await commandLineArgumentsProvider.TryGetCommandLineArgumentsAsync(process, CancellationToken.None);
 
             // Assert
-            Assert.True(result);
             Assert.NotNull(commandLineArguments);
             Assert.NotEmpty(commandLineArguments);
         }
