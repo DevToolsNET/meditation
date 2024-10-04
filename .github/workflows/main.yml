@@ -16,8 +16,7 @@ jobs:
     - name: Build
       run: dotnet build -c Debug src/Meditation.sln --no-restore --no-incremental /warnaserror
       
-      
-  tests:
+  tests-windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
@@ -39,3 +38,23 @@ jobs:
       run: dotnet test src/Tests/Meditation.InjectorService.Tests/Meditation.InjectorService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
     - name: Test (patcher)
       run: dotnet test src/Tests/Meditation.PatchingService.Tests/Meditation.PatchingService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
+  
+  tests-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.*
+    - name: Restore dependencies
+      run: dotnet restore src/Meditation.sln
+    - name: Build (managed)
+      run: dotnet build -c Debug src/Meditation.sln --no-restore --no-incremental /property:WarningLevel=0
+    - name: Build (native)
+      run: dotnet publish -c Debug ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r linux-x64
+    - name: Test (attach)
+      run: dotnet test src/Tests/Meditation.AttachProcessService.Tests/Meditation.AttachProcessService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
+    - name: Test (metadata)
+      run: dotnet test src/Tests/Meditation.MetadataLoaderService.Tests/Meditation.MetadataLoaderService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
+    

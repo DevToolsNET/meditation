@@ -22,10 +22,10 @@ namespace Meditation.AttachProcessService.Tests
 
             // Act
             var process = (await attachableProcessListProvider.GetAttachableProcessesAsync(CancellationToken.None)).Single(p => p.Id == pid).InternalProcess;
-            var result = await architectureProvider.TryGetProcessArchitectureAsync(process, out var architecture, CancellationToken.None);
+            var architecture = await architectureProvider.TryGetProcessArchitectureAsync(process, CancellationToken.None);
 
             // Assert
-            Assert.True(result);
+            Assert.NotNull(architecture);
             Assert.Equal(currentArchitecture, architecture);
         }
     }

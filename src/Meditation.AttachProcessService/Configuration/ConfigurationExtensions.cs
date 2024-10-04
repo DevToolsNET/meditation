@@ -1,4 +1,5 @@
 ﻿using Meditation.AttachProcessService.Services;
+using Meditation.AttachProcessService.Services.Linux;
 using Meditation.AttachProcessService.Services.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -36,7 +37,8 @@ namespace Meditation.AttachProcessService.Configuration
 
         private static void AddLinuxServices(this IServiceCollection services)
         {
-            throw new NotImplementedException(OSPlatform.Linux.ToString());
+            services.AddSingleton<IProcessCommandLineProvider, LinuxProcessCommandLineProvider>();
+            services.AddSingleton<IProcessArchitectureProvider, LinuxProcessArchitectureProvider>();
         }
     }
 }
