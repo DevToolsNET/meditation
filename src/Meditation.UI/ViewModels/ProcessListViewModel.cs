@@ -12,14 +12,21 @@ namespace Meditation.UI.ViewModels
     public partial class ProcessListViewModel : ViewModelBase
     {
         private readonly IAttachableProcessesAggregator _processListAggregator;
+        private readonly IPrivilegeElevatorService _privilegeElevatorService;
 
         [ObservableProperty] private FilterableCollectionView<ProcessInfo> _processList;
         [ObservableProperty] private ProcessInfo? _selectedProcess;
         [ObservableProperty] private string? _nameFilter;
+        [ObservableProperty] private bool _isElevated;
 
-        public ProcessListViewModel(IAttachableProcessesAggregator processListAggregator)
+        public ProcessListViewModel(
+            IAttachableProcessesAggregator processListAggregator,
+            IPrivilegeElevatorService privilegeElevatorService)
         {
             _processListAggregator = processListAggregator;
+            _privilegeElevatorService = privilegeElevatorService;
+
+            IsElevated = _privilegeElevatorService.IsElevated();
             ProcessList = new FilterableCollectionView<ProcessInfo>(GetAttachableProcessesAsync(CancellationToken.None));
         }
 
@@ -36,6 +43,12 @@ namespace Meditation.UI.ViewModels
         {
             _processListAggregator.Refresh();
             ProcessList = new FilterableCollectionView<ProcessInfo>(GetAttachableProcessesAsync(CancellationToken.None));
+        }
+
+        [RelayCommand]
+        public void RestartAsElevated()
+        {
+            _privilegeElevatorService.RestartAsElevated();
         }
 
         private async Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct)
