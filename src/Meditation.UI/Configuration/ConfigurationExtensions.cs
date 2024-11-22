@@ -5,6 +5,9 @@ using Meditation.UI.Services.Patches;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using Meditation.UI.Services.Windows;
 
 namespace Meditation.UI.Configuration
 {
@@ -22,6 +25,28 @@ namespace Meditation.UI.Configuration
             services.AddSingleton<DevelopmentEnvironmentController>();
             services.AddSingleton<PatchProcessController>();
             services.AddSingleton<InputTextDialogController>();
+            services.AddPlatformSpecificServices();
+        }
+
+        private static void AddPlatformSpecificServices(this IServiceCollection services)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                services.AddWindowsServices();
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                services.AddLinuxServices();
+            else
+                throw new PlatformNotSupportedException(RuntimeInformation.OSDescription);
+        }
+
+        [SupportedOSPlatform("windows")]
+        private static void AddWindowsServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IPrivilegeElevatorService, WindowsPrivilegeElevatorService>();
+        }
+
+        private static void AddLinuxServices(this IServiceCollection services)
+        {
+            throw new NotImplementedException(OSPlatform.Linux.ToString());
         }
 
         private static void ConfigureServices(this IServiceCollection services)
