@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -38,6 +39,13 @@ namespace Meditation.AttachProcessService.Services.Windows
                 handle = process.Handle;
                 return true;
             }
+            catch (Win32Exception)
+            {
+                // FIXME [#16]: add logging
+                // Most likely insufficient rights (access denied)
+                handle = null;
+                return false;
+            }
             catch (InvalidOperationException)
             {
                 // FIXME [#16]: add logging
@@ -49,6 +57,13 @@ namespace Meditation.AttachProcessService.Services.Windows
             {
                 // FIXME [#16]: add logging
                 // Process is running on a remote computer (unsupported)
+                handle = null;
+                return false;
+            }
+            catch (Exception)
+            {
+                // FIXME [#16]: add logging
+                // Unrecognized exception
                 handle = null;
                 return false;
             }

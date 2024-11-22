@@ -11,7 +11,7 @@
              x:CompileBindings="False">
 
     <Grid RowDefinitions="Auto,*">
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto">
             <TextBlock Grid.Column="0" Text="Filter: " VerticalAlignment="Center" HorizontalAlignment="Left" />
             <TextBox Grid.Column="1" x:Name="FilterTextBox" Text="{Binding NameFilter}" HorizontalAlignment="Stretch">
                 <i:Interaction.Behaviors>
@@ -21,7 +21,8 @@
                 </i:Interaction.Behaviors>
             </TextBox>
             <Button Grid.Column="2" Content="Refresh list" Command="{Binding RefreshProcessListCommand}" HorizontalAlignment="Right" />
-        </Grid>
+            <Button Grid.Column="3" Content="Elevate privilege" IsEnabled="{Binding !IsElevated}" Command="{Binding RestartAsElevatedCommand}" HorizontalAlignment="Right" />
+		</Grid>
 
         <DockPanel Grid.Row="1">
             <DataGrid ItemsSource="{Binding ProcessList.View^}" SelectedItem="{Binding SelectedProcess}" DockPanel.Dock="Top">
