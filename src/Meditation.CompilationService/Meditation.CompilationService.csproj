@@ -1,7 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="Lib.Harmony" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Meditation.MetadataLoaderService\Meditation.MetadataLoaderService.csproj" />
