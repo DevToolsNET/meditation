@@ -1,6 +1,7 @@
 ﻿using Meditation.UI.Controllers;
 using Meditation.UI.Services;
 using Meditation.UI.Services.Dialogs;
+using Meditation.UI.Services.Patches;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,8 +17,11 @@ namespace Meditation.UI.Configuration
             services.AddSingleton<IAvaloniaDialogService, AvaloniaDialogService>();
             services.AddSingleton<IAttachedProcessContext, AttachedProcessContext>();
             services.AddSingleton<IWorkspaceContext, WorkspaceContext>();
+            services.AddSingleton<IPatchViewModelBuilder, PatchViewModelBuilder>();
             services.AddSingleton<AttachToProcessController>();
             services.AddSingleton<DevelopmentEnvironmentController>();
+            services.AddSingleton<PatchProcessController>();
+            services.AddSingleton<InputTextDialogController>();
         }
 
         private static void ConfigureServices(this IServiceCollection services)

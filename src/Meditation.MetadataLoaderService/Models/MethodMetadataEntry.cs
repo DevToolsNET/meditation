@@ -10,7 +10,7 @@ namespace Meditation.MetadataLoaderService.Models
         internal readonly MethodDef MethodDef;
 
         internal MethodMetadataEntry(MethodDef methodDef, ImmutableArray<MetadataEntryBase> children)
-            : base(methodDef.Name, new MetadataToken(methodDef.MDToken.ToInt32()), children)
+            : base(methodDef.Name, methodDef.FullName, new MetadataToken(methodDef.MDToken.ToInt32()), children)
         {
             MethodDef = methodDef;
         }

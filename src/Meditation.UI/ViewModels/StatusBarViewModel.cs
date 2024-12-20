@@ -1,16 +1,16 @@
 ﻿using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Meditation.UI.ViewModels.IDE
+namespace Meditation.UI.ViewModels
 {
-    public partial class IdeStatusBarViewModel : ViewModelBase
+    public partial class StatusBarViewModel : ViewModelBase
     {
         [ObservableProperty] private string? _text;
         [ObservableProperty] private IBrush _backgroundBrush;
         private static readonly IBrush _defaultBrush = Brushes.LightGray;
         private const string DefaultTitle = "Ready";
 
-        public IdeStatusBarViewModel()
+        public StatusBarViewModel()
         {
             _text = DefaultTitle;
             _backgroundBrush = _defaultBrush;

@@ -4,11 +4,11 @@ using Meditation.AttachProcessService;
 using Meditation.UI.Services.Dialogs;
 using Meditation.UI.ViewModels;
 using Meditation.UI.Windows;
-using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Meditation.UI.Controllers.Utils;
 
 namespace Meditation.UI.Controllers
 {
@@ -38,7 +38,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                return ShowUnhandledExceptionMessageBox(exception);
+                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -52,7 +52,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                return ShowUnhandledExceptionMessageBox(exception);
+                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -65,7 +65,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                return ShowUnhandledExceptionMessageBox(exception);
+                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -78,7 +78,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                return ShowUnhandledExceptionMessageBox(exception);
+                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -86,14 +86,14 @@ namespace Meditation.UI.Controllers
         {
             if (_attachedProcessContext.ProcessSnapshot is { } snapshot)
             {
-                await ShowMessageBox(
+                await DialogUtilities.ShowMessageBox(
                     title: "Cannot attach to multiple processes",
                     content: $"To attach another process, detach first from the currently attached process ({snapshot.ProcessId.Value}).");
                 return;
             }
 
             _attachProcessDialogLifetime = _dialogService.CreateDialog<AttachToProcessWindow>();
-            _attachProcessDialogLifetime.Show();
+            await _attachProcessDialogLifetime.Show();
         }
 
         private void CloseAttachProcessWindowImplementation()
@@ -110,7 +110,7 @@ namespace Meditation.UI.Controllers
         {
             if (processListViewModel.SelectedProcess is not { } selectedProcessInfo)
             {
-                await ShowMessageBox(title: "Nothing selected", content: "You need to select a process before proceeding.");
+                await DialogUtilities.ShowMessageBox(title: "Nothing selected", content: "You need to select a process before proceeding.");
                 return;
             }
 
@@ -126,7 +126,7 @@ namespace Meditation.UI.Controllers
         {
             if (_attachedProcessContext.ProcessSnapshot is { } snapshot)
             {
-                var result = await ShowMessageBox(
+                var result = await DialogUtilities.ShowMessageBox(
                     title: "Preparing to detach process",
                     content: $"Do you want to detach from process ({snapshot.ProcessId.Value})?",
                     buttonEnum: ButtonEnum.YesNo);
@@ -136,7 +136,7 @@ namespace Meditation.UI.Controllers
             }
             else
             {
-                await ShowMessageBox(title: "Nothing to detach", content: "No process is currently attached.");
+                await DialogUtilities.ShowMessageBox(title: "Nothing to detach", content: "No process is currently attached.");
             }
         }
 
@@ -149,20 +149,9 @@ namespace Meditation.UI.Controllers
             catch (Exception exception)
             {
                 // FIXME [#16]: add logging
-                await ShowMessageBox(title: "Failed to attach process", content: $"Could not attach to selected process due to: {exception}");
+                await DialogUtilities.ShowMessageBox(title: "Failed to attach process", content: $"Could not attach to selected process due to: {exception}");
                 return null;
             }
-        }
-
-        private static Task<ButtonResult> ShowMessageBox(string title, string content, ButtonEnum buttonEnum = ButtonEnum.Ok)
-        {
-            var messageBox = MessageBoxManager.GetMessageBoxStandard(title: title, text: content, @enum: buttonEnum);
-            return messageBox.ShowAsync();
-        }
-
-        private static Task ShowUnhandledExceptionMessageBox(Exception exception)
-        {
-            return ShowMessageBox(title: "Unhandled exception", content: exception.ToString());
         }
     }
 }

@@ -19,28 +19,6 @@ namespace Meditation.MetadataLoaderService.Models
         }
     }
 
-    public readonly record struct ModuleToken
-    {
-        public int Value { get; }
-
-        public ModuleToken(int value)
-        {
-            MetadataToken.EnsureTokenValueIsValid(value);
-            Value = value;
-        }
-    }
-
-    public readonly record struct AssemblyToken
-    {
-        public int Value { get; }
-
-        public AssemblyToken(int value)
-        {
-            MetadataToken.EnsureTokenValueIsValid(value);
-            Value = value;
-        }
-    }
-
     public readonly record struct TypeDefinitionToken
     {
         public int Value { get; }

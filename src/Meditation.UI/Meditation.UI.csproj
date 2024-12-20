@@ -9,8 +9,12 @@
 
     <ItemGroup>
         <None Remove="Assets\Assembly.png" />
+        <None Remove="Assets\AssemblyError.png" />
+        <None Remove="Assets\MemberError.png" />
         <None Remove="Assets\Method.png" />
         <None Remove="Assets\Module.png" />
+        <None Remove="Assets\ModuleError.png" />
+        <None Remove="Assets\PatchPackage.png" />
         <None Remove="Assets\TypeDefinition.png" />
     </ItemGroup>
 
@@ -18,6 +22,7 @@
         <PackageReference Include="Avalonia" />
         <PackageReference Include="Avalonia.AvaloniaEdit" />
         <PackageReference Include="Avalonia.Controls.DataGrid" />
+        <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
         <PackageReference Include="Avalonia.Themes.Fluent" />
         <PackageReference Include="Avalonia.Fonts.Inter" />
         <PackageReference Include="Avalonia.Xaml.Behaviors" />
@@ -41,6 +46,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Update="Views\StatusBarView.axaml.cs">
+          <DependentUpon>StatusBarView.axaml</DependentUpon>
+        </Compile>
         <Compile Update="Views\IDE\IdeDiagnosticsListView.axaml.cs">
           <DependentUpon>IdeDiagnosticsListView.axaml</DependentUpon>
         </Compile>

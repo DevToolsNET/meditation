@@ -6,6 +6,7 @@ using Meditation.MetadataLoaderService.Models;
 using Meditation.PatchingService;
 using Meditation.PatchingService.Models;
 using Meditation.UI.Configuration;
+using Meditation.UI.Controllers.Utils;
 using Meditation.UI.ViewModels;
 using Meditation.UI.ViewModels.IDE;
 using Microsoft.CodeAnalysis;
@@ -22,33 +23,21 @@ namespace Meditation.UI.Controllers
 {
     public partial class DevelopmentEnvironmentController
     {
-        private readonly ApplicationConfiguration _configuration;
         private readonly IWorkspaceContext _compilationContext;
-        private readonly IAttachedProcessContext _attachedProcessContext;
-        private readonly IProcessListProvider _processListProvider;
         private readonly IPatchStorage _patchStorage;
-        private readonly IPatchListProvider _patchListProvider;
-        private readonly IPatchApplier _patchApplier;
         private readonly IAvaloniaDialogService _dialogService;
+        private readonly InputTextDialogController _inputTextDialogController;
 
         public DevelopmentEnvironmentController(
-            ApplicationConfiguration configuration, 
             IWorkspaceContext compilationContext, 
-            IAttachedProcessContext attachedProcessContext,
-            IProcessListProvider processListProvider,
-            IPatchListProvider patchListProvider, 
             IPatchStorage patchStorage,
-            IPatchApplier patchApplier,
-            IAvaloniaDialogService dialogService)
+            IAvaloniaDialogService dialogService,
+            InputTextDialogController inputTextDialogController)
         {
-            _configuration = configuration;
             _compilationContext = compilationContext;
-            _attachedProcessContext = attachedProcessContext;
-            _processListProvider = processListProvider;
-            _patchListProvider = patchListProvider;
             _patchStorage = patchStorage;
-            _patchApplier = patchApplier;
             _dialogService = dialogService;
+            _inputTextDialogController = inputTextDialogController;
         }
 
         [RelayCommand]
@@ -66,11 +55,18 @@ namespace Meditation.UI.Controllers
                     return;
                 }
 
-                await _compilationContext.CreateWorkspaceAsync(method, "MeditationTemporaryProject", "MeditationPatch", ct);
+                // Let user select project (assembly) name for the new patch
+                var dialog = await _inputTextDialogController.CreateDialog("Enter patch name for the new workspace:");
+                if (dialog is null || await _inputTextDialogController.GetDataContext(dialog) is not {} inputTextDialogDataContext)
+                    return;
+                await _inputTextDialogController.ShowDialog(dialog);
+
+                var projectName = inputTextDialogDataContext.Text ?? "MyPatch";
+                await _compilationContext.CreateWorkspaceAsync(method, projectName, projectName, ct);
             }
             catch (Exception exception)
             {
-                await ShowUnhandledExceptionMessageBoxAsync(exception);
+                await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -89,7 +85,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                await ShowUnhandledExceptionMessageBoxAsync(exception);
+                await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -113,7 +109,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                await ShowUnhandledExceptionMessageBoxAsync(exception);
+                await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -142,51 +138,6 @@ namespace Meditation.UI.Controllers
             var data = _compilationContext.GetProjectAssembly();
             await _patchStorage.StorePatch(fullPath, data, overwriteExistingFile: true, ct);
             ideViewModel.StatusBarViewModel.SetSuccessStatus($"Saved as {fullPath}.");
-
-            // TODO: code is temporary and will be refactored in milestone 4
-            messageBox = MessageBoxManager.GetMessageBoxStandard(
-                title: "Patch was successfully stored",
-                text: "Do you want to apply it?",
-                @enum: ButtonEnum.YesNo);
-            result = await messageBox.ShowAsync();
-            if (result != ButtonResult.Yes)
-                return;
-
-            var patch = _patchListProvider.GetAllPatches().Single(p => string.Equals(
-                Path.GetFullPath(p.Path), 
-                Path.GetFullPath(fileInfo.Path.AbsolutePath), 
-                StringComparison.InvariantCultureIgnoreCase));
-
-            await ApplyPatchAsync(patch, ct);
-        }
-
-        private async Task ApplyPatchAsync(PatchInfo patch, CancellationToken ct)
-        {
-            // TODO: this code is temporary and will be refactored in milestone 4
-            var processId = new ProcessId(_attachedProcessContext.ProcessSnapshot!.ProcessId.Value);
-            var processInfo = _processListProvider.GetProcessById(processId);
-            await processInfo.Initialize(ct);
-
-            if (processInfo.Architecture is null)
-                throw new Exception($"Could not determine architecture of the target process {processId}.");
-
-            var bootstrapLibrary = _configuration.NativeExecutables
-                .FirstOrDefault(e => e.Architecture == processInfo.Architecture);
-
-            if (bootstrapLibrary == null)
-                throw new Exception($"Application configuration did not specify native executable for architecture {processInfo.Architecture}.");
-
-            var patchConfiguration = new PatchingConfiguration(
-                PatchInfo: patch,
-                NativeBootstrapLibraryPath: bootstrapLibrary.Path,
-                NativeExportedEntryPointSymbol: _configuration.Hooking.NativeExportedEntryPointSymbol,
-                ManagedBootstrapEntryPointTypeFullName: _configuration.Hooking.ManagedBootstrapEntryPointTypeFullName,
-                ManagedBootstrapEntryPointMethod: _configuration.Hooking.ManagedBootstrapEntryPointMethod,
-                CompanyUniqueIdentifier: _configuration.UniquePatchingIdentifierScope,
-                NativeBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapNativeFileName,
-                ManagedBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapManagedFileName);
-
-            await Task.Run(() => _patchApplier.ApplyPatch(processId.Value, patchConfiguration), ct);
         }
 
         private void UpdateUserInterfaceAfterBuild(DevelopmentEnvironmentViewModel ideViewModel, CompilationResult compilationResult)
@@ -214,17 +165,6 @@ namespace Meditation.UI.Controllers
                 ideViewModel.StatusBarViewModel.SetWarningStatus($"Build succeeded with {warningsCount} warning(s).");
             else
                 ideViewModel.StatusBarViewModel.SetSuccessStatus("Build succeeded.");
-        }
-
-        private static Task<ButtonResult> ShowMessageBoxAsync(string title, string content, ButtonEnum buttonEnum = ButtonEnum.Ok)
-        {
-            var messageBox = MessageBoxManager.GetMessageBoxStandard(title: title, text: content, @enum: buttonEnum);
-            return messageBox.ShowAsync();
-        }
-
-        private static Task ShowUnhandledExceptionMessageBoxAsync(Exception exception)
-        {
-            return ShowMessageBoxAsync(title: "Unhandled exception", content: exception.ToString());
         }
     }
 }

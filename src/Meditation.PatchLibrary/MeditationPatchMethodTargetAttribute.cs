@@ -2,7 +2,7 @@
 
 namespace Meditation.PatchLibrary
 {
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class MeditationPatchMethodTargetAttribute : Attribute
     {
         public string Name { get; }

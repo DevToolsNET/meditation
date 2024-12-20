@@ -1,5 +1,4 @@
-﻿using dnlib.DotNet;
-using System;
+﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -7,16 +6,16 @@ namespace Meditation.MetadataLoaderService.Models
 {
     public record AssemblyMetadataEntry : MetadataEntryBase
     {
-        public Version Version => AssemblyDef.Version;
+        public Version Version { get; }
         public ModuleMetadataEntry ManifestModule { get; }
-        internal readonly AssemblyDef AssemblyDef;
 
-        public AssemblyMetadataEntry(AssemblyDef assemblyDef, ImmutableArray<MetadataEntryBase> children)
-            : base(assemblyDef.Name, new MetadataToken(assemblyDef.MDToken.ToInt32()), children)
+        public AssemblyMetadataEntry(string name, string fullName, Version version, ImmutableArray<MetadataEntryBase> children)
+            : base(name, fullName, Token: null, children)
         {
-            AssemblyDef = assemblyDef;
+            Version = version;
+            FullName = fullName;
             if (children.FirstOrDefault() is not ModuleMetadataEntry manifestModule)
-                throw new ArgumentException($"Assembly \"{assemblyDef.FullName}\" is corrupted.");
+                throw new ArgumentException($"Assembly \"{FullName}\" is corrupted.");
             ManifestModule = manifestModule;
         }
     }

@@ -1,12 +1,13 @@
 ﻿using Meditation.PatchingService.Models;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Loader;
+using HarmonyLib;
 using Meditation.PatchLibrary;
+using PatchInfo = Meditation.PatchingService.Models.PatchInfo;
 
 namespace Meditation.PatchingService.Services
 {
@@ -14,12 +15,13 @@ namespace Meditation.PatchingService.Services
     {
         private readonly IPatchStorage _patchStorage;
         private readonly AssemblyLoadContext _assemblyLoadContext;
-        private ImmutableArray<PatchInfo> _patches;
+        private ImmutableDictionary<AssemblyName, ImmutableArray<PatchInfo>> _patches;
         private bool _isReloadRequested;
 
         public PatchListProvider(IPatchStorage patchStorage)
         {
             _patchStorage = patchStorage;
+            _patches = ImmutableDictionary<AssemblyName, ImmutableArray<PatchInfo>>.Empty;
             _assemblyLoadContext = new AssemblyLoadContext(name: nameof(PatchListProvider));
             _isReloadRequested = true;
         }
@@ -29,7 +31,7 @@ namespace Meditation.PatchingService.Services
             _isReloadRequested = true;
         }
 
-        public ImmutableArray<PatchInfo> GetAllPatches()
+        public ImmutableDictionary<AssemblyName, ImmutableArray<PatchInfo>> GetAllPatches()
         {
             if (!_isReloadRequested)
                 return _patches;
@@ -37,53 +39,62 @@ namespace Meditation.PatchingService.Services
             var files = Directory.GetFiles(_patchStorage.GetRootFolderForPatches())
                 .Where(f => string.Equals(Path.GetExtension(f), ".dll", StringComparison.InvariantCultureIgnoreCase));
 
-            var patchesBuilder = new List<PatchInfo>();
+            var patchesBuilder = ImmutableDictionary.CreateBuilder<AssemblyName, ImmutableArray<PatchInfo>>();
             foreach (var file in files)
             {
-                if (!TryLoadPatch(file, out var patchInfo))
+                var patches = LoadPatches(file);
+                if (patches.Length == 0)
                     continue;
-                patchesBuilder.Add(patchInfo);
+
+                patchesBuilder.Add(patches[0].PatchName, patches);
             }
 
-            _patches = patchesBuilder.ToImmutableArray();
+            _patches = patchesBuilder.ToImmutable();
             _isReloadRequested = false;
             return _patches;
         }
 
-        private bool TryLoadPatch(string fullPathName, [NotNullWhen(returnValue: true)] out PatchInfo? patchInfo)
+        private ImmutableArray<PatchInfo> LoadPatches(string fullPathName)
         {
             try
             {
                 var assembly = _assemblyLoadContext.LoadFromAssemblyPath(fullPathName);
-                var attributes = assembly.GetCustomAttributes(inherit: false);
-                var targetAssemblyAttribute = attributes.SingleOrDefault(a => a is MeditationPatchAssemblyTargetAttribute) as MeditationPatchAssemblyTargetAttribute;
-                var targetTypeAttribute = attributes.SingleOrDefault(a => a is MeditationPatchTypeTargetAttribute) as MeditationPatchTypeTargetAttribute;
-                var targetMethodAttribute = attributes.SingleOrDefault(a => a is MeditationPatchMethodTargetAttribute) as MeditationPatchMethodTargetAttribute;
-                if (targetAssemblyAttribute == null || targetTypeAttribute == null || targetMethodAttribute == null)
+                var builder = ImmutableArray.CreateBuilder<PatchInfo>();
+                foreach (var patch in assembly.GetTypes().Where(t => t.CustomAttributes.Any(a => a.AttributeType == typeof(HarmonyPatch))))
                 {
-                    // Not a patch assembly
-                    patchInfo = null;
-                    return false;
+                    var assemblyAttribute = patch.GetCustomAttribute<MeditationPatchAssemblyTargetAttribute>();
+                    var typeAttribute = patch.GetCustomAttribute<MeditationPatchTypeTargetAttribute>();
+                    var methodAttribute = patch.GetCustomAttribute<MeditationPatchMethodTargetAttribute>();
+                    var methodParameterAttributes = patch.GetCustomAttributes<MeditationPatchMethodParameterTargetAttribute>();
+                    if (assemblyAttribute == null || typeAttribute == null || methodAttribute == null)
+                    {
+                        // Invalid patch metadata
+                        // FIXME [#16]: add logging
+                        continue;
+                    }
+
+                    builder.Add(new PatchInfo(
+                        Path: fullPathName,
+                        PatchName: assembly.GetName(),
+                        TargetAssemblyName: assemblyAttribute.AssemblyFullName,
+                        TargetFullyQualifiedTypeName: typeAttribute.TypeFullName,
+                        Method: new PatchedMethodInfo(
+                            Name: methodAttribute.Name,
+                            IsStatic: methodAttribute.IsStatic,
+                            ParametersCount: methodAttribute.ParametersCount,
+                            ParameterFullTypeNames: methodParameterAttributes
+                                .OrderBy(p => p.Index)
+                                .Select(p => p.TypeFullName)
+                                .ToImmutableArray())));
                 }
 
-                // Discovered a patch
-                patchInfo = new PatchInfo(
-                    Path: fullPathName,
-                    TargetFullAssemblyName: targetAssemblyAttribute.AssemblyFullName,
-                    Method: new PatchedMethodInfo(
-                        Name: targetMethodAttribute.Name,
-                        IsStatic: targetMethodAttribute.IsStatic,
-                        ParametersCount: targetMethodAttribute.ParametersCount,
-                        ParameterFullTypeNames: default));
-
-                return true;
+                return builder.ToImmutable();
             }
             catch
             {
                 // Could not load dll
                 // FIXME [#16]: logging
-                patchInfo = null;
-                return false;
+                return ImmutableArray<PatchInfo>.Empty;
             }
         }
     }

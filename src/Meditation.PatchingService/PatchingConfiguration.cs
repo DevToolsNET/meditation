@@ -1,10 +1,9 @@
 ﻿using System.Reflection;
-using Meditation.PatchingService.Models;
 
 namespace Meditation.PatchingService
 {
     public record struct PatchingConfiguration(
-        PatchInfo PatchInfo,
+        string PatchAssemblyPath,
         string NativeBootstrapLibraryPath,
         string NativeExportedEntryPointSymbol,
         string ManagedBootstrapEntryPointTypeFullName,
@@ -22,7 +21,7 @@ namespace Meditation.PatchingService
                 patchAssembly.Location,
                 configuration.ManagedBootstrapEntryPointTypeFullName,
                 configuration.ManagedBootstrapEntryPointMethod,
-                configuration.PatchInfo.Path);
+                configuration.PatchAssemblyPath);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Meditation.PatchingService.Models
+﻿using System.Reflection;
+
+namespace Meditation.PatchingService.Models
 {
-    public record PatchInfo(string Path, string TargetFullAssemblyName, PatchedMethodInfo Method);
+    public record PatchInfo(string Path, AssemblyName PatchName, AssemblyName TargetAssemblyName, string TargetFullyQualifiedTypeName, PatchedMethodInfo Method);
 }

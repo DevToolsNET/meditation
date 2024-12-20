@@ -45,23 +45,31 @@
             </MenuItem>
         </Menu>
         <Grid Grid.Row="1" ColumnDefinitions="*,1,2*">
-            <TabControl
-                Grid.Column="0">
-                <TabItem Header="Assemblies">
-                    <views:MetadataBrowserView
-                        Name="MetadataBrowserView"
-                        Margin="5,5,5,5"/>
-                </TabItem>
-                <TabItem Header="Patches">
- 
-                </TabItem>
-			</TabControl>
-			<GridSplitter
+            <Grid Grid.Column="0" RowDefinitions="*,Auto" >
+                <TabControl Grid.Row="0">
+                    <TabItem Header="Assemblies">
+                        <views:MetadataBrowserView
+                            Name="MetadataBrowserView"
+                            Margin="5,5,5,5"/>
+                    </TabItem>
+                    <TabItem Header="Patches">
+                        <views:PatchesBrowserView
+                            Name="PatchesBrowserView"
+                            Margin="5,5,5,5"/>
+                    </TabItem>
+                </TabControl>
+                <views:StatusBarView 
+                    Grid.Row="1"
+                    Margin="5,5,5,5"
+                    DataContext="{Binding StatusBarViewModel}" />
+            </Grid>
+
+            <GridSplitter
                 Grid.Column="1"
                 Background="LightGray"
                 ResizeDirection="Columns"
                 Margin="5,5,5,5"/>
-			<ide:DevelopmentEnvironmentView
+            <ide:DevelopmentEnvironmentView
                 Name="DevelopmentEnvironmentView"
                 Grid.Column="2"/>
         </Grid>
