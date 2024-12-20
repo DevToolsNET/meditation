@@ -9,6 +9,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Meditation.UI.Controllers.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Meditation.UI.Controllers
 {
@@ -17,28 +18,34 @@ namespace Meditation.UI.Controllers
         private readonly IAvaloniaDialogService _dialogService;
         private readonly IProcessSnapshotCreator _processSnapshotCreator;
         private readonly IAttachedProcessContext _attachedProcessContext;
+        private readonly ILogger _logger;
         private DialogLifetime? _attachProcessDialogLifetime;
 
         public AttachToProcessController(
             IAvaloniaDialogService dialogService,
             IAttachedProcessContext attachedProcessContext,
-            IProcessSnapshotCreator processSnapshotCreator)
+            IProcessSnapshotCreator processSnapshotCreator,
+            ILogger<AttachToProcessController> logger)
         {
+            _logger = logger;
             _dialogService = dialogService;
             _attachedProcessContext = attachedProcessContext;
             _processSnapshotCreator = processSnapshotCreator;
         }
 
         [RelayCommand]
-        public Task DisplayAttachProcessWindow()
+        public async Task DisplayAttachProcessWindow()
         {
             try
             {
-                return DisplayAttachProcessWindowImplementation();
+                _logger.LogDebug("Command {cmd} started.", nameof(DisplayAttachProcessWindow));
+                await DisplayAttachProcessWindowImplementation();
+                _logger.LogDebug("Command {cmd} finished.", nameof(DisplayAttachProcessWindow));
             }
             catch (Exception exception)
             {
-                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
+                _logger.LogError(exception, "Command {cmd} failed.", nameof(DisplayAttachProcessWindow));
+                await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -47,38 +54,47 @@ namespace Meditation.UI.Controllers
         {
             try
             {
+                _logger.LogDebug("Command {cmd} started.", nameof(CloseAttachProcessWindow));
                 CloseAttachProcessWindowImplementation();
+                _logger.LogDebug("Command {cmd} finished.", nameof(CloseAttachProcessWindow));
                 return Task.CompletedTask;
             }
             catch (Exception exception)
             {
+                _logger.LogError(exception, "Command {cmd} failed.", nameof(CloseAttachProcessWindow));
                 return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
         [RelayCommand]
-        public Task Attach(ProcessListViewModel processListViewModel, CancellationToken ct)
+        public async Task Attach(ProcessListViewModel processListViewModel, CancellationToken ct)
         {
             try
             {
-                return AttachImplementation(processListViewModel, ct);
+                _logger.LogDebug("Command {cmd} started.", nameof(Attach));
+                await AttachImplementation(processListViewModel, ct);
+                _logger.LogDebug("Command {cmd} finished.", nameof(Attach));
             }
             catch (Exception exception)
             {
-                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
+                _logger.LogError(exception, "Command {cmd} failed.", nameof(Attach));
+                await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
         [RelayCommand]
-        public Task Detach(CancellationToken ct)
+        public async Task Detach(CancellationToken ct)
         {
             try
             {
-                return DetachImplementation(ct);
+                _logger.LogDebug("Command {cmd} started.", nameof(Detach));
+                await DetachImplementation(ct);
+                _logger.LogDebug("Command {cmd} finished.", nameof(Detach));
             }
             catch (Exception exception)
             {
-                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
+                _logger.LogError("Command {cmd} failed.", nameof(Detach));
+                await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
@@ -148,7 +164,7 @@ namespace Meditation.UI.Controllers
             }
             catch (Exception exception)
             {
-                // FIXME [#16]: add logging
+                _logger.LogError(exception, "Could not obtain snapshot of process with PID = {pid}.", processInfo.Id);
                 await DialogUtilities.ShowMessageBox(title: "Failed to attach process", content: $"Could not attach to selected process due to: {exception}");
                 return null;
             }

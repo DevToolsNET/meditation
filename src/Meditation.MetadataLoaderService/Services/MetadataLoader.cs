@@ -8,6 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Meditation.MetadataLoaderService.Services
 {
@@ -18,6 +20,7 @@ namespace Meditation.MetadataLoaderService.Services
         private readonly ConcurrentDictionary<string, MetadataEntryBase> _metadataModels;
         private readonly ModuleContext _moduleContext;
         private readonly AssemblyResolver _assemblyResolver;
+        private readonly ILogger _logger;
         private readonly object _syncObject;
         private ImmutableArray<string> _modulePaths;
 
@@ -25,8 +28,9 @@ namespace Meditation.MetadataLoaderService.Services
         public ICollection<ModuleDef> LoadedModules => _modules.Values;
         public AssemblyResolver AssemblyResolver => _assemblyResolver;
 
-        public MetadataLoader()
+        public MetadataLoader(ILogger<MetadataLoader> logger)
         {
+            _logger = logger;
             _assemblyPaths = new ConcurrentDictionary<AssemblyName, string>(new AssemblyNameEqualityComparer());
             _modules = new ConcurrentDictionary<string, ModuleDef>();
             _metadataModels = new ConcurrentDictionary<string, MetadataEntryBase>();
@@ -62,8 +66,7 @@ namespace Meditation.MetadataLoaderService.Services
                         // This means that the assembly is already processed
                         // It happens usually in connection with NGEN (see: https://learn.microsoft.com/en-us/dotnet/framework/tools/ngen-exe-native-image-generator).
                         // For example, consider case when we are processing modules: System.Data.dll and subsequently try to process System.Data.ni.dll
-
-                        // FIXME [#16]: log reason for skipping assembly processing
+                        _logger.LogWarning("Skipping processing of assembly {assembly} as it was already processed. This usually happens for native images.", assemblyDef.FullName);
                         continue;
                     }
 

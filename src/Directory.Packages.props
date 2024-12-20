@@ -19,9 +19,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.11.0" />
     <PackageVersion Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.510501" />
     <PackageVersion Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     <PackageVersion Include="Avalonia" Version="11.2.1" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.2.1" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.2.1" />
@@ -31,8 +31,10 @@
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.2.1" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageVersion Include="MessageBox.Avalonia" Version="3.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="NetEscapades.Configuration.Yaml" Version="3.1.0" />
+    <PackageVersion Include="NetEscapades.Extensions.Logging.RollingFile" Version="2.5.0" />
     <PackageVersion Include="PolySharp" Version="1.14.1" />
     <PackageVersion Include="TextMateSharp.Grammars" Version="1.0.64" />
     <PackageVersion Include="xunit" Version="2.7.0" />

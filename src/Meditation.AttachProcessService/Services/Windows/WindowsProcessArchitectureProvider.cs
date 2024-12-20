@@ -4,11 +4,19 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Meditation.AttachProcessService.Services.Windows
 {
     internal class WindowsProcessArchitectureProvider : IProcessArchitectureProvider
     {
+        private readonly ILogger _logger;
+
+        public WindowsProcessArchitectureProvider(ILogger<WindowsProcessArchitectureProvider> logger)
+        {
+            _logger = logger;
+        }
+
         public Task<bool> TryGetProcessArchitectureAsync(Process process, [NotNullWhen(true)] out Architecture? architecture, CancellationToken ct)
         {
             if (!TryGetProcessHandle(process, out var handle))
@@ -31,24 +39,22 @@ namespace Meditation.AttachProcessService.Services.Windows
             return Task.FromResult(true);
         }
 
-        private static bool TryGetProcessHandle(Process process, [NotNullWhen(true)] out IntPtr? handle)
+        private bool TryGetProcessHandle(Process process, [NotNullWhen(true)] out IntPtr? handle)
         {
             try
             {
                 handle = process.Handle;
                 return true;
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException e)
             {
-                // FIXME [#16]: add logging
-                // Process has not been started, or already exited
+                _logger.LogWarning(e, "An error occurred while attempting to obtain handle of process with PID = {pid}. This process has already exited or did not start yet.", process.Id);
                 handle = null;
                 return false;
             }
-            catch (NotSupportedException)
+            catch (Exception e)
             {
-                // FIXME [#16]: add logging
-                // Process is running on a remote computer (unsupported)
+                _logger.LogWarning(e, "An error occurred while attempting to obtain handle of process with PID = {pid}.", process.Id);
                 handle = null;
                 return false;
             }
