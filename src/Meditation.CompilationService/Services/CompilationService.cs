@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Meditation.CompilationService.Services
 {
@@ -19,11 +20,13 @@ namespace Meditation.CompilationService.Services
         private readonly Dictionary<string, EmitResult> _emitResults;
         private readonly Dictionary<string, byte[]> _assemblies;
         private readonly AdhocWorkspace _workspace;
+        private readonly ILogger _logger;
         private DocumentId? _documentId;
         private bool _disposed;
 
-        public CompilationService()
+        public CompilationService(ILogger<CompilationService> logger)
         {
+            _logger = logger;
             _workspace = new AdhocWorkspace();
             _emitResults = new Dictionary<string, EmitResult>();
             _assemblies = new Dictionary<string, byte[]>();
@@ -92,7 +95,9 @@ namespace Meditation.CompilationService.Services
             _assemblies.Clear();
             var graph = _workspace.CurrentSolution.GetProjectDependencyGraph();
             var outputLogBuilder = new StringBuilder();
-            outputLogBuilder.AppendLine("Beginning build.");
+            var beginningBuildMessage = "Beginning build.";
+            outputLogBuilder.AppendLine(beginningBuildMessage);
+            _logger.LogInformation(beginningBuildMessage);
             foreach (var project in graph.GetTopologicallySortedProjects(ct)
                                            .Select(_workspace.CurrentSolution.GetProject)
                                            .Where(project => project != null))
@@ -101,37 +106,46 @@ namespace Meditation.CompilationService.Services
 
                 if (projectCompilation == null)
                 {
-                    // FIXME [#16]: add logging
-                    // Project does not support compilation (invalid project type)
+                    _logger.LogWarning("Project {project} does not support compilation, most likely due to unsupported type.", project.Name);
                     continue;
                 }
 
                 using var memoryStream = new MemoryStream();
                 var assemblyName = _assemblyNames[project.Id];
 
-                outputLogBuilder.AppendLine($"Starting build of project {project!.Name}.");
+                var startBuildingOfProjectMessage = $"Starting build of project {project.Name}.";
+                outputLogBuilder.AppendLine(startBuildingOfProjectMessage);
+                _logger.LogInformation(startBuildingOfProjectMessage);
                 var results = projectCompilation.Emit(memoryStream);
                 _emitResults.Add(assemblyName, results);
                 foreach (var diagnostic in results.Diagnostics)
+                {
                     outputLogBuilder.AppendLine($"> {diagnostic.Severity.ToString()}: {diagnostic.GetMessage()}");
+                }
 
                 if (!results.Success)
                 {
-                    // FIXME [#16]: add logging
-                    // There were errors during build
-                    outputLogBuilder.AppendLine($"Failed to compile project {project!.Name} due to previous issues.");
+                    var projectBuildFailedMessage = $"Failed to compile project {project.Name} due to previous issues.";
+                    _logger.LogWarning(projectBuildFailedMessage);
+                    outputLogBuilder.AppendLine(projectBuildFailedMessage);
                     continue;
                 }
 
-                outputLogBuilder.AppendLine($"Built project \"{project!.Name}\" without errors.");
+                var projectBuiltWithoutErrorsMessage = $"Built project \"{project.Name}\" without errors.";
+                outputLogBuilder.AppendLine(projectBuiltWithoutErrorsMessage);
+                _logger.LogInformation(projectBuiltWithoutErrorsMessage);
                 _assemblies.Add(assemblyName, memoryStream.ToArray());
             }
 
             var success = _emitResults.Count == _assemblies.Count;
-            outputLogBuilder.AppendLine();
-            outputLogBuilder.AppendLine(success
+            var buildStatusMessage = success
                 ? $"Build succeeded ({_emitResults.Count} projects)."
-                : $"Build failed ({_assemblies.Count} successful and {_assemblyNames.Count - _assemblies.Count} failing projects).");
+                : $"Build failed ({_assemblies.Count} successful and {_assemblyNames.Count - _assemblies.Count} failing projects).";
+            outputLogBuilder.AppendLine(buildStatusMessage);
+            if (success)
+                _logger.LogInformation(buildStatusMessage);
+            else
+                _logger.LogError(buildStatusMessage);
             
             var result = new CompilationResult(
                 Success: success, 

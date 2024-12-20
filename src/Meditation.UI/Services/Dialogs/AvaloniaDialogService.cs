@@ -4,16 +4,19 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Meditation.UI.Services.Dialogs
 {
     internal class AvaloniaDialogService : IAvaloniaDialogService
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger _logger;
 
-        public AvaloniaDialogService(IServiceProvider serviceProvider)
+        public AvaloniaDialogService(IServiceProvider serviceProvider, ILogger<AvaloniaDialogService> logger)
         {
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         public DialogLifetime CreateDialog<TWindow>() where TWindow : Window
@@ -25,7 +28,7 @@ namespace Meditation.UI.Services.Dialogs
             }
             catch (Exception ex)
             {
-                // FIXME [#16]: add logging
+                _logger.LogError(ex, "Could not open dialog.");
                 throw new InvalidOperationException("Could not open dialog.", ex);
             }
         }
@@ -46,7 +49,7 @@ namespace Meditation.UI.Services.Dialogs
             }
             catch (Exception ex)
             {
-                // FIXME [#16]: add logging
+                _logger.LogError(ex, "Could not open dialog.");
                 throw new InvalidOperationException("Could not open dialog.", ex);
             }
         }

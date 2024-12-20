@@ -6,19 +6,26 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Meditation.InjectorService.Services.Windows
 {
     internal class WindowsProcessInjector : IProcessInjector
     {
+        private readonly ILogger _logger;
+
+        public WindowsProcessInjector(ILogger<WindowsProcessInjector> logger)
+        {
+            _logger = logger;
+        }
+
         public bool TryInjectModule(int pid, string modulePath, [NotNullWhen(true)] out SafeHandle? remoteModuleHandle)
         {
             // Open target process
             using var processHandle = Kernel32.OpenProcess(ProcessAccessFlags.All, (uint)pid);
             if (processHandle.IsInvalid)
             {
-                // Could not open process
-                // FIXME [#16]: logging
+                _logger.LogError("Could not open process with PID = {pid}.", pid);
                 remoteModuleHandle = null;
                 return false;
             }
@@ -29,8 +36,7 @@ namespace Meditation.InjectorService.Services.Windows
             using var memoryHandle = Kernel32.VirtualAllocEx(processHandle, bytesCount, protection);
             if (memoryHandle.IsInvalid)
             {
-                // Unable to allocate memory in target process
-                // FIXME [#16]: logging
+                _logger.LogError("Could not allocate {size} bytes with projection {projection} in process with PID = {pid}.", bytesCount, protection, pid);
                 remoteModuleHandle = null;
                 return false;
             }
@@ -39,28 +45,27 @@ namespace Meditation.InjectorService.Services.Windows
             var modulePathData = Encoding.Unicode.GetBytes(modulePath + '\0');
             if (!Kernel32.WriteProcessMemory(processHandle, memoryHandle, modulePathData, out var written) || written != modulePathData.Length)
             {
-                // Unable to write memory of target process
-                // FIXME [#16]: logging
+                _logger.LogError("Could not write injected module path {path} into allocated memory in process with PID = {pid}.", modulePathData, pid);
                 remoteModuleHandle = null;
                 return false;
             }
 
             // Retrieve handle for kernel32 module
-            using var kernel32ModuleHandle = Kernel32.GetModuleHandle("kernel32");
+            const string kernel32ModuleName = "kernel32";
+            using var kernel32ModuleHandle = Kernel32.GetModuleHandle(kernel32ModuleName);
             if (kernel32ModuleHandle.IsInvalid)
             {
-                // Unable to obtain handle to kernel32
-                // FIXME [#16]: logging
+                _logger.LogError("Could not obtain handle to module {module}.", kernel32ModuleName);
                 remoteModuleHandle = null;
                 return false;
             }
 
             // Retrieve address of LoadLibraryW procedure
-            using var loadLibraryProcedureAddress = Kernel32.GetProcAddress(kernel32ModuleHandle, "LoadLibraryW");
+            const string loadLibraryWFunctionName = "LoadLibraryW";
+            using var loadLibraryProcedureAddress = Kernel32.GetProcAddress(kernel32ModuleHandle, loadLibraryWFunctionName);
             if (loadLibraryProcedureAddress.IsInvalid)
             {
-                // Unable to obtain address of LoadLibraryW procedure
-                // FIXME [#16]: logging
+                _logger.LogError("Could not obtain address of function {function} in module {module}.", loadLibraryWFunctionName, kernel32ModuleName);
                 remoteModuleHandle = null;
                 return false;
             }
@@ -69,8 +74,7 @@ namespace Meditation.InjectorService.Services.Windows
             using var threadHandle = Kernel32.CreateRemoteThread(processHandle, loadLibraryProcedureAddress, memoryHandle);
             if (threadHandle.IsInvalid)
             {
-                // Could not create thread in target process
-                // FIXME [#16]: logging
+                _logger.LogError("Could not create remote thread in process with PID = {pid}.", pid);
                 remoteModuleHandle = null;
                 return false;
             }
@@ -78,8 +82,7 @@ namespace Meditation.InjectorService.Services.Windows
             // Wait for the remote thread to finish execution
             if (!Kernel32.WaitForSingleObject(threadHandle, timeout: null))
             {
-                // Error while waiting for remote thread to finish
-                // FIXME [#16]: logging
+                _logger.LogError("Could not determine the end of execution for the spawned remote thread in process with PID = {pid}.", pid);
                 remoteModuleHandle = null;
                 return false;
             }
@@ -89,8 +92,7 @@ namespace Meditation.InjectorService.Services.Windows
             var module = Process.GetProcessById(pid).Modules.Cast<ProcessModule>().SingleOrDefault(m => m.ModuleName == moduleName);
             if (module == null)
             {
-                // Error while obtaining base address for loaded module
-                // FIXME [#16]: logging
+                _logger.LogError("Could not obtain address of injected module {module} in process with PID = {pid}.", moduleName, pid);
                 remoteModuleHandle = null;
                 return false;
             }

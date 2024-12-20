@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using Meditation.UI.Controllers.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace Meditation.UI.Controllers
 {
@@ -19,19 +20,22 @@ namespace Meditation.UI.Controllers
         private readonly IProcessListProvider _processListProvider;
         private readonly IPatchApplier _patchApplier;
         private readonly IPatchReverser _patchReverser;
+        private readonly ILogger _logger;
 
         public PatchProcessController(
             ApplicationConfiguration configuration,
             IProcessListProvider processListProvider,
             IAttachedProcessContext attachedProcessContext,
             IPatchApplier patchApplier,
-            IPatchReverser patchReverser)
+            IPatchReverser patchReverser,
+            ILogger<PatchProcessController> logger)
         {
             _configuration = configuration;
             _processListProvider = processListProvider;
             _attachedProcessContext = attachedProcessContext;
             _patchApplier = patchApplier;
             _patchReverser = patchReverser;
+            _logger = logger;
         }
 
         [RelayCommand]
@@ -39,13 +43,13 @@ namespace Meditation.UI.Controllers
         {
             try
             {
-                await ApplyPatchAsync(patchAssemblyPath, ct);
-                await DialogUtilities.ShowMessageBox(
-                    title: "Success",
-                    content: $"Applied patch \"{patchAssemblyPath}\" into target process.");
+                _logger.LogDebug("Command {cmd} started.", nameof(ApplyPatch));
+                await ApplyPatchImpl(patchAssemblyPath, ct);
+                _logger.LogDebug("Command {cmd} finished.", nameof(ApplyPatch));
             }
             catch (Exception exception)
             {
+                _logger.LogError("Command {cmd} failed.", nameof(ApplyPatch));
                 await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
@@ -55,15 +59,31 @@ namespace Meditation.UI.Controllers
         {
             try
             {
-                await ReversePatchAsync(patchAssemblyPath, ct);
-                await DialogUtilities.ShowMessageBox(
-                    title: "Success",
-                    content: $"Reversed patch \"{patchAssemblyPath}\" into target process.");
+                _logger.LogDebug("Command {cmd} started.", nameof(ReversePatch));
+                await ReversePatchImpl(patchAssemblyPath, ct);
+                _logger.LogDebug("Command {cmd} finished.", nameof(ReversePatch));
             }
             catch (Exception exception)
             {
+                _logger.LogError("Command {cmd} failed.", nameof(ReversePatch));
                 await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
+        }
+
+        private async Task ApplyPatchImpl(string patchAssemblyPath, CancellationToken ct)
+        {
+            await ApplyPatchAsync(patchAssemblyPath, ct);
+            await DialogUtilities.ShowMessageBox(
+                title: "Success",
+                content: $"Applied patch \"{patchAssemblyPath}\" into target process.");
+        }
+
+        private async Task ReversePatchImpl(string patchAssemblyPath, CancellationToken ct)
+        {
+            await ReversePatchAsync(patchAssemblyPath, ct);
+            await DialogUtilities.ShowMessageBox(
+                title: "Success",
+                content: $"Reversed patch \"{patchAssemblyPath}\" into target process.");
         }
 
         private async Task ApplyPatchAsync(string patchAssemblyPath, CancellationToken ct)
