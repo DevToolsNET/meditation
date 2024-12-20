@@ -22,6 +22,7 @@ namespace Meditation.CompilationService.Services
             sb.AppendLine("using System.Reflection;");
             sb.AppendLine();
             sb.AppendLine($"[{nameof(HarmonyPatch)}]");
+            sb.AppendLine($"[{nameof(HarmonyReversePatch)}]");
             sb.AppendLine($"[{nameof(MeditationPatchAssemblyTargetAttribute)}(\"{method.AssemblyName}\")]");
             sb.AppendLine($"[{nameof(MeditationPatchTypeTargetAttribute)}(\"{method.DeclaringTypeFullName}\")]");
             sb.AppendLine($"[{nameof(MeditationPatchMethodTargetAttribute)}(" +

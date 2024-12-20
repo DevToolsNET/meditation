@@ -66,6 +66,7 @@ namespace Meditation.PatchingService.Services
                     var typeAttribute = patch.GetCustomAttribute<MeditationPatchTypeTargetAttribute>();
                     var methodAttribute = patch.GetCustomAttribute<MeditationPatchMethodTargetAttribute>();
                     var methodParameterAttributes = patch.GetCustomAttributes<MeditationPatchMethodParameterTargetAttribute>();
+                    var reversePatchAttribute = patch.GetCustomAttribute<HarmonyReversePatch>();
                     if (assemblyAttribute == null || typeAttribute == null || methodAttribute == null)
                     {
                         // Invalid patch metadata
@@ -78,6 +79,7 @@ namespace Meditation.PatchingService.Services
                         PatchName: assembly.GetName(),
                         TargetAssemblyName: assemblyAttribute.AssemblyFullName,
                         TargetFullyQualifiedTypeName: typeAttribute.TypeFullName,
+                        IsReversible: reversePatchAttribute != null,
                         Method: new PatchedMethodInfo(
                             Name: methodAttribute.Name,
                             IsStatic: methodAttribute.IsStatic,

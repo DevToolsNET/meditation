@@ -18,17 +18,20 @@ namespace Meditation.UI.Controllers
         private readonly IAttachedProcessContext _attachedProcessContext;
         private readonly IProcessListProvider _processListProvider;
         private readonly IPatchApplier _patchApplier;
+        private readonly IPatchReverser _patchReverser;
 
         public PatchProcessController(
             ApplicationConfiguration configuration,
             IProcessListProvider processListProvider,
             IAttachedProcessContext attachedProcessContext,
-            IPatchApplier patchApplier)
+            IPatchApplier patchApplier,
+            IPatchReverser patchReverser)
         {
             _configuration = configuration;
             _processListProvider = processListProvider;
             _attachedProcessContext = attachedProcessContext;
             _patchApplier = patchApplier;
+            _patchReverser = patchReverser;
         }
 
         [RelayCommand]
@@ -48,27 +51,69 @@ namespace Meditation.UI.Controllers
         }
 
         [RelayCommand]
-        public Task ReversePatch(string patchAssemblyPath, CancellationToken ct)
+        public async Task ReversePatch(string patchAssemblyPath, CancellationToken ct)
         {
             try
             {
-                // TODO [#41]: implement patch reverse
-                throw new NotImplementedException("Reversing has not been implemented yet.");
+                await ReversePatchAsync(patchAssemblyPath, ct);
+                await DialogUtilities.ShowMessageBox(
+                    title: "Success",
+                    content: $"Reversed patch \"{patchAssemblyPath}\" into target process.");
             }
             catch (Exception exception)
             {
-                return DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
+                await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
         private async Task ApplyPatchAsync(string patchAssemblyPath, CancellationToken ct)
         {
+            var processInfo = await GetAttachedProcessInfo(ct);
+            var bootstrapLibraryPath = GetNativeBootstrapLibraryPath(processInfo);
+
+            var patchConfiguration = new PatchingConfiguration(
+                PatchAssemblyPath: patchAssemblyPath,
+                NativeBootstrapLibraryPath: bootstrapLibraryPath,
+                NativeExportedEntryPointSymbol: _configuration.Hooking.NativeExportedEntryPointSymbol,
+                ManagedBootstrapEntryPointTypeFullName: _configuration.Hooking.ManagedBootstrapEntryPointTypeFullName,
+                ManagedBootstrapEntryPointMethod: _configuration.Hooking.ManagedBootstrapEntryPointHookMethod,
+                CompanyUniqueIdentifier: _configuration.UniquePatchingIdentifierScope,
+                NativeBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapNativeFileName,
+                ManagedBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapManagedFileName);
+
+            await Task.Run(() => _patchApplier.ApplyPatch(processInfo.Id.Value, patchConfiguration), ct);
+        }
+
+        private async Task ReversePatchAsync(string patchAssemblyPath, CancellationToken ct)
+        {
+            var processInfo = await GetAttachedProcessInfo(ct);
+            var bootstrapLibraryPath = GetNativeBootstrapLibraryPath(processInfo);
+
+            var patchConfiguration = new PatchingConfiguration(
+                PatchAssemblyPath: patchAssemblyPath,
+                NativeBootstrapLibraryPath: bootstrapLibraryPath,
+                NativeExportedEntryPointSymbol: _configuration.Hooking.NativeExportedEntryPointSymbol,
+                ManagedBootstrapEntryPointTypeFullName: _configuration.Hooking.ManagedBootstrapEntryPointTypeFullName,
+                ManagedBootstrapEntryPointMethod: _configuration.Hooking.ManagedBootstrapEntryPointUnhookMethod,
+                CompanyUniqueIdentifier: _configuration.UniquePatchingIdentifierScope,
+                NativeBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapNativeFileName,
+                ManagedBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapManagedFileName);
+
+            await Task.Run(() => _patchReverser.ReversePatch(processInfo.Id.Value, patchConfiguration), ct);
+        }
+
+        private async Task<ProcessInfo> GetAttachedProcessInfo(CancellationToken ct)
+        {
             var processId = new ProcessId(_attachedProcessContext.ProcessSnapshot!.ProcessId.Value);
             var processInfo = _processListProvider.GetProcessById(processId);
             await processInfo.Initialize(ct);
+            return processInfo;
+        }
 
+        private string GetNativeBootstrapLibraryPath(ProcessInfo processInfo)
+        {
             if (processInfo.Architecture is null)
-                throw new Exception($"Could not determine architecture of the target process {processId}.");
+                throw new Exception($"Could not determine architecture of the target process {processInfo.Id.Value}.");
 
             var bootstrapLibrary = _configuration.NativeExecutables
                 .FirstOrDefault(e => e.Architecture == processInfo.Architecture);
@@ -79,17 +124,7 @@ namespace Meditation.UI.Controllers
             if (!File.Exists(bootstrapLibrary.Path))
                 throw new Exception($"Could not find \"{bootstrapLibrary.Path}\". Search directory: \"{Directory.GetCurrentDirectory()}\".");
 
-            var patchConfiguration = new PatchingConfiguration(
-                PatchAssemblyPath: patchAssemblyPath,
-                NativeBootstrapLibraryPath: bootstrapLibrary.Path,
-                NativeExportedEntryPointSymbol: _configuration.Hooking.NativeExportedEntryPointSymbol,
-                ManagedBootstrapEntryPointTypeFullName: _configuration.Hooking.ManagedBootstrapEntryPointTypeFullName,
-                ManagedBootstrapEntryPointMethod: _configuration.Hooking.ManagedBootstrapEntryPointMethod,
-                CompanyUniqueIdentifier: _configuration.UniquePatchingIdentifierScope,
-                NativeBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapNativeFileName,
-                ManagedBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapManagedFileName);
-
-            await Task.Run(() => _patchApplier.ApplyPatch(processId.Value, patchConfiguration), ct);
+            return bootstrapLibrary.Path;
         }
     }
 }

@@ -20,8 +20,10 @@ namespace Meditation.UI.Configuration
                 throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.NativeExportedEntryPointSymbol)));
             if (Hooking.ManagedBootstrapEntryPointTypeFullName.Length == 0)
                 throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.ManagedBootstrapEntryPointTypeFullName)));
-            if (Hooking.ManagedBootstrapEntryPointMethod.Length == 0)
-                throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.ManagedBootstrapEntryPointMethod)));
+            if (Hooking.ManagedBootstrapEntryPointHookMethod.Length == 0)
+                throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.ManagedBootstrapEntryPointHookMethod)));
+            if (Hooking.ManagedBootstrapEntryPointUnhookMethod.Length == 0)
+                throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Hooking), settingName: nameof(Hooking.ManagedBootstrapEntryPointUnhookMethod)));
 
             if (Logging.MainApplicationFileName.Length == 0)
                 throw new ArgumentException(CreateNotSpecifiedSettingMessage(settingScope: nameof(Logging), settingName: nameof(Logging.MainApplicationFileName)));

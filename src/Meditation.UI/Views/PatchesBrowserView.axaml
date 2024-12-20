@@ -63,7 +63,7 @@
                                     CommandParameter="{Binding Path}"/>
                                 <MenuItem 
                                     Header="Reverse" 
-                                    IsEnabled="False"
+                                    IsEnabled="{Binding IsReversible}"
                                     Command="{Binding $parent[TreeView].((vm:PatchesBrowserViewModel)DataContext).ReverseCommand}"
                                     CommandParameter="{Binding Path}"/>
                             </ContextMenu>

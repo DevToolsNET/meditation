@@ -10,6 +10,7 @@ namespace Meditation.PatchingService.Configuration
             services.AddSingleton<IPatchListProvider, PatchListProvider>();
             services.AddSingleton<IPatchStorage, PatchStorage>();
             services.AddSingleton<IPatchApplier, PatchApplier>();
+            services.AddSingleton<IPatchReverser, PatchReverser>();
         }
     }
 }
