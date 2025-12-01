@@ -1,17 +1,17 @@
 ﻿using Meditation.Interop;
 using Meditation.Interop.Windows;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Meditation.InjectorService.Services.Windows
 {
     internal class WindowsProcessInjector : IProcessInjector
     {
-        public bool TryInjectModule(int pid, string modulePath, [NotNullWhen(true)] out SafeHandle? remoteModuleHandle)
+        public Task<SafeHandle> TryInjectModule(int pid, string modulePath)
         {
             // Open target process
             using var processHandle = Kernel32.OpenProcess(ProcessAccessFlags.All, (uint)pid);
@@ -19,8 +19,7 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Could not open process
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
             // Allocate memory in target process for module path
@@ -31,8 +30,7 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Unable to allocate memory in target process
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
             // Write assembly path to target process
@@ -41,8 +39,7 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Unable to write memory of target process
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
             // Retrieve handle for kernel32 module
@@ -51,8 +48,7 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Unable to obtain handle to kernel32
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
             // Retrieve address of LoadLibraryW procedure
@@ -61,8 +57,7 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Unable to obtain address of LoadLibraryW procedure
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
             // Create thread in target process and use it to load the module
@@ -71,8 +66,7 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Could not create thread in target process
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
             // Wait for the remote thread to finish execution
@@ -80,8 +74,7 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Error while waiting for remote thread to finish
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
             // Obtain handle to injected module though thread exit code
@@ -91,12 +84,10 @@ namespace Meditation.InjectorService.Services.Windows
             {
                 // Error while obtaining base address for loaded module
                 // FIXME [#16]: logging
-                remoteModuleHandle = null;
-                return false;
+                return Task.FromResult<SafeHandle>(GenericSafeHandle.Invalid);
             }
 
-            remoteModuleHandle = new GenericSafeHandle(() => module.BaseAddress, static _ => true, ownsHandle: false);
-            return true;
+            return Task.FromResult<SafeHandle>(new GenericSafeHandle(() => module.BaseAddress, static _ => true, ownsHandle: false));
         }
     }
 }

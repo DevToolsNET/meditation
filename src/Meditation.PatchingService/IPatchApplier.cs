@@ -1,7 +1,9 @@
-﻿namespace Meditation.PatchingService
+﻿using System.Threading.Tasks;
+
+namespace Meditation.PatchingService
 {
     public interface IPatchApplier
     {
-        void ApplyPatch(int pid, PatchingConfiguration configuration);
+        Task ApplyPatch(int pid, PatchingConfiguration configuration);
     }
 }

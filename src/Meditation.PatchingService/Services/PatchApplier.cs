@@ -1,6 +1,7 @@
 ﻿using Meditation.Bootstrap.Managed;
 using Meditation.InjectorService;
 using System;
+using System.Threading.Tasks;
 
 namespace Meditation.PatchingService.Services
 {
@@ -15,17 +16,18 @@ namespace Meditation.PatchingService.Services
             _processInjecteeExecutor = processInjecteeExecutor;
         }
 
-        public void ApplyPatch(int pid, PatchingConfiguration configuration)
+        public async Task ApplyPatch(int pid, PatchingConfiguration configuration)
         {
             var hookArguments = PatchingConfiguration.ConstructArgs(typeof(EntryPoint).Assembly, configuration);
+            var remoteModuleHandle = await _processInjector.TryInjectModule(pid: pid, assemblyPath: configuration.NativeBootstrapLibraryPath);
 
-            if (!_processInjector.TryInjectModule(pid: pid, assemblyPath: configuration.NativeBootstrapLibraryPath, out var remoteMeditationBootstrapNativeModuleHandle))
+            if (remoteModuleHandle.IsInvalid)
                 throw new Exception("Could not inject patch!");
 
             var returnCode = _processInjecteeExecutor.ExecuteExportedMethod(
                 pid: pid,
                 modulePath: configuration.NativeBootstrapLibraryPath,
-                injectedModuleHandle: remoteMeditationBootstrapNativeModuleHandle,
+                injectedModuleHandle: remoteModuleHandle,
                 exportedMethodName: configuration.NativeExportedEntryPointSymbol,
                 argument: hookArguments);
 

@@ -1,9 +1,10 @@
+using CliWrap;
 using Meditation.Bootstrap.Managed;
 using Meditation.InjectorService;
 using Meditation.TestUtils;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Threading;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -11,8 +12,6 @@ namespace Meditation.PatchingService.Tests
 {
     public class ProcessPatchingTests : TestsBase
     {
-        private const string ipcTerminationSignaller = "/meditation/tests-ipc-signal";
-
         [Theory]
         [InlineData("net8.0")]
         public async Task PatchingService_PatchOtherProcess(string netSdkIdentifier)
@@ -31,35 +30,39 @@ namespace Meditation.PatchingService.Tests
 
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
-            using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
-            // Act (module injection)
-            using var executionTask = TestSubjectHelpers.GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
-            var processId = executionTask.ProcessId;
-            var moduleInjectionResult = processInjector.TryInjectModule(processId, patchingConfiguration.NativeBootstrapLibraryPath, out var remoteModuleHandle);
-            // Act (code execution)
+            // Act
+            CommandTask<CommandResult> execution;
+            SafeHandle remoteModuleHandle;
             bool? executionResult = null;
             uint? returnCode = null;
-            if (moduleInjectionResult)
+            using (var executionController = TestSubjectHelpers.GetTestSubjectExecutionController(netSdkIdentifier))
             {
-                // Ensure module had time to load properly
-                await Task.Delay(TimeSpan.FromSeconds(value: 1));
-                // Execute managed hook entrypoint
-                using var moduleHandle = remoteModuleHandle;
-                executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
-                    processId,
-                    patchingConfiguration.NativeBootstrapLibraryPath,
-                    moduleHandle!,
-                    patchingConfiguration.NativeExportedEntryPointSymbol,
-                    hookArgs,
-                    out returnCode);
+                // Act (module injection)
+                execution = executionController.ExecuteAsync();
+                var processId = execution.ProcessId;
+                remoteModuleHandle = await processInjector.TryInjectModule(processId, patchingConfiguration.NativeBootstrapLibraryPath);
+
+                // Act (code execution)
+                if (!remoteModuleHandle.IsInvalid)
+                {
+                    // Ensure module had time to load properly
+                    await Task.Delay(TimeSpan.FromSeconds(value: 1));
+                    // Execute managed hook entrypoint
+                    using var moduleHandle = remoteModuleHandle;
+                    executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                        processId,
+                        patchingConfiguration.NativeBootstrapLibraryPath,
+                        moduleHandle,
+                        patchingConfiguration.NativeExportedEntryPointSymbol,
+                        hookArgs,
+                        out returnCode);
+                }
             }
-            // Wait for target process to exit gracefully
-            waitHandle.Set();
-            await executionTask;
+            await TestSubjectHelpers.KillTestSubject(execution);
 
             // Assert
-            Assert.True(moduleInjectionResult);
+            Assert.False(remoteModuleHandle.IsInvalid);
             Assert.True(executionResult);
             Assert.True(returnCode.HasValue);
             Assert.True(returnCode.Value == 0);
@@ -84,50 +87,57 @@ namespace Meditation.PatchingService.Tests
             var unhookArgs = PatchingConfiguration.ConstructArgs(typeof(EntryPoint).Assembly, unhookingConfiguration);
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
             var processInjecteeExecutor = ServiceProvider.GetRequiredService<IProcessInjecteeExecutor>();
-            using var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, ipcTerminationSignaller);
 
-            // Act (module injection)
-            using var executionTask = TestSubjectHelpers.GetTestSubjectExecutionCommand(netSdkIdentifier).ExecuteAsync();
-            var processId = executionTask.ProcessId;
-            var moduleInjectionResult = processInjector.TryInjectModule(processId, hookingConfiguration.NativeBootstrapLibraryPath, out var remoteModuleHandle);
-            // Act (code execution - apply patch)
+            // Act
+            CommandTask<CommandResult> execution;
+            SafeHandle remoteModuleHandle;
+            bool? executionResult = null;
+            uint? returnCode = null;
             bool? applyExecutionResult = null;
             uint? applyReturnCode = null;
-            if (moduleInjectionResult)
-            {
-                // Ensure module had time to load properly
-                await Task.Delay(TimeSpan.FromSeconds(value: 1));
-                // Execute managed hook entrypoint
-                using var moduleHandle = remoteModuleHandle;
-                applyExecutionResult = processInjecteeExecutor.TryExecuteExportedMethod(
-                    processId,
-                    hookingConfiguration.NativeBootstrapLibraryPath,
-                    moduleHandle!,
-                    hookingConfiguration.NativeExportedEntryPointSymbol,
-                    hookArgs,
-                    out applyReturnCode);
-            }
-            // Act (code execution - reverse patch)
             bool? reverseExecutionResult = null;
             uint? reverseReturnCode = null;
-            if (applyExecutionResult.HasValue && applyExecutionResult.Value)
+            using (var executionController = TestSubjectHelpers.GetTestSubjectExecutionController(netSdkIdentifier))
             {
-                // Execute managed hook entrypoint
-                using var moduleHandle = remoteModuleHandle;
-                reverseExecutionResult = processInjecteeExecutor.TryExecuteExportedMethod(
-                    processId,
-                    hookingConfiguration.NativeBootstrapLibraryPath,
-                    moduleHandle!,
-                    hookingConfiguration.NativeExportedEntryPointSymbol,
-                    unhookArgs,
-                    out reverseReturnCode);
+                // Act (module injection)
+                execution = executionController.ExecuteAsync();
+                var processId = execution.ProcessId;
+                remoteModuleHandle = await processInjector.TryInjectModule(processId, hookingConfiguration.NativeBootstrapLibraryPath);
+
+                // Act (code execution - apply patch)
+                if (!remoteModuleHandle.IsInvalid)
+                {
+                    // Ensure module had time to load properly
+                    await Task.Delay(TimeSpan.FromSeconds(value: 1));
+                    // Execute managed hook entrypoint
+                    using var moduleHandle = remoteModuleHandle;
+                    applyExecutionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                        processId,
+                        hookingConfiguration.NativeBootstrapLibraryPath,
+                        moduleHandle!,
+                        hookingConfiguration.NativeExportedEntryPointSymbol,
+                        hookArgs,
+                        out applyReturnCode);
+                }
+
+                // Act (code execution - reverse patch)
+                if (applyExecutionResult.HasValue && applyExecutionResult.Value)
+                {
+                    // Execute managed hook entrypoint
+                    using var moduleHandle = remoteModuleHandle;
+                    reverseExecutionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                        processId,
+                        hookingConfiguration.NativeBootstrapLibraryPath,
+                        moduleHandle!,
+                        hookingConfiguration.NativeExportedEntryPointSymbol,
+                        unhookArgs,
+                        out reverseReturnCode);
+                }
             }
-            // Wait for target process to exit gracefully
-            waitHandle.Set();
-            await executionTask;
+            await TestSubjectHelpers.KillTestSubject(execution);
 
             // Assert
-            Assert.True(moduleInjectionResult);
+            Assert.False(remoteModuleHandle.IsInvalid);
             Assert.True(applyExecutionResult);
             Assert.True(applyReturnCode.HasValue);
             Assert.True(applyReturnCode.Value == 0);
