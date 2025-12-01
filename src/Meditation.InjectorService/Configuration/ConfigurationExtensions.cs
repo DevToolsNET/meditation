@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Runtime.InteropServices;
+using Meditation.InjectorService.Services.Linux;
 
 namespace Meditation.InjectorService.Configuration
 {
@@ -30,7 +31,7 @@ namespace Meditation.InjectorService.Configuration
 
         private static void AddLinuxServices(this IServiceCollection services)
         {
-            throw new NotImplementedException(OSPlatform.Linux.ToString());
+            services.AddTransient<IProcessInjector, LinuxProcessInjector>();
         }
     }
 }
