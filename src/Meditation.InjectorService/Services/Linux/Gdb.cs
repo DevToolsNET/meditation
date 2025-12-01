@@ -7,13 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using CliWrap;
 using Meditation.Interop;
+using Meditation.Interop.Linux;
 
 namespace Meditation.InjectorService.Services.Linux;
 
 internal static class Gdb
 {
-    private const int DLOPEN_RTLD_NOW = 0x2;
-    private const int DLOPEN_RTLD_GLOBAL = 0x100;
     private const string ShellExecutable = "/bin/sh";
     private const string GdbTestCommand = "gdb --version";
     private const string GdbInjectModuleCommandTemplate = """echo 'print dlopen("{0}", {1})' | gdb -p {2}""";
@@ -42,7 +41,7 @@ internal static class Gdb
         try
         {
             // Inject module into remote process
-            const int flags = DLOPEN_RTLD_NOW | DLOPEN_RTLD_GLOBAL;
+            const int flags = DynamicLinking.DLOPEN_RTLD_NOW | DynamicLinking.DLOPEN_RTLD_GLOBAL;
             var gdbInjectCommand = string.Format(GdbInjectModuleCommandTemplate, modulePath, flags, pid);
             await Cli.Wrap(ShellExecutable)
                 .WithArguments(["-c", gdbInjectCommand])
