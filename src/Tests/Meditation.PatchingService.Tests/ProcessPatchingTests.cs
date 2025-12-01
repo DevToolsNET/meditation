@@ -91,8 +91,6 @@ namespace Meditation.PatchingService.Tests
             // Act
             CommandTask<CommandResult> execution;
             SafeHandle remoteModuleHandle;
-            bool? executionResult = null;
-            uint? returnCode = null;
             bool? applyExecutionResult = null;
             uint? applyReturnCode = null;
             bool? reverseExecutionResult = null;
