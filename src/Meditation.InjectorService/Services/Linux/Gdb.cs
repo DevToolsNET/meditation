@@ -15,7 +15,7 @@ internal static class Gdb
 {
     private const string ShellExecutable = "/bin/sh";
     private const string GdbTestCommand = "gdb --version";
-    private const string GdbInjectModuleCommandTemplate = """echo 'print dlopen("{0}", {1})' | gdb -p {2}""";
+    private const string GdbInjectModuleCommandTemplate = "gdb -p {0} --batch -ex 'print dlopen(\"{1}\", {2})'";
     
     public static async Task<bool> IsInstalled()
     {
@@ -42,7 +42,7 @@ internal static class Gdb
         {
             // Inject module into remote process
             const int flags = DynamicLinking.DLOPEN_RTLD_NOW | DynamicLinking.DLOPEN_RTLD_GLOBAL;
-            var gdbInjectCommand = string.Format(GdbInjectModuleCommandTemplate, modulePath, flags, pid);
+            var gdbInjectCommand = string.Format(GdbInjectModuleCommandTemplate, pid, modulePath, flags);
             await Cli.Wrap(ShellExecutable)
                 .WithArguments(["-c", gdbInjectCommand])
                 .WithValidation(CommandResultValidation.ZeroExitCode)
