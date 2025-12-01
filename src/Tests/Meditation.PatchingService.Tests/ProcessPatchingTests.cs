@@ -89,7 +89,6 @@ namespace Meditation.PatchingService.Tests
             CommandTask<CommandResult> execution;
             SafeHandle remoteModuleHandle;
             uint? applyReturnCode = null;
-            bool? reverseExecutionResult = null;
             uint? reverseReturnCode = null;
             using (var executionController = TestSubjectHelpers.GetTestSubjectExecutionController(netSdkIdentifier))
             {
@@ -132,7 +131,6 @@ namespace Meditation.PatchingService.Tests
             Assert.False(remoteModuleHandle.IsInvalid);
             Assert.True(applyReturnCode.HasValue);
             Assert.True(applyReturnCode.Value == 0);
-            Assert.True(reverseExecutionResult);
             Assert.True(reverseReturnCode.HasValue);
             Assert.True(reverseReturnCode.Value == 0);
         }
