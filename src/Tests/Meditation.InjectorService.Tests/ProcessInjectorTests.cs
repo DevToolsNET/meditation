@@ -51,7 +51,6 @@ namespace Meditation.InjectorService.Tests
             // Act
             CommandTask<CommandResult> execution;
             SafeHandle remoteModuleHandle;
-            bool? executionResult = null;
             uint? returnCode = null;
             using (var executionController = TestSubjectHelpers.GetTestSubjectExecutionController(netSdkIdentifier))
             {
@@ -64,20 +63,18 @@ namespace Meditation.InjectorService.Tests
                 if (!remoteModuleHandle.IsInvalid)
                 {
                     using var moduleHandle = remoteModuleHandle;
-                    executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                    returnCode = await processInjecteeExecutor.TryExecuteExportedMethod(
                         processId,
                         injectedModulePath,
                         moduleHandle!,
                         exportedMethod,
-                        hookArgument,
-                        out returnCode);
+                        hookArgument);
                 }
             }
             await TestSubjectHelpers.KillTestSubject(execution);
 
             // Assert
             Assert.False(remoteModuleHandle.IsInvalid);
-            Assert.True(executionResult);
             Assert.True(returnCode.HasValue);
             Assert.Equal(0xABCD_EF98, returnCode);
         }
@@ -103,7 +100,6 @@ namespace Meditation.InjectorService.Tests
             // Act
             CommandTask<CommandResult> execution;
             SafeHandle remoteModuleHandle;
-            bool? executionResult = null;
             uint? returnCode = null;
             using (var executionController = TestSubjectHelpers.GetTestSubjectExecutionController(netSdkIdentifier))
             {
@@ -119,20 +115,18 @@ namespace Meditation.InjectorService.Tests
                     await Task.Delay(TimeSpan.FromSeconds(value: 1));
                     // Execute managed hook entrypoint
                     using var moduleHandle = remoteModuleHandle;
-                    executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                    returnCode = await processInjecteeExecutor.TryExecuteExportedMethod(
                         processId,
                         patchingConfiguration.NativeBootstrapLibraryPath,
                         moduleHandle!,
                         patchingConfiguration.NativeExportedEntryPointSymbol,
-                        hookArgs,
-                        out returnCode);
+                        hookArgs);
                 }
             }
             await TestSubjectHelpers.KillTestSubject(execution);
 
             // Assert
             Assert.False(remoteModuleHandle.IsInvalid);
-            Assert.True(executionResult);
             Assert.True(returnCode.HasValue);
             Assert.True(returnCode.Value == 0);
             Assert.Equal((uint)NativeHookErrorCode.Ok, returnCode);

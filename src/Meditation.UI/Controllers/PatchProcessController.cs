@@ -99,7 +99,7 @@ namespace Meditation.UI.Controllers
                 NativeBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapNativeFileName,
                 ManagedBootstrapLibraryLoggingPath: _configuration.Logging.BootstrapManagedFileName);
 
-            await Task.Run(() => _patchReverser.ReversePatch(processInfo.Id.Value, patchConfiguration), ct);
+            await Task.Run(async () => await _patchReverser.ReversePatch(processInfo.Id.Value, patchConfiguration), ct);
         }
 
         private async Task<ProcessInfo> GetAttachedProcessInfo(CancellationToken ct)

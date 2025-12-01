@@ -34,7 +34,6 @@ namespace Meditation.PatchingService.Tests
             // Act
             CommandTask<CommandResult> execution;
             SafeHandle remoteModuleHandle;
-            bool? executionResult = null;
             uint? returnCode = null;
             using (var executionController = TestSubjectHelpers.GetTestSubjectExecutionController(netSdkIdentifier))
             {
@@ -50,20 +49,18 @@ namespace Meditation.PatchingService.Tests
                     await Task.Delay(TimeSpan.FromSeconds(value: 1));
                     // Execute managed hook entrypoint
                     using var moduleHandle = remoteModuleHandle;
-                    executionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                    returnCode = await processInjecteeExecutor.TryExecuteExportedMethod(
                         processId,
                         patchingConfiguration.NativeBootstrapLibraryPath,
                         moduleHandle,
                         patchingConfiguration.NativeExportedEntryPointSymbol,
-                        hookArgs,
-                        out returnCode);
+                        hookArgs);
                 }
             }
             await TestSubjectHelpers.KillTestSubject(execution);
 
             // Assert
             Assert.False(remoteModuleHandle.IsInvalid);
-            Assert.True(executionResult);
             Assert.True(returnCode.HasValue);
             Assert.True(returnCode.Value == 0);
         }
@@ -91,7 +88,6 @@ namespace Meditation.PatchingService.Tests
             // Act
             CommandTask<CommandResult> execution;
             SafeHandle remoteModuleHandle;
-            bool? applyExecutionResult = null;
             uint? applyReturnCode = null;
             bool? reverseExecutionResult = null;
             uint? reverseReturnCode = null;
@@ -109,34 +105,31 @@ namespace Meditation.PatchingService.Tests
                     await Task.Delay(TimeSpan.FromSeconds(value: 1));
                     // Execute managed hook entrypoint
                     using var moduleHandle = remoteModuleHandle;
-                    applyExecutionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                    applyReturnCode = await processInjecteeExecutor.TryExecuteExportedMethod(
                         processId,
                         hookingConfiguration.NativeBootstrapLibraryPath,
                         moduleHandle!,
                         hookingConfiguration.NativeExportedEntryPointSymbol,
-                        hookArgs,
-                        out applyReturnCode);
+                        hookArgs);
                 }
 
                 // Act (code execution - reverse patch)
-                if (applyExecutionResult.HasValue && applyExecutionResult.Value)
+                if (applyReturnCode.HasValue)
                 {
                     // Execute managed hook entrypoint
                     using var moduleHandle = remoteModuleHandle;
-                    reverseExecutionResult = processInjecteeExecutor.TryExecuteExportedMethod(
+                    reverseReturnCode = await processInjecteeExecutor.TryExecuteExportedMethod(
                         processId,
                         hookingConfiguration.NativeBootstrapLibraryPath,
                         moduleHandle!,
                         hookingConfiguration.NativeExportedEntryPointSymbol,
-                        unhookArgs,
-                        out reverseReturnCode);
+                        unhookArgs);
                 }
             }
             await TestSubjectHelpers.KillTestSubject(execution);
 
             // Assert
             Assert.False(remoteModuleHandle.IsInvalid);
-            Assert.True(applyExecutionResult);
             Assert.True(applyReturnCode.HasValue);
             Assert.True(applyReturnCode.Value == 0);
             Assert.True(reverseExecutionResult);

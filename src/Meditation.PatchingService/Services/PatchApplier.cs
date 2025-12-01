@@ -24,7 +24,7 @@ namespace Meditation.PatchingService.Services
             if (remoteModuleHandle.IsInvalid)
                 throw new Exception("Could not inject patch!");
 
-            var returnCode = _processInjecteeExecutor.ExecuteExportedMethod(
+            var returnCode = await _processInjecteeExecutor.ExecuteExportedMethod(
                 pid: pid,
                 modulePath: configuration.NativeBootstrapLibraryPath,
                 injectedModuleHandle: remoteModuleHandle,

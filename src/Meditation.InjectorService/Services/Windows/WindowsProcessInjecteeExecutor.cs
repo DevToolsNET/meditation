@@ -4,37 +4,38 @@ using Meditation.Interop.Windows;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Meditation.InjectorService.Services.Windows
 {
     internal class WindowsProcessInjecteeExecutor : IProcessInjecteeExecutor
     {
-        public uint ExecuteExportedMethod(int pid, string modulePath, SafeHandle injectedModuleHandle, string exportedMethodName, string argument)
+        public async Task<uint> ExecuteExportedMethod(int pid, string modulePath, SafeHandle injectedModuleHandle, string exportedMethodName, string argument)
         {
-            if (!TryExecuteExportedMethod(pid, modulePath, injectedModuleHandle, exportedMethodName, argument, out var returnCode))
+            if (await TryExecuteExportedMethod(pid, modulePath, injectedModuleHandle, exportedMethodName, argument) is not { } exitCode)
                 throw new Exception($"Could not call exported symbol {exportedMethodName} with argument {argument} in PID = {pid}.");
 
-            return returnCode.Value;
+            return exitCode;
         }
 
-        public bool TryExecuteExportedMethod(
+        public Task<uint?> TryExecuteExportedMethod(
             int pid, 
             string modulePath, 
             SafeHandle injectedModuleHandle, 
             string exportedMethodName, 
-            string argument,
-            [NotNullWhen(returnValue: true)] out uint? returnCode)
+            string argument)
         {
             if (!TryGetMethodAddressInRemoteProcess(injectedModuleHandle, modulePath, exportedMethodName, out var remoteMethodHandle))
             {
                 // Could not get address of method within the injected module in remote process
                 // FIXME [#16]: logging
-                returnCode = null;
-                return false;
+                return Task.FromResult<uint?>(null);
             }
 
             using var methodHandle = remoteMethodHandle;
-            return TryExecuteInRemoteProcess(pid, methodHandle, argument, out returnCode);
+            return TryExecuteInRemoteProcess(pid, methodHandle, argument, out var exitCode)
+                ? Task.FromResult(exitCode)
+                : Task.FromResult<uint?>(null);
         }
 
         private static bool TryGetMethodAddressInRemoteProcess(

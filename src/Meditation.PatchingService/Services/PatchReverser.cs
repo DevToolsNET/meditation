@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Meditation.Bootstrap.Managed;
 using Meditation.Interop;
 
@@ -17,7 +18,7 @@ namespace Meditation.PatchingService.Services
             _processInjecteeExecutor = processInjecteeExecutor;
         }
 
-        public void ReversePatch(int pid, PatchingConfiguration configuration)
+        public async Task ReversePatch(int pid, PatchingConfiguration configuration)
         {
             var nativeBootstrapModuleName = Path.GetFileName(configuration.NativeBootstrapLibraryPath);
             var nativeBootstrapModule = Process.GetProcessById(pid)
@@ -32,7 +33,7 @@ namespace Meditation.PatchingService.Services
                 ownsHandle: false);
 
             var args = PatchingConfiguration.ConstructArgs(typeof(EntryPoint).Assembly, configuration);
-            var returnCode = _processInjecteeExecutor.ExecuteExportedMethod(
+            var returnCode = await _processInjecteeExecutor.ExecuteExportedMethod(
                 pid: pid,
                 modulePath: configuration.NativeBootstrapLibraryPath,
                 injectedModuleHandle: remoteMeditationBootstrapNativeModuleHandle,
