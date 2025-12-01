@@ -32,6 +32,7 @@ namespace Meditation.InjectorService.Configuration
         private static void AddLinuxServices(this IServiceCollection services)
         {
             services.AddTransient<IProcessInjector, LinuxProcessInjector>();
+            services.AddTransient<IProcessInjecteeExecutor, LinuxProcessInjecteeExecutor>();
         }
     }
 }
