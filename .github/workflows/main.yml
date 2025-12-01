@@ -57,4 +57,7 @@ jobs:
       run: dotnet test src/Tests/Meditation.AttachProcessService.Tests/Meditation.AttachProcessService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
     - name: Test (metadata)
       run: dotnet test src/Tests/Meditation.MetadataLoaderService.Tests/Meditation.MetadataLoaderService.Tests.csproj --no-build --verbosity normal --logger GitHubActions
-    
+    - name: Test (injector)
+      run: |
+        echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope # Allow ptrace for child processes
+        dotnet test src/Tests/Meditation.InjectorService.Tests/Meditation.InjectorService.Tests.csproj --no-build --verbosity normal --logger GitHubActions

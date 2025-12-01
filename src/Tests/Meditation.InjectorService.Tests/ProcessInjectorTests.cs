@@ -15,10 +15,10 @@ namespace Meditation.InjectorService.Tests
     {
         [Theory]
         [InlineData("net8.0")]
-        public async Task ProcessInjector_InjectSelfToOtherProcess(string netSdkIdentifier)
+        public async Task ProcessInjector_InjectToOtherProcess(string netSdkIdentifier)
         {
             // Prepare
-            var injectedAssemblyPath = typeof(ProcessInjectorTests).Assembly.Location;
+            var injectedModulePath = BootstrapNativeHelpers.GetMeditationNativeModulePath();
             var processInjector = ServiceProvider.GetRequiredService<IProcessInjector>();
 
             // Act
@@ -28,7 +28,7 @@ namespace Meditation.InjectorService.Tests
             {
                 execution = executionController.ExecuteAsync();
                 var processId = execution.ProcessId;
-                moduleHandle = await processInjector.TryInjectModule(processId, injectedAssemblyPath);
+                moduleHandle = await processInjector.TryInjectModule(processId, injectedModulePath);
             }
             await TestSubjectHelpers.KillTestSubject(execution);
 
