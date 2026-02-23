@@ -42,25 +42,23 @@ internal static class Gdb
             // Inject module into remote process
             const int flags = DynamicLinking.DLOPEN_RTLD_NOW | DynamicLinking.DLOPEN_RTLD_GLOBAL;
             var gdbInjectModuleScript = BuildInjectModuleGdbScript(pid, modulePath, flags);
-            var stdout = new StringBuilder();
-            var stderr = new StringBuilder();
+            var stdoutBuffer = new StringBuilder();
             
-            await Cli.Wrap(ShellExecutable)
+            var result = await Cli.Wrap(ShellExecutable)
                 .WithArguments(["-c", gdbInjectModuleScript])
-                .WithValidation(CommandResultValidation.ZeroExitCode)
-                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdout))
-                .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stderr))
+                .WithValidation(CommandResultValidation.None)
+                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdoutBuffer))
                 .ExecuteAsync();
 
             // Obtain handle to injected module though thread exit code
             var moduleName = Path.GetFileName(modulePath);
             var module = Process.GetProcessById(pid).Modules.Cast<ProcessModule>().SingleOrDefault(m => m.ModuleName == moduleName);
-            if (module == null)
+            
+            if (!result.IsSuccess || module == null)
             {
-                // Error while obtaining base address for loaded module
                 // FIXME [#16]: logging
-                // FIXME: add call to dlerror() in gdb to obtain more information about error
-                
+                // Error while obtaining base address for loaded module
+                // Log stdout from gdb execution for debugging purposes
                 return GenericSafeHandle.Invalid;
             }
 
@@ -79,17 +77,18 @@ internal static class Gdb
         try
         {
             // Execute function in remote process
-            var stdout = new StringBuilder();
+            var stdoutBuffer = new StringBuilder();
             var gdbExecuteFunctionScript = BuildExecuteFunctionGdbScript(pid, functionName, argument);
-            await Cli.Wrap(ShellExecutable)
+            var result = await Cli.Wrap(ShellExecutable)
                 .WithArguments(["-c", $"{gdbExecuteFunctionScript}"])
-                .WithValidation(CommandResultValidation.ZeroExitCode)
-                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdout))
+                .WithValidation(CommandResultValidation.None)
+                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdoutBuffer))
                 .ExecuteAsync();
             
             // Parse output to obtain return code
-            var evaluationLine = stdout.ToString().Split(Environment.NewLine).SingleOrDefault(line => line.StartsWith("$1"));
-            if (evaluationLine == null)
+            var stdout = stdoutBuffer.ToString();
+            var evaluationLine = stdout.Split(Environment.NewLine).SingleOrDefault(line => line.StartsWith("$1"));
+            if (!result.IsSuccess || evaluationLine == null)
             {
                 // Could not find expression evaluation line in gdb output
                 // FIXME [#16]: logging
