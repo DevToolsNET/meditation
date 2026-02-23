@@ -43,9 +43,14 @@ internal static class Gdb
             // Inject module into remote process
             const int flags = DynamicLinking.DLOPEN_RTLD_NOW | DynamicLinking.DLOPEN_RTLD_GLOBAL;
             var gdbInjectCommand = string.Format(GdbInjectModuleCommandTemplate, pid, modulePath, flags);
+            var stdout = new StringBuilder();
+            var stderr = new StringBuilder();
+            
             await Cli.Wrap(ShellExecutable)
                 .WithArguments(["-c", gdbInjectCommand])
                 .WithValidation(CommandResultValidation.ZeroExitCode)
+                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdout))
+                .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stderr))
                 .ExecuteAsync();
 
             // Obtain handle to injected module though thread exit code
@@ -55,6 +60,8 @@ internal static class Gdb
             {
                 // Error while obtaining base address for loaded module
                 // FIXME [#16]: logging
+                // FIXME: add call to dlerror() in gdb to obtain more information about error
+                
                 return GenericSafeHandle.Invalid;
             }
 
