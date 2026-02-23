@@ -1,6 +1,7 @@
 ﻿using Meditation.Bootstrap.Managed;
 using Meditation.InjectorService;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Meditation.PatchingService.Services
@@ -19,8 +20,11 @@ namespace Meditation.PatchingService.Services
         public async Task ApplyPatch(int pid, PatchingConfiguration configuration)
         {
             var hookArguments = PatchingConfiguration.ConstructArgs(typeof(EntryPoint).Assembly, configuration);
-            var remoteModuleHandle = await _processInjector.TryInjectModule(pid: pid, assemblyPath: configuration.NativeBootstrapLibraryPath);
-
+            var fullNativeBootstrapLibraryPath = Path.GetFullPath(configuration.NativeBootstrapLibraryPath);
+            if (!File.Exists(fullNativeBootstrapLibraryPath))
+                throw new FileNotFoundException($"Could not find native bootstrap library at path: {fullNativeBootstrapLibraryPath}.");
+            
+            var remoteModuleHandle = await _processInjector.TryInjectModule(pid: pid, fullNativeBootstrapLibraryPath);
             if (remoteModuleHandle.IsInvalid)
                 throw new Exception("Could not inject patch!");
 

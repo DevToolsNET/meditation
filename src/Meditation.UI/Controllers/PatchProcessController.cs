@@ -19,6 +19,7 @@ namespace Meditation.UI.Controllers
         private readonly IProcessListProvider _processListProvider;
         private readonly IPatchApplier _patchApplier;
         private readonly IPatchReverser _patchReverser;
+        private readonly OperatingSystemType _currentOperatingSystem;
 
         public PatchProcessController(
             ApplicationConfiguration configuration,
@@ -32,6 +33,10 @@ namespace Meditation.UI.Controllers
             _attachedProcessContext = attachedProcessContext;
             _patchApplier = patchApplier;
             _patchReverser = patchReverser;
+
+            _currentOperatingSystem = GetCurrentOperatingSystem();
+            if (_currentOperatingSystem == OperatingSystemType.Unknown)
+                throw new NotSupportedException("Current operating system is not supported.");
         }
 
         [RelayCommand]
@@ -116,7 +121,7 @@ namespace Meditation.UI.Controllers
                 throw new Exception($"Could not determine architecture of the target process {processInfo.Id.Value}.");
 
             var bootstrapLibrary = _configuration.NativeExecutables
-                .FirstOrDefault(e => e.Architecture == processInfo.Architecture);
+                .FirstOrDefault(e => e.Architecture == processInfo.Architecture && e.OperatingSystem == _currentOperatingSystem);
 
             if (bootstrapLibrary == null)
                 throw new Exception($"Application configuration did not specify native executable for architecture {processInfo.Architecture}.");
@@ -125,6 +130,16 @@ namespace Meditation.UI.Controllers
                 throw new Exception($"Could not find \"{bootstrapLibrary.Path}\". Search directory: \"{Directory.GetCurrentDirectory()}\".");
 
             return bootstrapLibrary.Path;
+        }
+
+        private static OperatingSystemType GetCurrentOperatingSystem()
+        {
+            if (OperatingSystem.IsWindows())
+                return OperatingSystemType.Windows;
+            if (OperatingSystem.IsLinux())
+                return OperatingSystemType.Linux;
+
+            return OperatingSystemType.Unknown;
         }
     }
 }
