@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 namespace Meditation.UI.Services.Windows
 {
@@ -15,17 +16,18 @@ namespace Meditation.UI.Services.Windows
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-        public void RestartAsElevated()
+        public Task RestartAsElevated()
         {
             var processStartInfo = new ProcessStartInfo
             {
                 Verb = "runas",
-                FileName = Process.GetCurrentProcess().MainModule!.FileName,
+                FileName = Environment.ProcessPath,
                 UseShellExecute = true
             };
 
             Process.Start(processStartInfo);
             Environment.Exit(0);
+            return Task.CompletedTask;
         }
     }
 }

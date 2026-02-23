@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using Meditation.UI.Services.Linux;
 using Meditation.UI.Services.Windows;
 
 namespace Meditation.UI.Configuration
@@ -44,9 +45,10 @@ namespace Meditation.UI.Configuration
             services.AddSingleton<IPrivilegeElevatorService, WindowsPrivilegeElevatorService>();
         }
 
+        [SupportedOSPlatform("linux")]
         private static void AddLinuxServices(this IServiceCollection services)
         {
-            throw new NotImplementedException(OSPlatform.Linux.ToString());
+            services.AddSingleton<IPrivilegeElevatorService, LinuxPrivilegeElevatorService>();
         }
 
         private static void ConfigureServices(this IServiceCollection services)

@@ -1,9 +1,11 @@
-﻿namespace Meditation.UI
+﻿using System.Threading.Tasks;
+
+namespace Meditation.UI
 {
     public interface IPrivilegeElevatorService
     {
         bool IsElevated();
 
-        void RestartAsElevated();
+        Task RestartAsElevated();
     }
 }
