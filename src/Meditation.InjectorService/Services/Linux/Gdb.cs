@@ -15,7 +15,6 @@ internal static class Gdb
 {
     private const string ShellExecutable = "/bin/sh";
     private const string GdbTestCommand = "gdb --version";
-    private const string GdbInjectModuleCommandTemplate = "gdb -p {0} --batch -ex 'print dlopen(\"{1}\", {2})'";
     
     public static async Task<bool> IsInstalled()
     {
@@ -42,12 +41,12 @@ internal static class Gdb
         {
             // Inject module into remote process
             const int flags = DynamicLinking.DLOPEN_RTLD_NOW | DynamicLinking.DLOPEN_RTLD_GLOBAL;
-            var gdbInjectCommand = string.Format(GdbInjectModuleCommandTemplate, pid, modulePath, flags);
+            var gdbInjectModuleScript = BuildInjectModuleGdbScript(pid, modulePath, flags);
             var stdout = new StringBuilder();
             var stderr = new StringBuilder();
             
             await Cli.Wrap(ShellExecutable)
-                .WithArguments(["-c", gdbInjectCommand])
+                .WithArguments(["-c", gdbInjectModuleScript])
                 .WithValidation(CommandResultValidation.ZeroExitCode)
                 .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdout))
                 .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stderr))
@@ -114,6 +113,17 @@ internal static class Gdb
         }
     }
 
+    private static string BuildInjectModuleGdbScript(int pid, string modulePath, int flags)
+    {
+        return string.Join(" ", new[]
+        {
+            $"gdb -p {pid}",
+            $"--batch",
+            $"-ex 'print dlopen(\"{modulePath}\", {flags})'",
+            $"-ex 'print dlerror()'"
+        });
+    }
+    
     private static string BuildExecuteFunctionGdbScript(int pid, string functionName, string argument)
     {
         // Convert argument string to null-terminated uint16_t initializer list: { 0x006E, 0x0061, 0x0074, ... }

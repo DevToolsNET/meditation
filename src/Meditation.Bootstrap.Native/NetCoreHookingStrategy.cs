@@ -30,7 +30,8 @@ namespace Meditation.Bootstrap.Native
         {
             // In order to obtain the handle for CLRRuntimeHost, we must call a DLLEXPORT ("GetCLRRuntimeHost" - it is part of the public API)
             // The definition of this specific export can be found here: https://github.com/dotnet/runtime/blob/9e31c21bcbb661fc4fa235839a66442a65ef447c/src/coreclr/vm/corhost.cpp#L827
-            // The exported symbol can be found in the main coreclr module. Therefore, we can use the GetProcAddress to obtain the address of the desired function
+            // The exported symbol can be found in the main coreclr module.
+            // We can use the GetProcAddress / dlsym to obtain the address of the desired function
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return Kernel32.GetProcAddress(coreClrModuleHandle, nameof(GetCLRRuntimeHost));
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
