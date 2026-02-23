@@ -8,12 +8,15 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Meditation.MetadataLoaderService.Services
 {
     internal class DependencyResolver : IDependencyResolver
     {
         private readonly IMetadataLoaderInternal _metadataLoader;
+        private readonly ILogger _logger;
         private static readonly ImmutableArray<string> _meditationAssemblies;
 
         static DependencyResolver()
@@ -25,9 +28,10 @@ namespace Meditation.MetadataLoaderService.Services
             _meditationAssemblies = builder.ToImmutableArray();
         }
 
-        public DependencyResolver(IMetadataLoaderInternal metadataLoader)
+        public DependencyResolver(IMetadataLoaderInternal metadataLoader, ILogger<DependencyResolver> logger)
         {
             _metadataLoader = metadataLoader;
+            _logger = logger;
             MeditationAssemblies = _meditationAssemblies;
         }
 
@@ -50,24 +54,23 @@ namespace Meditation.MetadataLoaderService.Services
             return builder.ToImmutableArray();
         }
 
-        private static IEnumerable<string> GetReferencedAssemblies(ModuleDef module, HashSet<string> processedAssemblies, AssemblyResolver resolver)
+        private IEnumerable<string> GetReferencedAssemblies(ModuleDef module, HashSet<string> processedAssemblies, AssemblyResolver resolver)
         {
-            foreach (var reference in module.GetAssemblyRefs().Select(ar => resolver.Resolve(ar, module)))
+            foreach (var (resolved, reference) in module.GetAssemblyRefs().Select(ar => (resolver.Resolve(ar, module), ar)))
             {
-                if (reference == null)
+                if (resolved == null)
                 {
-                    // FIXME [#16]: add logging
-                    // Unable to resolve referenced assembly
+                    _logger.LogWarning("Unable to resolve referenced assembly {reference}.", reference.FullName);
                     continue;
                 }
 
-                var assemblyLocation = reference.ManifestModule.Location;
+                var assemblyLocation = resolved.ManifestModule.Location;
                 if (processedAssemblies.Contains(assemblyLocation))
                     continue;
 
                 yield return assemblyLocation;
 
-                foreach (var transitiveReference in GetReferencedAssemblies(reference.ManifestModule, processedAssemblies, resolver))
+                foreach (var transitiveReference in GetReferencedAssemblies(resolved.ManifestModule, processedAssemblies, resolver))
                     yield return transitiveReference;
             }
         }

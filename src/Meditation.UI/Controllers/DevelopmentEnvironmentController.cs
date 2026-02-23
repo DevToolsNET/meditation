@@ -1,19 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using Meditation.AttachProcessService;
-using Meditation.AttachProcessService.Models;
 using Meditation.CompilationService;
 using Meditation.MetadataLoaderService.Models;
 using Meditation.PatchingService;
-using Meditation.PatchingService.Models;
-using Meditation.UI.Configuration;
 using Meditation.UI.Controllers.Utils;
 using Meditation.UI.ViewModels;
 using Meditation.UI.ViewModels.IDE;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using System;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -26,18 +22,21 @@ namespace Meditation.UI.Controllers
         private readonly IWorkspaceContext _compilationContext;
         private readonly IPatchStorage _patchStorage;
         private readonly IAvaloniaDialogService _dialogService;
+        private readonly ILogger _logger;
         private readonly InputTextDialogController _inputTextDialogController;
 
         public DevelopmentEnvironmentController(
             IWorkspaceContext compilationContext, 
             IPatchStorage patchStorage,
             IAvaloniaDialogService dialogService,
-            InputTextDialogController inputTextDialogController)
+            InputTextDialogController inputTextDialogController,
+            ILogger<DevelopmentEnvironmentController> logger)
         {
             _compilationContext = compilationContext;
             _patchStorage = patchStorage;
             _dialogService = dialogService;
             _inputTextDialogController = inputTextDialogController;
+            _logger = logger;
         }
 
         [RelayCommand]
@@ -45,27 +44,13 @@ namespace Meditation.UI.Controllers
         {
             try
             {
-                if (metadataBrowserViewModel.SelectedItem is not MethodMetadataEntry method)
-                {
-                    var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                        title: "No method was selected",
-                        text: "Unable to create a new workspace because no method was selected.",
-                        @enum: ButtonEnum.Ok);
-                    await messageBox.ShowAsync();
-                    return;
-                }
-
-                // Let user select project (assembly) name for the new patch
-                var dialog = await _inputTextDialogController.CreateDialog("Enter patch name for the new workspace:");
-                if (dialog is null || await _inputTextDialogController.GetDataContext(dialog) is not {} inputTextDialogDataContext)
-                    return;
-                await _inputTextDialogController.ShowDialog(dialog);
-
-                var projectName = inputTextDialogDataContext.Text ?? "MyPatch";
-                await _compilationContext.CreateWorkspaceAsync(method, projectName, projectName, ct);
+                _logger.LogDebug("Command {cmd} started.", nameof(CreateWorkspace));
+                await CreateWorkspaceImpl(metadataBrowserViewModel, ct);
+                _logger.LogDebug("Command {cmd} finished.", nameof(CreateWorkspace));
             }
             catch (Exception exception)
             {
+                _logger.LogError("Command {cmd} failed.", nameof(CreateWorkspace));
                 await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
@@ -75,42 +60,80 @@ namespace Meditation.UI.Controllers
         {
             try
             {
-                // Build project
-                _compilationContext.AddDocument(ideViewModel.TextEditorViewModel.Text ?? string.Empty, Encoding.UTF8);
-                var compilationResult = await _compilationContext.BuildAsync(ct);
-                UpdateUserInterfaceAfterBuild(ideViewModel, compilationResult);
+                _logger.LogDebug("Command {cmd} started.", nameof(BuildWorkspace));
+                await BuildWorkspaceImpl(ideViewModel, ct);
+                _logger.LogDebug("Command {cmd} finished.", nameof(BuildWorkspace));
 
-                if (compilationResult.Success)
-                    await UpdateUserInterfaceAfterSuccessfulBuildAsync(ideViewModel, ct);
             }
             catch (Exception exception)
             {
+                _logger.LogError("Command {cmd} failed.", nameof(BuildWorkspace));
                 await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
         }
 
         [RelayCommand]
-        public async Task DestroyWorkspace(DevelopmentEnvironmentViewModel ideViewModel)
+        public async Task DestroyWorkspace(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)
         {
             try
             {
-                if (_compilationContext.Method is null)
-                {
-                    var messageBox = MessageBoxManager.GetMessageBoxStandard(
-                        title: "No workspace is active",
-                        text: "Unable to destroy workspace as there is no editor active.",
-                        @enum: ButtonEnum.Ok);
-                    await messageBox.ShowAsync();
-                    return;
-                }
-
-                _compilationContext.DestroyWorkspace();
-                ideViewModel.StatusBarViewModel.SetInformationStatus("Ready.");
+                _logger.LogDebug("Command {cmd} started.", nameof(DestroyWorkspace));
+                await DestroyWorkspaceImpl(ideViewModel, ct);
+                _logger.LogDebug("Command {cmd} finished.", nameof(DestroyWorkspace));
             }
             catch (Exception exception)
             {
+                _logger.LogError("Command {cmd} failed.", nameof(DestroyWorkspace));
                 await DialogUtilities.ShowUnhandledExceptionMessageBox(exception);
             }
+        }
+
+        private async Task CreateWorkspaceImpl(MetadataBrowserViewModel metadataBrowserViewModel, CancellationToken ct)
+        {
+            if (metadataBrowserViewModel.SelectedItem is not MethodMetadataEntry method)
+            {
+                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                    title: "No method was selected",
+                    text: "Unable to create a new workspace because no method was selected.",
+                    @enum: ButtonEnum.Ok);
+                await messageBox.ShowAsync();
+                return;
+            }
+
+            // Let user select project (assembly) name for the new patch
+            var dialog = await _inputTextDialogController.CreateDialog("Enter patch name for the new workspace:");
+            if (dialog is null || await _inputTextDialogController.GetDataContext(dialog) is not { } inputTextDialogDataContext)
+                return;
+            await _inputTextDialogController.ShowDialog(dialog);
+
+            var projectName = inputTextDialogDataContext.Text ?? "MyPatch";
+            await _compilationContext.CreateWorkspaceAsync(method, projectName, projectName, ct);
+        }
+
+        private async Task BuildWorkspaceImpl(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)
+        {
+            _compilationContext.AddDocument(ideViewModel.TextEditorViewModel.Text ?? string.Empty, Encoding.UTF8);
+            var compilationResult = await _compilationContext.BuildAsync(ct);
+            UpdateUserInterfaceAfterBuild(ideViewModel, compilationResult);
+
+            if (compilationResult.Success)
+                await UpdateUserInterfaceAfterSuccessfulBuildAsync(ideViewModel, ct);
+        }
+
+        private async Task DestroyWorkspaceImpl(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)
+        {
+            if (_compilationContext.Method is null)
+            {
+                var messageBox = MessageBoxManager.GetMessageBoxStandard(
+                    title: "No workspace is active",
+                    text: "Unable to destroy workspace as there is no editor active.",
+                    @enum: ButtonEnum.Ok);
+                await messageBox.ShowAsync();
+                return;
+            }
+
+            _compilationContext.DestroyWorkspace();
+            ideViewModel.StatusBarViewModel.SetInformationStatus("Ready.");
         }
 
         private async Task UpdateUserInterfaceAfterSuccessfulBuildAsync(DevelopmentEnvironmentViewModel ideViewModel, CancellationToken ct)

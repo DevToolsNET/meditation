@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using HarmonyLib;
 using Meditation.PatchLibrary;
+using Microsoft.Extensions.Logging;
 using PatchInfo = Meditation.PatchingService.Models.PatchInfo;
 
 namespace Meditation.PatchingService.Services
@@ -16,10 +17,12 @@ namespace Meditation.PatchingService.Services
         private readonly IPatchStorage _patchStorage;
         private readonly AssemblyLoadContext _assemblyLoadContext;
         private ImmutableDictionary<AssemblyName, ImmutableArray<PatchInfo>> _patches;
+        private readonly ILogger _logger;
         private bool _isReloadRequested;
 
-        public PatchListProvider(IPatchStorage patchStorage)
+        public PatchListProvider(IPatchStorage patchStorage, ILogger<PatchListProvider> logger)
         {
+            _logger = logger;
             _patchStorage = patchStorage;
             _patches = ImmutableDictionary<AssemblyName, ImmutableArray<PatchInfo>>.Empty;
             _assemblyLoadContext = new AssemblyLoadContext(name: nameof(PatchListProvider));
@@ -70,7 +73,7 @@ namespace Meditation.PatchingService.Services
                     if (assemblyAttribute == null || typeAttribute == null || methodAttribute == null)
                     {
                         // Invalid patch metadata
-                        // FIXME [#16]: add logging
+                        _logger.LogWarning("Could not load patch type {patch} from assembly {assembly} due to missing/corrupted metadata.", patch.FullName, fullPathName);
                         continue;
                     }
 
@@ -92,10 +95,9 @@ namespace Meditation.PatchingService.Services
 
                 return builder.ToImmutable();
             }
-            catch
+            catch (Exception ex)
             {
-                // Could not load dll
-                // FIXME [#16]: logging
+                _logger.LogWarning(ex, "Could not load file {file} to search for patches.", fullPathName);
                 return ImmutableArray<PatchInfo>.Empty;
             }
         }
