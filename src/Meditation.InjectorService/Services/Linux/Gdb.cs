@@ -139,7 +139,8 @@ internal static class Gdb
             $"--batch",
             $"-ex 'set $arr = malloc({wideCharCount} * 2)'",
             $"-ex 'set {{unsigned short[{wideCharCount}]}} $arr = {{{utf16Initializer}}}'",
-            $"-ex 'print (unsigned int){functionName}((unsigned short*)$arr)'"
+            $"-ex 'print (unsigned int){functionName}((unsigned short*)$arr)'",
+            $"-ex 'call free($arr)'"
         });
     }
 }
