@@ -4,8 +4,43 @@ on:
   workflow_dispatch:
 
 jobs:
-  release-windows-x64:
+  prepare-windows-x64:
     runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.*
+    - name: Build
+      run: dotnet publish -c Release ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: win-x64
+        path: ./src/Meditation.Bootstrap.Native/bin/Release/net8.0/win-x64/native/Meditation.Bootstrap.Native.dll
+        if-no-files-found: error
+        
+  prepare-linux-x64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.*
+      - name: Build
+        run: dotnet publish -c Release ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r linux-x64
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: ./src/Meditation.Bootstrap.Native/bin/Release/net8.0/linux-x64/native/Meditation.Bootstrap.Native.so
+          if-no-files-found: error
+          
+  pack:
+    needs: [prepare-windows-x64, prepare-linux-x64]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET
@@ -15,17 +50,16 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore src/Meditation.sln
     - name: Build (managed)
-      run: dotnet build -c Release src/Meditation.sln --no-restore --no-incremental /p:WarningLevel=0
-    - name: Build (native)
-      run: dotnet publish -c Release ./src/Meditation.Bootstrap.Native/Meditation.Bootstrap.Native.csproj -r win-x64
+      run: dotnet publish src/Meditation.UI.Desktop/Meditation.UI.Desktop.csproj -c Release -o meditation-release
+    - name: Download (native)
+      uses: actions/download-artifact@v4
     - name: Pack release
       run: |
-        mkdir win-x64-release
-        Copy -Path "./src/Meditation.UI.Desktop/bin/Release/net8.0/" "./win-x64-release/" -Recurse -Force -Verbose
-        Copy -Path "./src/Meditation.Bootstrap.Native/bin/Release/net8.0/win-x64/native/Meditation.Bootstrap.Native.dll" "./win-x64-release/net8.0/" -Force -Verbose
+        ls -la
+        cp win-x64/Meditation.Bootstrap.Native.dll ./meditation-release/
+        cp linux-x64/Meditation.Bootstrap.Native.so ./meditation-release/
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: win-x64
-        path: win-x64-release
+        path: meditation-release
         retention-days: 7
