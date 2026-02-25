@@ -4,6 +4,7 @@ namespace Meditation.Interop
 {
     public class GenericSafeHandle : System.Runtime.InteropServices.SafeHandle
     {
+        public static GenericSafeHandle Invalid { get; } = new(() => IntPtr.Zero, _ => true, ownsHandle: false);
         private readonly Func<nint, bool> _releaseDelegate;
 
         public GenericSafeHandle(Func<nint> acquireDelegate, Func<nint, bool> releaseDelegate, bool ownsHandle = true)

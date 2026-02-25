@@ -46,9 +46,9 @@ namespace Meditation.UI.ViewModels
         }
 
         [RelayCommand]
-        public void RestartAsElevated()
+        public Task RestartAsElevated()
         {
-            _privilegeElevatorService.RestartAsElevated();
+            return _privilegeElevatorService.RestartAsElevated();
         }
 
         private async Task<ImmutableArray<ProcessInfo>> GetAttachableProcessesAsync(CancellationToken ct)

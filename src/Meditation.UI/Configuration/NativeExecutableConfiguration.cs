@@ -4,5 +4,6 @@ namespace Meditation.UI.Configuration
 {
     public record NativeExecutableConfiguration(
         string Path,
-        Architecture Architecture);
+        Architecture Architecture,
+        OperatingSystemType OperatingSystem);
 }

@@ -11,6 +11,10 @@ Hooking:
 NativeExecutables:
   - Path: "Meditation.Bootstrap.Native.dll"
     Architecture: "X64"
+    OperatingSystem: "Windows"
+  - Path: "Meditation.Bootstrap.Native.so"
+    Architecture: "X64"
+    OperatingSystem: "Linux"
 
 Logging:
   MainApplicationFileName: "%localappdata%/Meditation/Meditation.log"

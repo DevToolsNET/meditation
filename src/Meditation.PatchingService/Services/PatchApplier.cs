@@ -1,6 +1,8 @@
 ﻿using Meditation.Bootstrap.Managed;
 using Meditation.InjectorService;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Meditation.PatchingService.Services
 {
@@ -15,17 +17,21 @@ namespace Meditation.PatchingService.Services
             _processInjecteeExecutor = processInjecteeExecutor;
         }
 
-        public void ApplyPatch(int pid, PatchingConfiguration configuration)
+        public async Task ApplyPatch(int pid, PatchingConfiguration configuration)
         {
             var hookArguments = PatchingConfiguration.ConstructArgs(typeof(EntryPoint).Assembly, configuration);
-
-            if (!_processInjector.TryInjectModule(pid: pid, assemblyPath: configuration.NativeBootstrapLibraryPath, out var remoteMeditationBootstrapNativeModuleHandle))
+            var fullNativeBootstrapLibraryPath = Path.GetFullPath(configuration.NativeBootstrapLibraryPath);
+            if (!File.Exists(fullNativeBootstrapLibraryPath))
+                throw new FileNotFoundException($"Could not find native bootstrap library at path: {fullNativeBootstrapLibraryPath}.");
+            
+            var remoteModuleHandle = await _processInjector.TryInjectModule(pid: pid, fullNativeBootstrapLibraryPath);
+            if (remoteModuleHandle.IsInvalid)
                 throw new Exception("Could not inject patch!");
 
-            var returnCode = _processInjecteeExecutor.ExecuteExportedMethod(
+            var returnCode = await _processInjecteeExecutor.ExecuteExportedMethod(
                 pid: pid,
                 modulePath: configuration.NativeBootstrapLibraryPath,
-                injectedModuleHandle: remoteMeditationBootstrapNativeModuleHandle,
+                injectedModuleHandle: remoteModuleHandle,
                 exportedMethodName: configuration.NativeExportedEntryPointSymbol,
                 argument: hookArguments);
 

@@ -1,7 +1,9 @@
-﻿namespace Meditation.PatchingService
+﻿using System.Threading.Tasks;
+
+namespace Meditation.PatchingService
 {
     public interface IPatchReverser
     {
-        void ReversePatch(int pid, PatchingConfiguration configuration);
+        Task ReversePatch(int pid, PatchingConfiguration configuration);
     }
 }

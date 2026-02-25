@@ -19,8 +19,8 @@ namespace Meditation.TestUtils
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                // TODO: implement support within issue #46
-                throw new NotImplementedException();
+                runtimeIdentifier = "linux-x64";
+                moduleExtension = "so";
             }
             else
             {

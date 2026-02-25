@@ -10,26 +10,24 @@ namespace Meditation.AttachProcessService.Services.Windows
 {
     internal class WindowsProcessArchitectureProvider : IProcessArchitectureProvider
     {
-        public Task<bool> TryGetProcessArchitectureAsync(Process process, [NotNullWhen(true)] out Architecture? architecture, CancellationToken ct)
+        public Task<Architecture?> TryGetProcessArchitectureAsync(Process process, CancellationToken ct)
         {
             if (!TryGetProcessHandle(process, out var handle))
             {
                 // The process is not running locally
-                architecture = null;
-                return Task.FromResult(false);
+                return Task.FromResult<Architecture?>(null);
             }
 
             var processHandle = handle.Value;
             if (!IsWow64Process(processHandle, out var isWow64))
             {
                 // Windows failed to obtain information about the process
-                architecture = null;
-                return Task.FromResult(false);
+                return Task.FromResult<Architecture?>(null);
             }
 
             // Assume we are on x86 or x86_64
-            architecture = isWow64 ? Architecture.X86 : Architecture.X64;
-            return Task.FromResult(true);
+            var architecture = isWow64 ? Architecture.X86 : Architecture.X64;
+            return Task.FromResult<Architecture?>(architecture);
         }
 
         private static bool TryGetProcessHandle(Process process, [NotNullWhen(true)] out IntPtr? handle)

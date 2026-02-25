@@ -1,4 +1,5 @@
 ﻿using Meditation.Interop;
+using Meditation.Interop.Linux;
 using Meditation.Interop.Windows;
 using System;
 using System.Runtime.InteropServices;
@@ -42,7 +43,7 @@ namespace Meditation.Bootstrap.Native
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     return NativeEntryPointWindows(hookArguments);
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    return NativeHookErrorCode.NotImplemented_OperatingSystem;
+                    return NativeEntryPointLinux(hookArguments);
 
                 return NativeHookErrorCode.NotSupported_OperatingSystem;
             }
@@ -62,13 +63,26 @@ namespace Meditation.Bootstrap.Native
             // Test for .NET Core application
             using var coreClrModuleHandle = Kernel32.GetModuleHandle(coreClrModule);
             if (!coreClrModuleHandle.IsInvalid)
-                return NetCoreHookingStrategy.TryInitializeWindowsNetCoreProcess(coreClrModuleHandle, arguments);
+                return NetCoreHookingStrategy.TryInitializeNetCoreProcess(coreClrModuleHandle, arguments);
 
             // Test for .NET Framework application
             using var mscoreeModuleHandle = Kernel32.GetModuleHandle(mscoreeModule);
             if (!mscoreeModuleHandle.IsInvalid)
                 return NetFrameworkHookingStrategy.TryInitializeWindowsNetFrameworkProcess(mscoreeModuleHandle, arguments);
 
+            // Attempt to inject an unsupported process
+            return NativeHookErrorCode.NotSupported_Process;
+        }
+        
+        private static NativeHookErrorCode NativeEntryPointLinux(NativeHookArguments arguments)
+        {
+            const string coreClrModule = "libcoreclr.so";
+            
+            // Test for .NET Core application
+            using var coreClrModuleHandle = DynamicLinking.OpenDynamicSharedObject(coreClrModule, DynamicLinking.DLOPEN_RTLD_LAZY);
+            if (!coreClrModuleHandle.IsInvalid)
+                return NetCoreHookingStrategy.TryInitializeNetCoreProcess(coreClrModuleHandle, arguments);
+            
             // Attempt to inject an unsupported process
             return NativeHookErrorCode.NotSupported_Process;
         }

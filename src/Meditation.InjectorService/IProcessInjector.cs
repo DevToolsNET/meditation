@@ -1,10 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Meditation.InjectorService
 {
     public interface IProcessInjector
     {
-        bool TryInjectModule(int pid, string assemblyPath, [NotNullWhen(true)] out SafeHandle? moduleHandle);
+        Task<SafeHandle> TryInjectModule(int pid, string assemblyPath);
     }
 }

@@ -7,8 +7,6 @@ namespace Meditation.TestSubject.NetCore
 {
     public static class TestSubject
     {
-        public const string SynchronizationHandleName = "/meditation/tests-ipc-signal";
-
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static void Method()
         {
@@ -18,11 +16,13 @@ namespace Meditation.TestSubject.NetCore
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static void Main()
         {
-            var waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, SynchronizationHandleName);
             TestClass.Init();
 
-            while (!waitHandle.WaitOne(TimeSpan.FromSeconds(value: 1)))
+            while (Console.In.Peek() == -1)
+            {
                 Method();
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
         }
     }
 }
